@@ -23,7 +23,7 @@ class ExtendableTest {
     assert(OBJECT.assignable(INT))
     assert(NUMBER.assignable(INT))
     assert(!INT.assignable(NUMBER))
-    assert(!INT.assignable(OBJECT)
+    assert(!INT.assignable(OBJECT))
 
     assert(OBJECT.assignable(DOUBLE))
     assert(NUMBER.assignable(DOUBLE))
