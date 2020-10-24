@@ -4,7 +4,9 @@ trait Type extends Assignable with Extendable with Genericable {
 }
 
 object Type {
-  abstract class Primitive extends Type with Named
+  abstract class Primitive extends Type with Named {
+    override def toString: String = name
+  }
   val VOID:Type = new Primitive {
     override val name: String = "void"
   }

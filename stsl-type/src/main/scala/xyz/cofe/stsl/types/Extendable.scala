@@ -10,6 +10,10 @@ trait Extendable extends Assignable {
       var x = t
       var matched = false
       while( x!=null && !matched ){
+        x = x match {
+          case cov:CoVariant => cov.tip
+          case _ => x
+        }
         matched = this==x
         x = x.extend.orNull
       }
