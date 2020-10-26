@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test
 class GenericParamTest {
   @Test
   def test01():Unit = {
-    val coObj = CoVariant("a",OBJECT)
-    assert(coObj.assignable(OBJECT))
+    val coObj = CoVariant("a",ANY)
+    assert(coObj.assignable(ANY))
     assert(coObj.assignable(NUMBER))
 
     val coNum = CoVariant("b",NUMBER)
@@ -19,7 +19,7 @@ class GenericParamTest {
   @Test
   def test02():Unit = {
     val t2 = CoVariant("b",NUMBER)
-    assert(OBJECT.assignable(t2), "OBJECT = NUMBER+")
+    assert(ANY.assignable(t2), "OBJECT = NUMBER+")
   }
 
   implicit class StrExt( val str:String ) {
@@ -47,11 +47,11 @@ class GenericParamTest {
 
   @Test
   def test03():Unit = {
-    val coObj = CoVariant("a",OBJECT)
+    val coObj = CoVariant("a",ANY)
     val coNum = CoVariant("a",NUMBER)
     val coInt = CoVariant("a",INT)
 
-    val ctrObj = ContraVariant("a",OBJECT)
+    val ctrObj = ContraVariant("a",ANY)
     val ctrNum = ContraVariant("a",NUMBER)
     val ctrInt = ContraVariant("a",INT)
 

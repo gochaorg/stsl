@@ -8,26 +8,26 @@ class ExtendableTest {
   def test01():Unit = {
     import Type._
 
-    assert(OBJECT.assignable(OBJECT))
+    assert(ANY.assignable(ANY))
     assert(VOID.assignable(VOID))
     assert(NUMBER.assignable(NUMBER))
     assert(INT.assignable(INT))
     assert(DOUBLE.assignable(DOUBLE))
 
-    assert(!VOID.assignable(OBJECT))
-    assert(!OBJECT.assignable(VOID))
+    assert(!VOID.assignable(ANY))
+    assert(!ANY.assignable(VOID))
 
-    assert(OBJECT.assignable(NUMBER))
-    assert(!NUMBER.assignable(OBJECT))
+    assert(ANY.assignable(NUMBER))
+    assert(!NUMBER.assignable(ANY))
 
-    assert(OBJECT.assignable(INT))
+    assert(ANY.assignable(INT))
     assert(NUMBER.assignable(INT))
     assert(!INT.assignable(NUMBER))
-    assert(!INT.assignable(OBJECT))
+    assert(!INT.assignable(ANY))
 
-    assert(OBJECT.assignable(DOUBLE))
+    assert(ANY.assignable(DOUBLE))
     assert(NUMBER.assignable(DOUBLE))
     assert(!DOUBLE.assignable(NUMBER))
-    assert(!DOUBLE.assignable(OBJECT))
+    assert(!DOUBLE.assignable(ANY))
   }
 }

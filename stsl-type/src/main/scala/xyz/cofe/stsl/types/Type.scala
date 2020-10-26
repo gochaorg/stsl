@@ -10,12 +10,12 @@ object Type {
   val VOID:Type = new Primitive {
     override val name: String = "void"
   }
-  val OBJECT:Type = new Primitive {
-    override val name: String = "object"
+  val ANY:Type = new Primitive {
+    override val name: String = "any"
   }
   val NUMBER:Type = new Primitive {
     override val name: String = "number"
-    override lazy val extend: Option[Type] = Some(OBJECT)
+    override lazy val extend: Option[Type] = Some(ANY)
   }
   val INT:Type = new Primitive {
     override val name: String = "int"
@@ -26,7 +26,7 @@ object Type {
     override lazy val extend: Option[Type] = Some(NUMBER)
   }
   val FN:Type = new Type {
-    override lazy val extend: Option[Type] = Some(OBJECT)
+    override lazy val extend: Option[Type] = Some(ANY)
     override def toString: String = "fn"
   }
 }

@@ -11,3 +11,8 @@ case class Fn( fgParams: GenericParams
   override lazy val parameters: Params = fParams
   override lazy val returns: Type = fReturn
 }
+
+object Fn {
+  def apply(fgParams: GenericParams, fParams: Params, fReturn: Type): Fn = new Fn(fgParams, fParams, fReturn)
+  def apply(fParams: Params, fReturn: Type): Fn = new Fn(GenericParams(), fParams, fReturn)
+}

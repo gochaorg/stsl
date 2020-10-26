@@ -21,6 +21,23 @@ case class GenericParams( val params: List[GenericParam]=List() ) {
     }
   }
 
+  def sameTypes(paramz:GenericParams):Boolean = {
+    require(paramz!=null)
+    if( paramz.params.length!=params.length ){
+      false
+    }else{
+      if(params.isEmpty){
+        true
+      }else{
+        params.indices.map(pi=> {
+          val gp1:GenericParam = params(pi)
+          val gp2:GenericParam = paramz.params(pi)
+          gp1.sameType(gp2)
+        }).reduce((a,b)=>a&&b)
+      }
+    }
+  }
+
   override def toString: String = if( params.isEmpty ) "" else "["+params.map(_.toString).reduce((a,b)=>a+","+b)+"]"
 }
 
