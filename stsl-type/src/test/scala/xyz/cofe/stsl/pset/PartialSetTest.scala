@@ -3,30 +3,58 @@ package xyz.cofe.stsl.pset
 import org.junit.jupiter.api.Test
 
 class PartialSetTest {
-  case class Item( name:String, parent:Option[Item]=None ) {
+  case class Item( name:String, parent:List[Item]=List() ) {
     override def toString: String = name
-    lazy val path:List[Item] = {
-      var x = this
-      var l = List(x)
-      while( x.parent.isDefined ){
-        x = x.parent.get
-        l = x :: l
+    lazy val paths:List[List[Item]] = {
+      if( parent.isEmpty ){
+        List(List(this))
+      }else{
+        parent.flatMap(prnt =>
+          prnt.paths.map(path =>
+            path ++ List(this)
+          ))
       }
-      l
     }
   }
+  def Item(name:String, parents:Item* ):Item = {
+    Item(name, parents.toList)
+  }
+
   val any = Item("any")
-  val obj = Item("obj", Some(any))
-  val string = Item("string", Some(obj))
-  val number = Item("number", Some(obj))
-  val int = Item("int", Some(number))
-  val long = Item("long", Some(number))
+  val obj = Item("obj", any)
+  val string = Item("string", obj)
+  val number = Item("number", obj)
+  val int = Item("int", number)
+  val long = Item("long", number)
   val void = Item("void")
-  val none = Item("none", Some(void))
+  val none = Item("none", void)
   val items = Set(any,obj,string,number,int,long,void,none)
 
   def relation(a:Item, b:Item):Boolean = {
-    b.path.contains(a)
+    val p = b.paths.map(path=>path.contains(a))
+    if( p.isEmpty ) {
+      false
+    } else {
+      p.reduce((a,b)=>a || b)
+    }
+  }
+
+  @Test
+  def pathTest():Unit = {
+    println(s"paths of string:")
+    string.paths.foreach( path =>
+      println("  "+path.map(n=>n.name).reduce((a,b)=>a+","+b))
+    )
+    assert(string.paths.size==1)
+    assert(string.paths.head.size==3)
+    assert(string.paths.head.map(p=>List(any.name, obj.name, string.name).contains(p.name)).reduce((a,b)=>a&&b))
+
+    assert(relation(any,any))
+    assert(relation(any,obj))
+    assert(relation(any,string))
+
+    assert(!relation(string,any))
+    assert(!relation(obj,any))
   }
 
   @Test
@@ -54,5 +82,34 @@ class PartialSetTest {
         println( path.map(_.toString).reduce((a,b)=>a+" -> "+b) )
       }
     })
+  }
+
+  @Test
+  def test02():Unit = {
+    val a = Item("a")
+    val b = Item("b",a)
+    val c = Item("c",b)
+    val d = Item("d",b)
+    val f = Item("f",a)
+    val e = Item("e",d,f)
+
+    val i = Item("i")
+    val j = Item("j",i)
+    val k = Item("k",i)
+
+    val set = Set(a,b,c,d,f,e,i,j,k)
+
+    val pset = PartialSet[Item](
+      set,
+      (a,b)=>a.name.equals(b.name),
+      relation
+    )
+
+    val print = (dir:String)=>{
+      (path:List[Item])=>println( path.map(_.name).reduce((a,b)=>a+dir+b) )
+    }
+
+    pset.descending(a,e).foreach(print(" -> "))
+    pset.ascending(e,a).foreach(print(" <- "))
   }
 }
