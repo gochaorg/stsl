@@ -12,7 +12,7 @@ case class GenericParams( val params: List[GenericParam]=List() ) {
       false
     }else{
       if( params.length<=0  ){
-        false
+        true
       }else{
         params.indices.map( pi =>
           params(pi).assignable(genericParams.params(pi))
