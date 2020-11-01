@@ -12,7 +12,7 @@ case class AnyVariant(name:String) extends GenericParam {
     require(t!=null)
     true
   }
-  override def toString: String = s"${name}:*"
+  override def toString: String = s"${name}"
   override def sameType(t: GenericParam): Boolean = {
     require(t!=null)
     t match {
