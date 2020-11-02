@@ -13,9 +13,9 @@ class FunTest {
           AnyVariant("B"),
         ),
         Params(
-          Param("a", GenericVariable("A", Type.FN))
+          Param("a", TypeVariable("A", Type.FN))
         ),
-        GenericVariable("C", Type.FN)
+        TypeVariable("C", Type.FN)
       )
       println(f1)
     } catch {
@@ -34,23 +34,24 @@ class FunTest {
         AnyVariant("B"),
       ),
       Params(
-        Param("a", GenericVariable("A", Type.FN))
+        Param("a", TypeVariable("A", Type.FN))
       ),
-      GenericVariable("B", Type.FN)
+      TypeVariable("B", Type.FN)
     )
     println(fmap)
+    println(fmap.parameters)
 
-    val fget = Fn(
-      GenericParams(
-        AnyVariant("X"),
-        AnyVariant("Y"),
-      ),
-      Params(
-        Param("ls", Type.VOID),
-        Param("map", fmap)
-      ),
-      GenericVariable("Y", Type.FN)
-    )
-    println(fget)
+//    val fget = Fn(
+//      GenericParams(
+//        AnyVariant("X"),
+//        AnyVariant("Y"),
+//      ),
+//      Params(
+//        Param("ls", Type.VOID),
+//        Param("map", fmap)
+//      ),
+//      TypeVariable("Y", Type.FN)
+//    )
+//    println(fget)
   }
 }

@@ -11,13 +11,13 @@ case class Fn( fgParams: GenericParams
   // Переменные типа обявленные для owner = FN, должны указывать на  GenericParams
   private val inputGenericVariables =
     fParams.params.map( p => p.tip match {
-      case gv:GenericVariable => gv
+      case gv:TypeVariable => gv
       case _ => null
     }).filter( _ != null )
 
   private val outGenericVariable =
     fReturn match {
-      case gv:GenericVariable => Some(gv)
+      case gv:TypeVariable => Some(gv)
       case _ => None
     }
 
@@ -28,7 +28,7 @@ case class Fn( fgParams: GenericParams
     .map( _.name )
     .foreach( vname =>
       if( !fgParams.params.map(_.name).contains(vname) ){
-        throw TypeError(s"bind undeclared generic variable $vname into Fn")
+        throw TypeError(s"bind undeclared type variable $vname into Fn")
       }
     )
 
