@@ -1,6 +1,6 @@
 package xyz.cofe.stsl.types
 
-case class Params( params:List[Param]=List() ) {
+case class Params( params:List[Param]=List() ) extends Seq[Param] with TypeVarReplace[Params] {
   require(params!=null)
 
   params.groupBy(p=>p.name).foreach( p=>
@@ -22,6 +22,24 @@ case class Params( params:List[Param]=List() ) {
         ).reduce((a,b)=>a&&b)
       }
     }
+  }
+
+  override def length: Int = params.length
+  override def iterator: Iterator[Param] = params.iterator
+  def apply(index:Int):Param = params(index)
+
+  def apply(paramName:String): Param = {
+    require(paramName!=null)
+    filter(_.name == paramName).head
+  }
+  def get(paramName:String):Option[Param] = {
+    require(paramName!=null)
+    filter(_.name == paramName).headOption
+  }
+
+  override def typeVarReplace(recipe: TypeVariable => Option[Type]): Params = {
+    require(recipe!=null)
+    Params( params.map(p => p.typeVarReplace(recipe)) )
   }
 }
 

@@ -1,6 +1,6 @@
 package xyz.cofe.stsl.types
 
-case class GenericParams( val params: List[GenericParam]=List() ) {
+case class GenericParams( val params: List[GenericParam]=List() ) extends Seq[GenericParam] {
   require(params!=null)
   params.groupBy(p=>p.name).foreach( p=>
     if(p._2.size>1)throw TypeError(s"generic parameter ${p._1} duplicate")
@@ -20,7 +20,6 @@ case class GenericParams( val params: List[GenericParam]=List() ) {
       }
     }
   }
-
   def sameTypes(paramz:GenericParams):Boolean = {
     require(paramz!=null)
     if( paramz.params.length!=params.length ){
@@ -39,6 +38,20 @@ case class GenericParams( val params: List[GenericParam]=List() ) {
   }
 
   override def toString: String = if( params.isEmpty ) "" else "["+params.map(_.toString).reduce((a,b)=>a+","+b)+"]"
+
+  override def length: Int = params.length
+  override def iterator: Iterator[GenericParam] = params.iterator
+  override def apply(idx: Int): GenericParam = params(idx)
+
+  def apply(paramName:String):GenericParam = {
+    require(paramName!=null)
+    filter(_.name == paramName).head
+  }
+
+  def get(paramName:String):Option[GenericParam] = {
+    require(paramName!=null)
+    filter(_.name == paramName).headOption
+  }
 }
 
 object GenericParams {
