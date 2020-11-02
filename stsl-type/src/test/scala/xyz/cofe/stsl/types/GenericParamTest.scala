@@ -93,4 +93,19 @@ class GenericParamTest {
       assert(asgn==expt,s"expt=${expt}: ${t1}=${t2}, assign enable=${asgn}")
     })
   }
+
+  @Test
+  def test04():Unit = {
+    val coObj = CoVariant("a",ANY)
+    val coNum = CoVariant("a",NUMBER)
+    val coInt = CoVariant("a",INT)
+
+    val ctrObj = ContraVariant("a",ANY)
+    val ctrNum = ContraVariant("a",NUMBER)
+    val ctrInt = ContraVariant("a",INT)
+
+    assert(!ctrNum.assignable(ANY), s"${ctrNum} = $ANY ==> must false");
+    assert(ctrNum.assignable(NUMBER), s"${ctrNum} = $NUMBER ==> must true");
+    assert(ctrNum.assignable(INT), s"${ctrNum} = $INT ==> must true");
+  }
 }

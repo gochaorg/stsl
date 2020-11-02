@@ -53,7 +53,7 @@ case class ContraVariant(name:String, tip:Type) extends GenericParam {
       case ctr:ContraVariant => ctr.tip.assignable(tip)
       case _:CoVariant => false
       case _:AnyVariant => false
-      case _ => t.assignable(tip)
+      case _ => tip.assignable(t)
     }
   }
   override def sameType(t: GenericParam): Boolean = {
