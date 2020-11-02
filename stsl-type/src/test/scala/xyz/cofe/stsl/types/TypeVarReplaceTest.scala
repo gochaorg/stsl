@@ -63,5 +63,91 @@ class TypeVarReplaceTest {
       "B" -> TypeVariable("Z", Type.FN),
     )
     println( ffmap2 )
+
+    val ffmap3 = fmap.typeVarBake.fn(
+      "A" -> Type.INT,
+      "B" -> Type.DOUBLE,
+    )
+    println( ffmap3 )
+  }
+
+  @Test
+  def replaceInFun02():Unit = {
+    val fmap = Fn(
+      GenericParams(
+        AnyVariant("A"),
+        AnyVariant("B"),
+      ),
+      Params(
+        Param("a", TypeVariable("A", Type.FN))
+      ),
+      TypeVariable("B", Type.FN)
+    )
+    println(fmap)
+
+    val ffmap3 = fmap.typeVarBake.fn(
+      "A" -> Type.INT,
+      "B" -> Type.DOUBLE,
+    )
+    println( ffmap3 )
+  }
+
+  @Test
+  def replaceInFun03():Unit = {
+    var f:Function1[Number,Number] = (a)=>a
+    val a:Int = 10
+    f(a)
+
+    val contraVar = ContraVariant("A",Type.NUMBER)
+    val typeArg = Type.INT
+    assert(contraVar.assignable(typeArg))
+
+    val coVar = CoVariant("B",Type.NUMBER)
+    val typeRet = Type.DOUBLE
+    assert(coVar.assignable(typeRet))
+
+    val fmap = Fn(
+      GenericParams(
+        contraVar,
+        coVar,
+      ),
+      Params(
+        Param("a", TypeVariable("A", Type.FN))
+      ),
+      TypeVariable("B", Type.FN)
+    )
+    println(fmap)
+
+    val ffmap = fmap.typeVarBake.fn(
+      "A" -> typeArg,
+      "B" -> typeRet,
+    )
+    println( ffmap )
+
+    var catch1 = false
+    try {
+      fmap.typeVarBake.fn(
+        "A" -> Type.ANY,
+        "B" -> typeRet,
+      )
+    } catch {
+      case err:TypeError =>
+        catch1 = true
+        println(err)
+    }
+    assert(catch1)
+
+    var catch2 = false
+    try {
+      fmap.typeVarBake.fn(
+        "A" -> typeArg,
+        "B" -> Type.ANY,
+      )
+    } catch {
+      case err:TypeError =>
+        catch2 = true
+        println(err)
+    }
+    assert(catch2)
   }
 }

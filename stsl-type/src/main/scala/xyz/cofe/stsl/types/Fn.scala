@@ -97,27 +97,41 @@ case class Fn( fgParams: GenericParams
       name -> types.head
     })
 
+    val replaceTypeVarsName = replaceTypeVarsNames.filter( _._2.nonEmpty ).map( r => r._1 -> r._2.head )
+
     val ngenerics = GenericParams(
       generics.map {
         case av: AnyVariant =>
           if( !av.assignable(genericMap(av.name)) ){
             throw TypeError(s"can't assign generic param $av from ${genericMap(av.name)}")
           }else {
-            AnyVariant(replaceTypeVarsNames.getOrElse(av.name, List(av.name)).head)
+            if( replaceTypeVarsName.contains(av.name) ) {
+              AnyVariant(replaceTypeVarsName(av.name))
+            }else{
+              null
+            }
           }
         case cov: CoVariant =>
           if( !cov.assignable(genericMap(cov.name)) ){
             throw TypeError(s"can't assign generic param $cov from ${genericMap(cov.name)}")
           }else {
-            CoVariant(replaceTypeVarsNames.getOrElse(cov.name, List(cov.name)).head, cov.tip)
+            if( replaceTypeVarsName.contains(cov.name) ) {
+              CoVariant(replaceTypeVarsName(cov.name), cov.tip)
+            }else{
+              null
+            }
           }
         case ctr: ContraVariant =>
           if( !ctr.assignable(genericMap(ctr.name)) ){
             throw TypeError(s"can't assign generic param $ctr from ${genericMap(ctr.name)}")
           }else {
-            ContraVariant(replaceTypeVarsNames.getOrElse(ctr.name, List(ctr.name)).head, ctr.tip)
+            if( replaceTypeVarsName.contains(ctr.name) ){
+              ContraVariant(replaceTypeVarsName(ctr.name), ctr.tip)
+            }else{
+              null
+            }
           }
-      }.toList
+      }.filter(_!=null).toList
     )
 
     Fn(ngenerics,paramz,ret)
