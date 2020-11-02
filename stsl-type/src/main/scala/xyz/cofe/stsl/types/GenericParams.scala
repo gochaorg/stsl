@@ -47,11 +47,11 @@ case class GenericParams( val params: List[GenericParam]=List() ) extends Seq[Ge
     require(paramName!=null)
     filter(_.name == paramName).head
   }
-
   def get(paramName:String):Option[GenericParam] = {
     require(paramName!=null)
     filter(_.name == paramName).headOption
   }
+
 }
 
 object GenericParams {

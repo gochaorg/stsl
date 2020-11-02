@@ -1,6 +1,6 @@
 package xyz.cofe.stsl.types
 
-trait Fun extends Type {
+trait Fun extends Type with TypeVarReplace[Fun] {
   lazy val parameters:Params = Params()
   lazy val returns:Type = Type.VOID
   override def assignable(t: Type): Boolean = super.assignable(t)

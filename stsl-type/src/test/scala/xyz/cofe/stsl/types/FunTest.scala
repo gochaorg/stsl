@@ -39,19 +39,27 @@ class FunTest {
       TypeVariable("B", Type.FN)
     )
     println(fmap)
-    println(fmap.parameters)
+    println(fmap.parameters("a").tip.asInstanceOf[TypeVariable].owner)
 
-//    val fget = Fn(
-//      GenericParams(
-//        AnyVariant("X"),
-//        AnyVariant("Y"),
-//      ),
-//      Params(
-//        Param("ls", Type.VOID),
-//        Param("map", fmap)
-//      ),
-//      TypeVariable("Y", Type.FN)
-//    )
-//    println(fget)
+    var catched = false
+    try {
+      val fget = Fn(
+        GenericParams(
+          AnyVariant("X"),
+          AnyVariant("Y"),
+        ),
+        Params(
+          Param("ls", Type.VOID),
+          Param("map", fmap)
+        ),
+        TypeVariable("Y", Type.FN)
+      )
+      println(fget)
+    } catch {
+      case err: TypeError =>
+        println(err)
+        catched = true
+    }
+    assert(catched)
   }
 }
