@@ -74,5 +74,8 @@ public class SomeTest {
         Supplier<? extends Object> s_coObj = null;
         Supplier<? extends Number> s_coNum = null;
         Supplier<? extends Integer> s_coInt = null;
+
+//        ctrNum.accept((Integer)10);
+//        ctrNum.accept((Object)10);
     }
 }

@@ -19,3 +19,8 @@ case class Fields( val fields:List[Field]=List(), val owner:Type=Type.VOID ) ext
     filter(_.name == fieldName).headOption
   }
 }
+
+object Fields {
+  def apply(fields: List[Field], owner: Type=Type.VOID): Fields = new Fields(fields, owner)
+  def apply(fields: (String,Type)*): Fields = new Fields(fields.map(f=>Field(f._1,f._2)).toList)
+}
