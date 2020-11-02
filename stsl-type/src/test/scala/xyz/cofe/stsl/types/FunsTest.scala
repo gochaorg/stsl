@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 
 class FunsTest {
   @Test
-  def test01():Unit = {
+  def duplicateParamNames():Unit = {
     import Type._
     var catched = false
 
