@@ -1,4 +1,4 @@
-package xyz.cofe.stsl.pset
+package xyz.cofe.stsl.types.pset
 
 class GBuild[A]( val descendingChildren:Map[A,Set[A]]
                , val ascendingParents:Map[A,Set[A]]

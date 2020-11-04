@@ -1,4 +1,4 @@
-package xyz.cofe.stsl.pset
+package xyz.cofe.stsl.types.pset
 
 class PartialSet[A](
                    val set:Set[A],
