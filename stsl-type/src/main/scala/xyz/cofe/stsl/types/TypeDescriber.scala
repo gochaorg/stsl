@@ -28,8 +28,7 @@ object TypeDescriber {
         case _ => "?"
       })
     }
-    sb.append("\n")
-    sb.append("{")
+    sb.append(" {\n")
 
     var ti:Type = o
     var stop = false
@@ -38,7 +37,7 @@ object TypeDescriber {
         case oi:Obj =>
           oi.fields.fields.foreach(fld => {
             sb.append("  ")
-            sb.append(fld.toString).append("\n")
+            sb.append(s"${fld.name} : ${fld.tip}").append("\n")
           })
           oi.methods.funs.foreach({ case (name, funs) =>
             funs.funs.foreach(fn => {
@@ -54,10 +53,10 @@ object TypeDescriber {
         ti match {
           case oi:Obj =>
             if( oi.methods.funs.nonEmpty || oi.fields.fields.nonEmpty ){
-              sb.append("  // extends ").append(oi.name).append(oi.generics).append("\n")
+              sb.append("  /* extends ").append(oi.name).append(oi.generics).append(" */").append("\n")
             }
           case n:Named =>
-            sb.append("  // extends ").append(n.name).append(n.generics).append("\n")
+            sb.append("  /* extends ").append(n.name).append(n.generics).append(" */").append("\n")
           case _ =>
         }
       }else{
