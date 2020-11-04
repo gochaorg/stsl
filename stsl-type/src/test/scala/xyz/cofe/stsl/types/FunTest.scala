@@ -13,7 +13,7 @@ class FunTest {
           AnyVariant("B"),
         ),
         Params(
-          Param("a", TypeVariable("A", Type.FN))
+          "a" -> TypeVariable("A", Type.FN)
         ),
         TypeVariable("C", Type.FN)
       )
@@ -34,7 +34,7 @@ class FunTest {
         AnyVariant("B"),
       ),
       Params(
-        Param("a", TypeVariable("A", Type.FN))
+        "a" -> TypeVariable("A", Type.FN)
       ),
       TypeVariable("B", Type.FN)
     )
@@ -49,8 +49,8 @@ class FunTest {
           AnyVariant("Y"),
         ),
         Params(
-          Param("ls", Type.VOID),
-          Param("map", fmap)
+          "ls" -> Type.VOID,
+          "map" -> fmap
         ),
         TypeVariable("Y", Type.FN)
       )

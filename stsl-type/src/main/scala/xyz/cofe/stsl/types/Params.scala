@@ -44,5 +44,6 @@ case class Params( params:List[Param]=List() ) extends Seq[Param] with TypeVarRe
 }
 
 object Params {
-  def apply(params: Param*): Params = new Params(params.toList)
+  //def apply(params: Param*): Params = new Params(params.toList)
+  def apply(params: (String,Type)*): Params = new Params(params.map(p=>Param(p._1, p._2)).toList)
 }

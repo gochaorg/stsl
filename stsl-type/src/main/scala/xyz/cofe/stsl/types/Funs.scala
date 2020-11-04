@@ -1,6 +1,6 @@
 package xyz.cofe.stsl.types
 
-case class Funs( val funs: List[Fun] ) {
+case class Funs( val funs: List[Fun] ) extends Seq[Fun] {
   require(funs!=null)
   funs.foreach( f => require(f!=null, "funs contains null") )
 
@@ -22,6 +22,10 @@ case class Funs( val funs: List[Fun] ) {
     }).reduce((a,b)=>a+"\n"+b)
     throw TypeError("has duplicate type params in functons:\n"+matchedStr)
   }
+
+  override def length: Int = funs.length
+  override def iterator: Iterator[Fun] = funs.iterator
+  override def apply(idx: Int): Fun = funs.apply(idx)
 }
 
 object Funs {

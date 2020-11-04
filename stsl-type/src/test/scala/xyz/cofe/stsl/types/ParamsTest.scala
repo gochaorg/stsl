@@ -9,8 +9,8 @@ class ParamsTest {
     var catched = false
     try {
       Params(
-        Param("a", ANY),
-        Param("a", ANY),
+        "a" -> ANY,
+        "a" -> ANY,
       )
     } catch {
       case e:TypeError => catched = true

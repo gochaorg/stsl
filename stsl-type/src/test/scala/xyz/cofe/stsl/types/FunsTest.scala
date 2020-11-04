@@ -8,9 +8,9 @@ class FunsTest {
     import Type._
     var catched = false
 
-    val f1=Fn(Params(Param("a",INT)),INT)
-    val f2=Fn(Params(Param("b",INT)),INT)
-    val f3=Fn(Params(Param("c",VOID)),INT)
+    val f1=Fn(Params("a" -> INT),INT)
+    val f2=Fn(Params("b" -> INT),INT)
+    val f3=Fn(Params("c" -> VOID),INT)
     try {
       Funs(f1, f2, f3)
     } catch {

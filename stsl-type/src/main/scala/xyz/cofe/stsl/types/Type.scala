@@ -29,4 +29,8 @@ object Type {
     override lazy val extend: Option[Type] = Some(ANY)
     override def toString: String = "fn"
   }
+  val THIS:Type = new Type with Named {
+    override val name: String = "THIS"
+    override def toString: String = "THIS"
+  }
 }

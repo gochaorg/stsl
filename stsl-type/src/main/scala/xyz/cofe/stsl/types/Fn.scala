@@ -24,7 +24,7 @@ case class Fn( fgParams: GenericParams
       case _ => List()
     }
 
-  lazy val typeVariables: Seq[TypeVariable] = inputTypeVariables ++ outTypeVariable
+  override lazy val typeVariables: Seq[TypeVariable] = inputTypeVariables ++ outTypeVariable
 
   typeVariables
     .filter( gv => gv.owner == Type.FN )

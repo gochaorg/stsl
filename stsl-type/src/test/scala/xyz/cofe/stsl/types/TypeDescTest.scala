@@ -13,4 +13,8 @@ class TypeDescTest {
   def test01():Unit = {
     println( TypeDescriber.describe(userType) )
   }
+
+  val list = TObject("List")
+    .generics(AnyVariant("A"))
+    .fields("size" -> Type.INT)
 }

@@ -9,4 +9,5 @@ trait Fun extends Type with TypeVarReplace[Fun] {
     require(f!=null)
     parameters.sameTypes(f.parameters) && generics.sameTypes(f.generics)
   }
+  lazy val typeVariables: Seq[TypeVariable] = List()
 }

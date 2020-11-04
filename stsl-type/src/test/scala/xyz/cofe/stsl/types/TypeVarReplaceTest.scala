@@ -17,10 +17,10 @@ class TypeVarReplaceTest {
   @Test
   def replaceInParams():Unit = {
     val params1 = Params(
-      Param("a",TypeVariable("A",Type.FN)),
-      Param("b",TypeVariable("A",Type.FN)),
-      Param("c",TypeVariable("B",Type.FN)),
-      Param("d",TypeVariable("C",Type.FN))
+      "a" -> TypeVariable("A",Type.FN),
+      "b" -> TypeVariable("A",Type.FN),
+      "c" -> TypeVariable("B",Type.FN),
+      "d" -> TypeVariable("C",Type.FN)
     )
 
     println( params1 )
@@ -45,7 +45,7 @@ class TypeVarReplaceTest {
         AnyVariant("B"),
       ),
       Params(
-        Param("a", TypeVariable("A", Type.FN))
+        "a" -> TypeVariable("A", Type.FN)
       ),
       TypeVariable("B", Type.FN)
     )
@@ -79,7 +79,7 @@ class TypeVarReplaceTest {
         AnyVariant("B"),
       ),
       Params(
-        Param("a", TypeVariable("A", Type.FN))
+        "a" -> TypeVariable("A", Type.FN)
       ),
       TypeVariable("B", Type.FN)
     )
@@ -112,7 +112,7 @@ class TypeVarReplaceTest {
         coVar,
       ),
       Params(
-        Param("a", TypeVariable("A", Type.FN))
+        "a" -> TypeVariable("A", Type.FN)
       ),
       TypeVariable("B", Type.FN)
     )
@@ -149,5 +149,33 @@ class TypeVarReplaceTest {
         println(err)
     }
     assert(catch2)
+  }
+
+  val listType = TObject("List")
+    .generics(AnyVariant("A"))
+    .fields("size" -> Type.INT)
+    .methods(
+      "add" -> Fn(
+        Params(
+          "this" -> Type.THIS,
+          "item" -> TypeVariable("A",Type.THIS),
+        ),
+        Type.VOID
+      ),
+      "get" -> Fn(
+        Params(
+          "this" -> Type.THIS,
+          "idx" -> Type.INT,
+        ),
+        TypeVariable("A",Type.THIS)
+      ),
+    )
+    .build
+
+  @Test
+  def replaceInObj01():Unit = {
+    println("replaceInObj01()")
+    println("====================")
+    println( TypeDescriber.describe(listType) )
   }
 }

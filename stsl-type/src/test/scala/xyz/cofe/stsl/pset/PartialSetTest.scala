@@ -1,6 +1,7 @@
 package xyz.cofe.stsl.pset
 
 import org.junit.jupiter.api.Test
+import xyz.cofe.stsl.types.pset.PartialSet
 
 class PartialSetTest {
   case class Item( name:String, parent:List[Item]=List() ) {
