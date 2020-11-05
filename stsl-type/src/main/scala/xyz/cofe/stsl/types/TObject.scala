@@ -5,7 +5,7 @@ class TObject( Name:String,
                oextend:Option[Type] = Some(Type.ANY),
                ofields:Fields=Fields(),
                omethods:Methods=Methods()
-             ) extends Obj {
+             ) extends Obj with TypeVarReplace[TObject] {
   require(Name!=null)
   require(ogenerics!=null)
   require(ofields!=null)
@@ -30,6 +30,98 @@ class TObject( Name:String,
         throw TypeError(s"bind undeclared type variable $vname into Object")
       }
     )
+
+  def withName(name:String):TObject = {
+    require(name!=null)
+    new TObject(name,generics,extend,fields,methods)
+  }
+  override def toString: String = {
+    s"${name}${generics}"
+  }
+
+  override def typeVarReplace(recipe: TypeVariable => Option[Type]): TObject = {
+    require(recipe!=null)
+    var replaceTypeVarMap : Map[String,Type] = Map()
+
+    val replacement : TypeVariable => Option[Type] = (tv) => {
+      val trgt = recipe(tv)
+      if( trgt.isDefined ){
+        println( s"replacement ${tv} => ${trgt.get}" )
+        if( replaceTypeVarMap.contains(tv.name) ){
+          //
+        }else{
+          if( !generics(tv.name).assignable(trgt.get) ){
+            throw TypeError(s"can't assign type ${trgt.get} into type variable ${generics(tv.name)}")
+          }
+          replaceTypeVarMap = replaceTypeVarMap + ( tv.name -> trgt.get )
+        }
+      }
+      trgt
+    }
+
+    val newGeneric = generics match {
+      case tvr: TypeVarReplace[GenericParams] =>
+        tvr.typeVarReplace(replacement)
+      case _ =>
+        generics
+    }
+    val newExtend = if( extend.isDefined ){
+      val ext : Type = extend.get match {
+        case t: TypeVarReplace[_] => t.typeVarReplace(replacement).asInstanceOf[Type]
+        case _ => extend.get
+      }
+      Some(ext)
+    }else{
+      None
+    }
+    val asIsFields : Seq[Field] = fields.filter( f=> !fieldsTypeVariablesMap.contains(f.name) )
+    val newTvFields : Seq[Field] = fields
+      .filter( f=> fieldsTypeVariablesMap.contains(f.name) )
+      .map( f => Field(f.name,
+        f.tip match {
+          case tv:TypeVariable =>
+            replacement(tv).getOrElse(
+              tv match {
+                case tv2:TypeVarReplace[_] => tv2.typeVarReplace(replacement).asInstanceOf[Type]
+                case _ => tv
+              }
+            )
+          case _ =>
+            f.tip match {
+              case tv2:TypeVarReplace[_] => tv2.typeVarReplace(replacement).asInstanceOf[Type]
+              case _ => f.tip
+            }
+        }
+      )
+    )
+    val newFields = Fields( (asIsFields ++ newTvFields).toList )
+    val newMethods = Methods(
+      methods.funs.map({case(name, funs)=>
+        name -> new Funs(funs.map( fun => {
+          fun.typeVarReplace(replacement)
+        }).toList)
+      })
+    )
+
+    val nnewGeneric = new GenericParams(
+      newGeneric.params.map( p => {
+        if( replaceTypeVarMap.get(p.name).exists(t=>t.isInstanceOf[TypeVariable]) ){
+          val tv = replaceTypeVarMap(p.name).asInstanceOf[TypeVariable]
+          p match {
+            case av:AnyVariant => AnyVariant(tv.name)
+            case cov:CoVariant => CoVariant(tv.name,cov.tip)
+            case ctr:ContraVariant => ContraVariant(tv.name,ctr.tip)
+          }
+        }else{
+          null
+        }
+      }).filter(_ != null)
+    )
+
+    val newTObj = TObject(name,nnewGeneric,newExtend,newFields,newMethods)
+
+    newTObj
+  }
 }
 
 object TObject {

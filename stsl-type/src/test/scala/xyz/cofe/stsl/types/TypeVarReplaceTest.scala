@@ -1,6 +1,7 @@
 package xyz.cofe.stsl.types
 
 import org.junit.jupiter.api.Test
+import xyz.cofe.stsl.types.TypeDescriber.describe
 
 class TypeVarReplaceTest {
   @Test
@@ -172,10 +173,27 @@ class TypeVarReplaceTest {
     )
     .build
 
+  val userType = TObject("User")
+    .fields("name" -> Type.INT)
+    .build
+
   @Test
   def replaceInObj01():Unit = {
     println("replaceInObj01()")
     println("====================")
-    println( TypeDescriber.describe(listType) )
+    println( describe(listType) )
+
+    val listType2 = listType.typeVarBake.thiz("A" -> userType).withName("List_User")
+    println( describe(listType2) )
+  }
+
+  @Test
+  def replaceInObj02():Unit = {
+    println("replaceInObj02()")
+    println("====================")
+    println( describe(listType) )
+
+    val listType3 = listType.typeVarBake.thiz("A" -> TypeVariable("B", Type.THIS)).withName("List_2")
+    println( describe(listType3) )
   }
 }
