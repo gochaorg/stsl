@@ -152,6 +152,32 @@ class TypeVarReplaceTest {
     assert(catch2)
   }
 
+  @Test
+  def replaceInObj01():Unit = {
+    import TypeVarReplaceTest._
+
+    println("replaceInObj01()")
+    println("====================")
+    println( describe(listType) )
+
+    val listType2 = listType.typeVarBake.thiz("A" -> userType).withName("List_User")
+    println( describe(listType2) )
+  }
+
+  @Test
+  def replaceInObj02():Unit = {
+    import TypeVarReplaceTest._
+
+    println("replaceInObj02()")
+    println("====================")
+    println( describe(listType) )
+
+    val listType3 = listType.typeVarBake.thiz("A" -> TypeVariable("B", Type.THIS)).withName("List_2")
+    println( describe(listType3) )
+  }
+}
+
+object TypeVarReplaceTest {
   val listType = TObject("List")
     .generics(AnyVariant("A"))
     .fields("size" -> Type.INT)
@@ -176,24 +202,4 @@ class TypeVarReplaceTest {
   val userType = TObject("User")
     .fields("name" -> Type.INT)
     .build
-
-  @Test
-  def replaceInObj01():Unit = {
-    println("replaceInObj01()")
-    println("====================")
-    println( describe(listType) )
-
-    val listType2 = listType.typeVarBake.thiz("A" -> userType).withName("List_User")
-    println( describe(listType2) )
-  }
-
-  @Test
-  def replaceInObj02():Unit = {
-    println("replaceInObj02()")
-    println("====================")
-    println( describe(listType) )
-
-    val listType3 = listType.typeVarBake.thiz("A" -> TypeVariable("B", Type.THIS)).withName("List_2")
-    println( describe(listType3) )
-  }
 }
