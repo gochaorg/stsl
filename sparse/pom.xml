@@ -10,6 +10,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>sparse</artifactId>
+    <version>1.0</version>
+    
     <name>sparse</name>
     <description>scala parsing lib</description>
 
