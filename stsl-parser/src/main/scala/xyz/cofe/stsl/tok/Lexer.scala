@@ -1,9 +1,6 @@
-package xyz.cofe.sel
+package xyz.cofe.stsl.tok
 
-import xyz.cofe.sparse.{BasicCharPointer, CToken, CharPointer, GR, Tokenizer}
-import xyz.cofe.sel.tok.WS
-import xyz.cofe.sparse
-import xyz.cofe.stsl.tok.{BigIntNumberTok, ByteNumberTok, CommentTok, DecimalNumberTok, DoubleNumberTok, FloatNumberTok, IdentifierTok, IntNumberTok, LongNumberTok, NumberTok, OperatorTok, ShortNumberTok, StringLiteralChar, StringTok, UnTypedNumberTok, WS}
+import xyz.cofe.sparse.{CToken, CharPointer, GR, Tokenizer}
 
 object Lexer {
   import xyz.cofe.sparse.Chars._

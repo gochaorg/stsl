@@ -1,8 +1,8 @@
-package xyz.cofe.sel
+package xyz.cofe.stsl.tok
 
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import xyz.cofe.sparse.Tokenizer
-import xyz.cofe.sel.Lexer._
+import xyz.cofe.stsl.tok.Lexer._
 
 class LexerTest {
   @Test
