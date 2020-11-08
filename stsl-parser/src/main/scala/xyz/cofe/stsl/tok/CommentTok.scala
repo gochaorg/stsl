@@ -1,7 +1,10 @@
 package xyz.cofe.stsl.tok
 
+import xyz.cofe.sparse.{CToken, CharPointer}
+
 /**
  * Комментарий
+ *
  * @param b1 начало в тексте
  * @param e1 конец в тексте
  */

@@ -1,7 +1,10 @@
 package xyz.cofe.stsl.tok
 
+import xyz.cofe.sparse.CharPointer
+
 /**
  * Целое 8 байтовое число
+ *
  * @param b1 начало в тексте
  * @param e1 конец в тексте
  * @param value значение

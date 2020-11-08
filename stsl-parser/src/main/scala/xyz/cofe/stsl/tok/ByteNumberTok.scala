@@ -1,5 +1,7 @@
 package xyz.cofe.stsl.tok
 
+import xyz.cofe.sparse.CharPointer
+
 /**
  * Целое число
  *
