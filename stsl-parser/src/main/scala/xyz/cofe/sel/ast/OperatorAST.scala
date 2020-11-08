@@ -1,7 +1,7 @@
 package xyz.cofe.sel.ast
 
 import xyz.cofe.sel.Parser.PTR
-import xyz.cofe.sel.tok.OperatorTok
+import xyz.cofe.stsl.tok.OperatorTok
 import xyz.cofe.stsl.tok.OperatorTok
 
 /**

@@ -2,7 +2,7 @@ package xyz.cofe.sel
 
 import xyz.cofe.sel.ast._
 import xyz.cofe.sel.cmpl.rt._
-import xyz.cofe.sel.tok._
+import xyz.cofe.stsl.tok._
 import xyz.cofe.sel.types.Type._
 import xyz.cofe.sel.types.{Fun, Param, Type}
 import xyz.cofe.stsl.tok.{BigIntNumberTok, ByteNumberTok, DecimalNumberTok, DoubleNumberTok, FloatNumberTok, IntNumberTok, LongNumberTok, NumberTok, ShortNumberTok, StringTok}
@@ -131,7 +131,7 @@ class Toaster( val scope: Scope ) {
           null
         }
       }
-      lazy val invokes: immutable.Seq[Invokable] = {
+      lazy val invokes: Seq[Invokable] = {
         val argumentsType = arguments.map( _.supplierType )
         funs.find.sameArgs(argumentsType)(implFuns).preferred
       }

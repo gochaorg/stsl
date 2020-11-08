@@ -9,9 +9,9 @@ class LexerTest {
   def test01(): Unit ={
     val toks = Tokenizer.tokens(
       "  \"aa\"  \"b\\\\c\\\"d\"='hello'^^1234 + 0xffL-12.34 .5 10. 14d abc /* rr */ xyz",
-      List(ws,string,number,comment,identifier,operator), null)
+      List(ws,string,number,comment,identifier,operator), null).toList
 
-    toks.foreach(println)
+    toks.indices.foreach(i=>println(s"${i} ${toks(i)}"))
   }
 
   @Test

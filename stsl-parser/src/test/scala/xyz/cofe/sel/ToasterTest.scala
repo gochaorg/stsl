@@ -1,6 +1,6 @@
 package xyz.cofe.sel
 
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import xyz.cofe.sel.ast.ASTDump
 import xyz.cofe.sel.cmpl.rt.{Funs, Scope, TASTDump}
 import xyz.cofe.sel.types.Fun.fn

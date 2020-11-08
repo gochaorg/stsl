@@ -1,6 +1,6 @@
 package xyz.cofe.sel
 
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import xyz.cofe.sel.types.Type._
 import xyz.cofe.sel.cmpl.rt.Funs
 import xyz.cofe.sel.cmpl.rt.PredefFun

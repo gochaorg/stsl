@@ -1,6 +1,6 @@
 package xyz.cofe.sel
 
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import xyz.cofe.sel.ast.{AST, ASTDump, BinaryAST, CallAST, IdentifierAST, LambdaAST, LiteralAST, ParamAST, PropertyAST, TernaryAST, TypeNameAST}
 import xyz.cofe.sel.cmpl.rt.{CallStack, StackedArgumentAST}
 

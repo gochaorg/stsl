@@ -1,6 +1,6 @@
 package xyz.cofe.sel
 
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import xyz.cofe.sel.types.{AnyVariant, CoVariant, Fun, GenericInstance, GenericPlaceholder, InVariant, Methods, ObjectType, Param, Properties, Property, Type, TypeDescriber}
 import xyz.cofe.sel.types.Type.{BOOL, FN, INT, OBJECT, STRING, THIS, VOID}
 import xyz.cofe.sel.types.Fun.fn
