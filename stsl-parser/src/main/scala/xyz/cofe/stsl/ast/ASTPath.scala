@@ -1,4 +1,4 @@
-package xyz.cofe.sel.ast
+package xyz.cofe.stsl.ast
 
 class ASTPath( val reversePath:List[AST] = List() ) {
   require(reversePath!=null)

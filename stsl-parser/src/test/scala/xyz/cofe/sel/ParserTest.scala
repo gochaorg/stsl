@@ -1,8 +1,9 @@
 package xyz.cofe.sel
 
 import org.junit.jupiter.api.Test
-import xyz.cofe.sel.ast.{AST, ASTDump, BinaryAST, CallAST, IdentifierAST, LambdaAST, LiteralAST, ParamAST, PropertyAST, TernaryAST, TypeNameAST}
+import xyz.cofe.sel.ast.TypeNameAST
 import xyz.cofe.sel.cmpl.rt.{CallStack, StackedArgumentAST}
+import xyz.cofe.stsl.ast.{AST, ASTDump, BinaryAST, CallAST, IdentifierAST, LambdaAST, LiteralAST, ParamAST, Parser, PropertyAST, TernaryAST, TypeNameAST}
 
 class ParserTest {
   //noinspection TypeAnnotation

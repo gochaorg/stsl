@@ -1,6 +1,6 @@
 package xyz.cofe.sel.cmpl.rt
 
-import xyz.cofe.sel.ast.AST
+import xyz.cofe.stsl.ast.AST
 
 class CompileError(val message:String, val cause:Throwable, val ast:List[AST] = List()) extends Error(message,cause) {
 }

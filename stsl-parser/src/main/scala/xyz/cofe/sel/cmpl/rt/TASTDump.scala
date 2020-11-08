@@ -1,6 +1,7 @@
 package xyz.cofe.sel.cmpl.rt
 
-import xyz.cofe.sel.ast.{CallAST, PropertyAST}
+import xyz.cofe.sel.ast.PropertyAST
+import xyz.cofe.stsl.ast.{CallAST, PropertyAST}
 
 object TASTDump {
   def dump(out: Appendable, tast: TAST, level:Int):Unit = {

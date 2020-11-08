@@ -1,9 +1,7 @@
-package xyz.cofe.sel
+package xyz.cofe.stsl.ast
 
-import xyz.cofe.sel.ast.{AST, ASTDump, BinaryAST, CallAST, DelegateAST, IdentifierAST, LambdaAST, LiteralAST, OperatorAST, ParamAST, PropertyAST, ProxyGR, TernaryAST, TypeNameAST, UnaryAST}
-import xyz.cofe.stsl.tok.WS
 import xyz.cofe.sparse.{CToken, GR, LPointer}
-import xyz.cofe.stsl.tok.{CommentTok, IdentifierTok, Lexer, LiteralTok, OperatorTok, WS}
+import xyz.cofe.stsl.tok._
 
 /**
  * Парсер

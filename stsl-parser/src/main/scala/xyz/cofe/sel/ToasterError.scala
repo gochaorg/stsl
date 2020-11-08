@@ -1,6 +1,6 @@
 package xyz.cofe.sel
 
-import xyz.cofe.sel.ast.AST
+import xyz.cofe.stsl.ast.AST
 
 class ToasterError( message:String, cause:Throwable, val locations:List[AST]=List() ) extends Error(message,cause) {
 

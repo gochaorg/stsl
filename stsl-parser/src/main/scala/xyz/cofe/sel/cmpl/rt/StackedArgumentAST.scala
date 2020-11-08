@@ -1,7 +1,7 @@
 package xyz.cofe.sel.cmpl.rt
 
-import xyz.cofe.sel.ast.IdentifierAST
 import xyz.cofe.sel.types.Type
+import xyz.cofe.stsl.ast.IdentifierAST
 
 /**
  * Переменная аргумент, переданная через стек

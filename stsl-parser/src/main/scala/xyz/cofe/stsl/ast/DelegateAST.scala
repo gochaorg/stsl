@@ -1,7 +1,6 @@
-package xyz.cofe.sel.ast
+package xyz.cofe.stsl.ast
 
-import xyz.cofe.sel.Parser.PTR
-import xyz.cofe.stsl.tok.IdentifierTok
+import Parser.PTR
 
 /**
  * Ссылка на AST

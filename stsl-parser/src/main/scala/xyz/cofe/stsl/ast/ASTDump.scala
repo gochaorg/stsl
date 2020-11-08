@@ -1,4 +1,4 @@
-package xyz.cofe.sel.ast
+package xyz.cofe.stsl.ast
 
 object ASTDump {
   def dump(out: Appendable, ast: AST, level:Int):Unit = {

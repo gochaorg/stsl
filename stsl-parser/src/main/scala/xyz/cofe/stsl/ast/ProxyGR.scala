@@ -1,6 +1,6 @@
-package xyz.cofe.sel.ast
+package xyz.cofe.stsl.ast
 
-import xyz.cofe.sel.Parser.{AstGR, PTR}
+import Parser.{AstGR, PTR}
 
 class ProxyGR extends AstGR {
   var target : AstGR = null;

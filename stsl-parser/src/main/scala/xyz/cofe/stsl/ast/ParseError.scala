@@ -1,6 +1,7 @@
-package xyz.cofe.sel
+package xyz.cofe.stsl.ast
 
-import xyz.cofe.sel.Parser.PTR
+import xyz.cofe.stsl.ast
+import xyz.cofe.stsl.ast.Parser.PTR
 
 class ParseError(
                   message:String,
@@ -23,11 +24,11 @@ object ParseError {
     require(message!=null)
     require(begin!=null)
     require(end!=null)
-    new ParseError(message, null, List(ParseLocation(begin,end)))
+    new ParseError(message, null, List(ast.ParseLocation(begin,end)))
   }
   def apply(message: String, location: PTR):ParseError = {
     require(message!=null)
     require(location!=null)
-    new ParseError(message, null, List(ParseLocation(location,location)))
+    new ParseError(message, null, List(ast.ParseLocation(location,location)))
   }
 }

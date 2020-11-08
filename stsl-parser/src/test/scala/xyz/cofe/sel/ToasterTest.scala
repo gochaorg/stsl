@@ -1,11 +1,11 @@
 package xyz.cofe.sel
 
 import org.junit.jupiter.api.Test
-import xyz.cofe.sel.ast.ASTDump
 import xyz.cofe.sel.cmpl.rt.{Funs, Scope, TASTDump}
 import xyz.cofe.sel.types.Fun.fn
 import xyz.cofe.sel.types.{Fun, Methods, ObjectType, Param, Properties, Property, TypeDescriber}
 import xyz.cofe.sel.types.Type._
+import xyz.cofe.stsl.ast.{ASTDump, Parser}
 
 class ToasterTest {
   @Test

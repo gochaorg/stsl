@@ -1,6 +1,6 @@
-package xyz.cofe.sel.ast
+package xyz.cofe.stsl.ast
 
-import xyz.cofe.sel.Parser.PTR
+import Parser.PTR
 
 class PropertyAST( begin:PTR,
                    end:PTR,

@@ -1,7 +1,6 @@
-package xyz.cofe.sel
+package xyz.cofe.stsl.ast
 
 import org.junit.jupiter.api.Test
-import xyz.cofe.sel.ast.{ASTDump, LiteralAST}
 
 class AstTest {
   @Test

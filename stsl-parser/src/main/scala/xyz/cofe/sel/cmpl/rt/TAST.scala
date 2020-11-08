@@ -2,8 +2,8 @@ package xyz.cofe.sel.cmpl.rt
 
 import java.util.function.Supplier
 
-import xyz.cofe.sel.ast.AST
 import xyz.cofe.sel.types.Type
+import xyz.cofe.stsl.ast.AST
 
 /**
  * Типизированый узел дерева
