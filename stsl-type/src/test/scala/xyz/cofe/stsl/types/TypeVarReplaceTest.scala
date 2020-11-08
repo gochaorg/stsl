@@ -175,6 +175,57 @@ class TypeVarReplaceTest {
     val listType3 = listType.typeVarBake.thiz("A" -> TypeVariable("B", Type.THIS)).withName("List_2")
     println( describe(listType3) )
   }
+
+  implicit class TypeVar(varName:String) {
+    def fn: TypeVariable = TypeVariable(varName,Type.FN)
+  }
+
+  implicit class Bake(base:Type) {
+    def bake(r:(String,Type)*):GenericInstance = {
+      val m:Map[String,Type] = r.toMap
+      GenericInstance(m,base)
+    }
+  }
+
+  @Test
+  def replaceInFun04_GI():Unit = {
+    import TypeVarReplaceTest._
+
+    println("replaceInFun04_GI()")
+    println("====================")
+    println("list type")
+    println( describe(listType) )
+
+    val fmapper = Fn(
+      GenericParams(
+        AnyVariant("F"),
+        AnyVariant("T"),
+      ),
+      Params(
+        "from" -> "F".fn
+      ),
+      "T".fn
+    )
+    println("\nfmapper")
+    println(describe(fmapper))
+
+    val fn1 = Fn(
+      GenericParams(
+        AnyVariant("X"),
+        AnyVariant("Y"),
+      ),
+      Params(
+        "list" -> listType.bake(
+          "A" -> "X".fn),
+        "map" -> fmapper.bake(
+          "F" -> "X".fn,
+          "T" -> "Y".fn )
+      ),
+      listType.bake("A"->"Y".fn)
+    )
+    println("\nlist map")
+    println(describe(fn1))
+  }
 }
 
 object TypeVarReplaceTest {
