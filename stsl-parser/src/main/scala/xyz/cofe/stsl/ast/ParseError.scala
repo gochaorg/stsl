@@ -3,6 +3,12 @@ package xyz.cofe.stsl.ast
 import xyz.cofe.stsl.ast
 import xyz.cofe.stsl.ast.Parser.PTR
 
+/**
+ * Ошибка парсинга
+ * @param message сообщение о ошибке
+ * @param cause ошибка - причина
+ * @param locations расположение в исходнике
+ */
 class ParseError(
                   message:String,
                   cause:Throwable,
