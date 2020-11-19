@@ -1,7 +1,12 @@
 package xyz.cofe.stsl.types
-import scala.collection.immutable
 
-case class Fn( fgParams: GenericParams
+/**
+ * Функция
+ * @param fgParams Определение переменных типа - функции
+ * @param fParams Параметры функции
+ * @param fReturn Результат функции
+ */
+class Fn( fgParams: GenericParams
              , fParams: Params
              , fReturn: Type
              ) extends Fun {
@@ -24,6 +29,9 @@ case class Fn( fgParams: GenericParams
       case _ => List()
     }
 
+  /**
+   * Экземепляры переменных типа
+   */
   override lazy val typeVariables: Seq[TypeVariable] = inputTypeVariables ++ outTypeVariable
 
   typeVariables
@@ -134,7 +142,114 @@ case class Fn( fgParams: GenericParams
       }.filter(_!=null).toList
     )
 
-    Fn(ngenerics,paramz,ret)
+    clone(ngenerics,paramz,ret)
+  }
+
+  /**
+   * Клонирование
+   * @param fgParams Определение переменных типа - функции
+   * @param fParams Параметры функции
+   * @param fReturn Результат функции
+   * @return клон
+   */
+  protected def clone( fgParams: GenericParams, fParams: Params, fReturn: Type ):Fn = new Fn(fgParams,fParams,fReturn)
+
+  /**
+   * Указывает реализацию
+   * @param impl реализация функции
+   * @return вызываемая функция
+   */
+  def invoking[Z]( impl: Seq[_]=>_ ):CallableFn = {
+    require(impl!=null)
+    new CallableFn(generics,parameters,returns,impl)
+  }
+
+  /**
+   * Указывает реализацию
+   * @param impl реализация функции
+   * @return вызываемая функция
+   */
+  def invoke[Z]( impl: ()=>Z ):CallableFn = {
+    require(impl!=null)
+    if( parameters.length!=0 ) throw TypeError(s"function require ${parameters.length} parameters")
+    new CallableFn(generics,parameters,returns,_ => impl())
+  }
+
+  /**
+   * Указывает реализацию
+   * @param impl реализация функции
+   * @return вызываемая функция
+   */
+  def invoke[A,Z]( impl: A=>Z ):CallableFn = {
+    require(impl!=null)
+    if( parameters.length!=1 ) throw TypeError(s"function require ${parameters.length} parameters")
+    new CallableFn(generics,parameters,returns,args => impl(args.head.asInstanceOf[A]))
+  }
+
+  /**
+   * Указывает реализацию
+   * @param impl реализация функции
+   * @return вызываемая функция
+   */
+  def invoke[A,B,Z]( impl: (A,B)=>Z ):CallableFn = {
+    require(impl!=null)
+    if( parameters.length!=2 ) throw TypeError(s"function require ${parameters.length} parameters")
+    new CallableFn(generics,parameters,returns,
+      args => impl(
+        args.head.asInstanceOf[A],
+        args(1).asInstanceOf[B]
+      ))
+  }
+
+  /**
+   * Указывает реализацию
+   * @param impl реализация функции
+   * @return вызываемая функция
+   */
+  def invoke[A,B,C,Z]( impl: (A,B,C)=>Z ):CallableFn = {
+    require(impl!=null)
+    if( parameters.length!=3 ) throw TypeError(s"function require ${parameters.length} parameters")
+    new CallableFn(generics,parameters,returns,
+      args => impl(
+        args.head.asInstanceOf[A],
+        args(1).asInstanceOf[B],
+        args(2).asInstanceOf[C]
+      ))
+  }
+
+  /**
+   * Указывает реализацию
+   * @param impl реализация функции
+   * @return вызываемая функция
+   */
+  def invoke[A,B,C,D,Z]( impl: (A,B,C,D)=>Z ):CallableFn = {
+    require(impl!=null)
+    if( parameters.length!=4 ) throw TypeError(s"function require ${parameters.length} parameters")
+    new CallableFn(generics,parameters,returns,
+      args => impl(
+        args.head.asInstanceOf[A],
+        args(1).asInstanceOf[B],
+        args(2).asInstanceOf[C],
+        args(3).asInstanceOf[D],
+      ))
+  }
+
+  /**
+   * Указывает реализацию
+   * @param impl реализация функции
+   * @return вызываемая функция
+   */
+  def invoke[A,B,C,D,E,Z]( impl: (A,B,C,D,E)=>Z ):CallableFn = {
+    require(impl!=null)
+    if( parameters.length!=4 ) throw TypeError(s"function require ${parameters.length} parameters")
+    new CallableFn(generics,parameters,returns,
+      args => impl(
+        args.head.asInstanceOf[A],
+        args(1).asInstanceOf[B],
+        args(2).asInstanceOf[C],
+        args(3).asInstanceOf[D],
+        args(4).asInstanceOf[E],
+      ))
   }
 }
 
