@@ -5,6 +5,9 @@ import xyz.cofe.sel.cmpl.rt.{CallStack, StackedArgumentAST}
 
 class ParserTest {
   //noinspection TypeAnnotation
+  val delegate = (ast:AST) => ast.isInstanceOf[DelegateAST]
+
+  //noinspection TypeAnnotation
   val binary = (ast:AST) => ast.isInstanceOf[BinaryAST]
 
   //noinspection TypeAnnotation
@@ -67,6 +70,13 @@ class ParserTest {
     val ast = Parser.parse("123 - 234 / 345")
     ast.foreach( ASTDump.dump )
     test(ast, binary, literal, binary, literal, literal)
+  }
+
+  @Test
+  def testDelegateAST(): Unit ={
+    val ast = Parser.parse("( 123 - 234 ) * 2")
+    ast.foreach( ASTDump.dump )
+    test(ast, binary, delegate, binary, literal, literal, literal)
   }
 
   @Test
