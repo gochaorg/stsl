@@ -4,7 +4,9 @@ import Parser.PTR
 import xyz.cofe.stsl.tok.OperatorTok
 
 /**
- * Оператор-символ
+ * Оператор-символ.
+ * В дереве AST в явном виде отсуствует,
+ * входит в состав операторов: UnaryAST, BinaryAST, TernaryAST
  * @param begin начало в тексте
  * @param end конец в тексте
  * @param tok символ

@@ -4,7 +4,19 @@ import Parser.PTR
 import xyz.cofe.stsl.tok.LiteralTok
 
 /**
- * Литерал-символ
+ * Литерал-символ.
+ * <p>
+ * Пример парсинг выражения
+ * <pre>123 + 234 * 345</pre>
+ *
+ * Дерево AST:
+ * <pre>
+ * BinaryAST +
+ * -| LiteralAST IntNumberTok 123
+ * -| BinaryAST *
+ * -|-| LiteralAST IntNumberTok 234
+ * -|-| LiteralAST IntNumberTok 345
+ * </pre>
  * @param begin начало в тексте
  * @param end конец в тексте
  * @param tok символ

@@ -4,6 +4,19 @@ import Parser.PTR
 
 /**
  * Тренарный оператор
+ *
+ * <p>
+ * Пример парсинг выражения
+ * <pre>a ? b : c</pre>
+ *
+ * Дерево AST:
+ * <pre>
+ * TernaryAST ? :
+ * -| IdentifierAST IdentifierTok a
+ * -| IdentifierAST IdentifierTok b
+ * -| IdentifierAST IdentifierTok c
+ * </pre>
+ *
  * @param begin начало в исходнике
  * @param end конец в исходнике
  * @param firstOperator оператор

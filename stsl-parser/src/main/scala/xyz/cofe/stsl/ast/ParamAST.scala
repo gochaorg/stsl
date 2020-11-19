@@ -2,6 +2,13 @@ package xyz.cofe.stsl.ast
 
 import Parser.PTR
 
+/**
+ * Параметр лямбды
+ * @param begin начало в тексте
+ * @param end конец в тексте
+ * @param name имя параметра
+ * @param typeName тип параметра
+ */
 class ParamAST(
                 begin:PTR,
                 end:PTR,

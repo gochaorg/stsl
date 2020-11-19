@@ -5,6 +5,19 @@ import xyz.cofe.stsl.tok.IdentifierTok
 
 /**
  * Ссылка на переменную
+ * <p>
+ * Пример парсинг выражения
+ * <pre>a - b / c</pre>
+ *
+ * Дерево AST:
+ * <pre>
+ * BinaryAST -
+ * -| <b>IdentifierAST</b> IdentifierTok a
+ * -| BinaryAST /
+ * -|-| <b>IdentifierAST</b> IdentifierTok b
+ * -|-| <b>IdentifierAST</b> IdentifierTok c
+ * </pre>
+ *
  * @param begin начало в тексте
  * @param end конец в тексте
  * @param tok символ

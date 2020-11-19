@@ -3,7 +3,20 @@ package xyz.cofe.stsl.ast
 import Parser.PTR
 
 /**
- * Ссылка на AST
+ * Ссылка на AST, испольщуется в скобочных выражениях
+ * <p>
+ * Пример парсинг выражения
+ * <pre>( 123 - 234 ) * 2</pre>
+ *
+ * Дерево AST:
+ * <pre>
+ * BinaryAST *
+ * -| <b>DelegateAST</b>
+ * -|-| BinaryAST -
+ * -|-|-| LiteralAST IntNumberTok 123
+ * -|-|-| LiteralAST IntNumberTok 234
+ * -| LiteralAST IntNumberTok 2
+ * </pre>
  *
  * @param begin начало в тексте
  * @param end конец в тексте

@@ -2,6 +2,12 @@ package xyz.cofe.stsl.ast
 
 import Parser.PTR
 
+/**
+ * Имя типа
+ * @param begin начало в исходник
+ * @param end конец в исходнике
+ * @param name имя типа
+ */
 class TypeNameAST(
                    begin:PTR,
                    end:PTR,

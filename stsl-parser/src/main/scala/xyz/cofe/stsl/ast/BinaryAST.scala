@@ -3,7 +3,21 @@ package xyz.cofe.stsl.ast
 import Parser.PTR
 
 /**
- * Бинарный оператор
+ * Бинарный оператор.
+ *
+ * <p>
+ * Пример парсинг выражения
+ * <pre>123 + 234 * 345</pre>
+ *
+ * Дерево AST:
+ * <pre>
+ * BinaryAST +
+ * -| LiteralAST IntNumberTok 123
+ * -| BinaryAST *
+ * -|-| LiteralAST IntNumberTok 234
+ * -|-| LiteralAST IntNumberTok 345
+ * </pre>
+ *
  * @param begin начало в исходнике
  * @param end конец в исходнике
  * @param operator оператор

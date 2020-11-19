@@ -2,6 +2,28 @@ package xyz.cofe.stsl.ast
 
 import Parser.PTR
 
+/**
+ * Ссылка на свойство объекта.
+ *
+ * <p>
+ * Пример парсинг выражения
+ * <pre>x.a + x.b.c</pre>
+ *
+ * Дерево AST:
+ * <pre>
+ * BinaryAST +
+ * -| PropertyAST a
+ * -|-| IdentifierAST IdentifierTok x
+ * -| PropertyAST c
+ * -|-| PropertyAST b
+ * -|-|-| IdentifierAST IdentifierTok x
+ * </pre>
+ *
+ * @param begin начало в тексте
+ * @param end конец в тексте
+ * @param obj объект
+ * @param name имя свойства
+ */
 class PropertyAST( begin:PTR,
                    end:PTR,
                    val obj:AST,

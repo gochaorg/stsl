@@ -4,6 +4,58 @@ import Parser.PTR
 
 /**
  * Определение лямбды
+ *
+ * <p>
+ * Пример парсинг выражения
+ * <pre>a:int , b:int => a+b</pre>
+ *
+ * Дерево AST:
+ * <pre>
+ * LambdaAST
+ * -| ParamAST IdentifierAST IdentifierTok a
+ * -|-| IdentifierAST IdentifierTok a
+ * -|-| TypeNameAST int
+ * -| ParamAST IdentifierAST IdentifierTok b
+ * -|-| IdentifierAST IdentifierTok b
+ * -|-| TypeNameAST int
+ * -| BinaryAST +
+ * -|-| IdentifierAST IdentifierTok a
+ * -|-| IdentifierAST IdentifierTok b
+ * </pre>
+ *
+ * <p>
+ * Пример парсинг выражения
+ * <pre>a:int , b:int , r :: int => a+b</pre>
+ *
+ * Дерево AST:
+ * <pre>
+ * LambdaAST recursion: ParamAST IdentifierAST IdentifierTok r
+ * -| ParamAST IdentifierAST IdentifierTok a
+ * -|-| IdentifierAST IdentifierTok a
+ * -|-| TypeNameAST int
+ * -| ParamAST IdentifierAST IdentifierTok b
+ * -|-| IdentifierAST IdentifierTok b
+ * -|-| TypeNameAST int
+ * -| ParamAST IdentifierAST IdentifierTok r
+ * -|-| IdentifierAST IdentifierTok r
+ * -|-| TypeNameAST int
+ * -| BinaryAST +
+ * -|-| IdentifierAST IdentifierTok a
+ * -|-| IdentifierAST IdentifierTok b
+ * </pre>
+ *
+ * <p>
+ * Пример парсинг выражения
+ * <pre>() => a+b</pre>
+ *
+ * Дерево AST:
+ * <pre>
+ * LambdaAST
+ * -| BinaryAST +
+ * -|-| IdentifierAST IdentifierTok a
+ * -|-| IdentifierAST IdentifierTok b
+ * </pre>
+ *
  * @param begin начало в тексте
  * @param end конец в тексте
  * @param params параметры
