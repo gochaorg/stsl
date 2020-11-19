@@ -1,6 +1,5 @@
 package xyz.cofe.sel.cmpl.rt
 
-import xyz.cofe.sel.ast.PropertyAST
 import xyz.cofe.stsl.ast.{CallAST, PropertyAST}
 
 object TASTDump {
