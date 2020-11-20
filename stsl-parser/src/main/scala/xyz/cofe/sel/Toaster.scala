@@ -1,6 +1,6 @@
 package xyz.cofe.sel
 
-import xyz.cofe.sel.ast._
+import xyz.cofe.stsl.ast._
 import xyz.cofe.sel.cmpl.rt._
 import xyz.cofe.stsl.tok._
 import xyz.cofe.sel.types.Type._
