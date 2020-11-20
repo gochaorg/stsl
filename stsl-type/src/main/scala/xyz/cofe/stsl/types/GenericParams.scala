@@ -1,11 +1,22 @@
 package xyz.cofe.stsl.types
 
-case class GenericParams( val params: List[GenericParam]=List() ) extends Seq[GenericParam] {
-  require(params!=null)
-  params.groupBy(p=>p.name).foreach( p=>
+/**
+ * Коллекция типов-параметров
+ * @param parameters типы параметров
+ */
+class GenericParams( private val parameters: List[GenericParam]=List() ) extends Seq[GenericParam] {
+  require(parameters!=null)
+  parameters.groupBy(p=>p.name).foreach( p=>
     if(p._2.size>1)throw TypeError(s"generic parameter ${p._1} duplicate")
   )
 
+  def params:List[GenericParam] = parameters;
+
+  /**
+   * Проверка на допустимость присвоения
+   * @param genericParams присваемое значение
+   * @return true - допускается присвоение
+   */
   def assignable( genericParams: GenericParams ):Boolean = {
     require(genericParams!=null)
     if( genericParams.params.length!=params.length ){

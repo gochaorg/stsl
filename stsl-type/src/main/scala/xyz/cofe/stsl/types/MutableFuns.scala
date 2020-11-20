@@ -42,7 +42,7 @@ class MutableFuns(
 
   override def filter(filter:(Fun)=>Boolean ):MutableFuns = {
     require(filter!=null)
-    if( freezed )throw new IllegalStateException("function freezed")
+    if( freezed )throw new IllegalStateException("freezed")
     functions = functions.filter( filter )
     this
   }

@@ -1,7 +1,7 @@
 package xyz.cofe.stsl.types
 
 trait Extendable extends Assignable {
-  lazy val extend : Option[Type] = None
+  def extend : Option[Type] = None
   override def assignable(t: Type): Boolean = {
     require(t!=null)
     if( this==t ){

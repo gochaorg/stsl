@@ -107,7 +107,7 @@ class Fn( fgParams: GenericParams
 
     val replaceTypeVarsName = replaceTypeVarsNames.filter( _._2.nonEmpty ).map( r => r._1 -> r._2.head )
 
-    val ngenerics = GenericParams(
+    val ngenerics = new GenericParams(
       generics.map {
         case av: AnyVariant =>
           if( !av.assignable(genericMap(av.name)) ){

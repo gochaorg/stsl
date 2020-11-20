@@ -9,7 +9,7 @@ package xyz.cofe.stsl.types
  * @param omethods Методы класса
  */
 class TObject( Name:String,
-               ogenerics:GenericParams=GenericParams(),
+               ogenerics:MutableGenericParams=new MutableGenericParams(),
                oextend:Option[Type] = Some(Type.ANY),
                ofields:MutableFields=new MutableFields(),
                omethods:MutableMethods=new MutableMethods()
@@ -30,13 +30,22 @@ class TObject( Name:String,
     freezedValue = true
     methods.freeze
     fields.freeze
+    generics.freeze
   }
   //endregion
 
-  override val name: String = Name
+  private var name_value : String = Name
+  override def name: String = name_value
+  def name_=( value:String ):String = {
+    require(value!=null)
+    require(value.trim.length>0)
+    if( freezed )throw TypeError("freezed")
+    name_value = value
+    value
+  }
 
-  override lazy val extend: Option[Type] = oextend
-  override lazy val generics: GenericParams = ogenerics
+  override def extend: Option[Type] = oextend
+  override lazy val generics: MutableGenericParams = ogenerics
   override lazy val fields: MutableFields = ofields
   override lazy val methods: MutableMethods = omethods
 
@@ -173,7 +182,10 @@ object TObject {
            , ofields: Fields
            , omethods: Methods): TObject = new TObject(
     Name,
-    ogenerics,
+    ogenerics match {
+      case m:MutableGenericParams => m
+      case _ => new MutableGenericParams(ogenerics.params)
+    },
     oextend,
     ofields match {
       case m: MutableFields => m
@@ -206,7 +218,7 @@ object TObject {
     }
     def generics(newGenerics:GenericParam*):Builder = {
       require(newGenerics!=null)
-      ogenerics = GenericParams(newGenerics.toList)
+      ogenerics = new GenericParams(newGenerics.toList)
       this
     }
     private var ofields = Fields()
@@ -236,7 +248,10 @@ object TObject {
     def build:TObject = {
       new TObject(
         name,
-        ogenerics,
+        ogenerics match {
+          case m:MutableGenericParams => m
+          case _ => new MutableGenericParams(ogenerics.params)
+        },
         oextend,
         new MutableFields(ofields.fields),
         new MutableMethods(omethods.funs))
