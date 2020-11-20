@@ -2,15 +2,17 @@ package xyz.cofe.stsl.types
 
 import org.junit.jupiter.api.Test
 import xyz.cofe.stsl.types.TypeDescriber.describe
+import Type._
+import JvmType._
 
 class TypeVarReplaceTest {
   @Test
   def replaceInParam():Unit = {
-    val param1 = Param("a",TypeVariable("A",Type.FN))
+    val param1 = Param("a",TypeVariable("A",FN))
     println( param1 )
 
     val param2 = param1.typeVarReplace( p =>
-      if( p.name == "A" ) Some(TypeVariable("B",Type.FN)) else None
+      if( p.name == "A" ) Some(TypeVariable("B",FN)) else None
     )
     println( param2 )
   }
@@ -18,19 +20,19 @@ class TypeVarReplaceTest {
   @Test
   def replaceInParams():Unit = {
     val params1 = Params(
-      "a" -> TypeVariable("A",Type.FN),
-      "b" -> TypeVariable("A",Type.FN),
-      "c" -> TypeVariable("B",Type.FN),
-      "d" -> TypeVariable("C",Type.FN)
+      "a" -> TypeVariable("A",FN),
+      "b" -> TypeVariable("A",FN),
+      "c" -> TypeVariable("B",FN),
+      "d" -> TypeVariable("C",FN)
     )
 
     println( params1 )
 
     val params2 = params1.typeVarReplace( p=>
       if( p.name == "A" )
-        Some(TypeVariable("E",Type.FN))
+        Some(TypeVariable("E",FN))
       else if( p.name == "B" )
-        Some(TypeVariable("F",Type.FN))
+        Some(TypeVariable("F",FN))
       else
         None
     )
@@ -46,28 +48,28 @@ class TypeVarReplaceTest {
         AnyVariant("B"),
       ),
       Params(
-        "a" -> TypeVariable("A", Type.FN)
+        "a" -> TypeVariable("A", FN)
       ),
-      TypeVariable("B", Type.FN)
+      TypeVariable("B", FN)
     )
     println(fmap)
 
     val ffmap = fmap.typeVarReplace(tv => tv.name match {
-      case "A" => Some(TypeVariable("X", Type.FN))
-      case "B" => Some(TypeVariable("Y", Type.FN))
+      case "A" => Some(TypeVariable("X", FN))
+      case "B" => Some(TypeVariable("Y", FN))
       case _ => None
     })
     println( ffmap )
 
     val ffmap2 = fmap.typeVarBake.fn(
-      "A" -> TypeVariable("W", Type.FN),
-      "B" -> TypeVariable("Z", Type.FN),
+      "A" -> TypeVariable("W", FN),
+      "B" -> TypeVariable("Z", FN),
     )
     println( ffmap2 )
 
     val ffmap3 = fmap.typeVarBake.fn(
-      "A" -> Type.INT,
-      "B" -> Type.DOUBLE,
+      "A" -> INT,
+      "B" -> DOUBLE,
     )
     println( ffmap3 )
   }
@@ -80,15 +82,15 @@ class TypeVarReplaceTest {
         AnyVariant("B"),
       ),
       Params(
-        "a" -> TypeVariable("A", Type.FN)
+        "a" -> TypeVariable("A", FN)
       ),
-      TypeVariable("B", Type.FN)
+      TypeVariable("B", FN)
     )
     println(fmap)
 
     val ffmap3 = fmap.typeVarBake.fn(
-      "A" -> Type.INT,
-      "B" -> Type.DOUBLE,
+      "A" -> INT,
+      "B" -> DOUBLE,
     )
     println( ffmap3 )
   }
@@ -99,12 +101,12 @@ class TypeVarReplaceTest {
     val a:Int = 10
     f(a)
 
-    val contraVar = ContraVariant("A",Type.NUMBER)
-    val typeArg = Type.INT
+    val contraVar = ContraVariant("A",NUMBER)
+    val typeArg = INT
     assert(contraVar.assignable(typeArg))
 
-    val coVar = CoVariant("B",Type.NUMBER)
-    val typeRet = Type.DOUBLE
+    val coVar = CoVariant("B",NUMBER)
+    val typeRet = DOUBLE
     assert(coVar.assignable(typeRet))
 
     val fmap = Fn(
@@ -113,9 +115,9 @@ class TypeVarReplaceTest {
         coVar,
       ),
       Params(
-        "a" -> TypeVariable("A", Type.FN)
+        "a" -> TypeVariable("A", FN)
       ),
-      TypeVariable("B", Type.FN)
+      TypeVariable("B", FN)
     )
     println(fmap)
 
@@ -128,7 +130,7 @@ class TypeVarReplaceTest {
     var catch1 = false
     try {
       fmap.typeVarBake.fn(
-        "A" -> Type.ANY,
+        "A" -> ANY,
         "B" -> typeRet,
       )
     } catch {
@@ -142,7 +144,7 @@ class TypeVarReplaceTest {
     try {
       fmap.typeVarBake.fn(
         "A" -> typeArg,
-        "B" -> Type.ANY,
+        "B" -> ANY,
       )
     } catch {
       case err:TypeError =>
@@ -172,12 +174,12 @@ class TypeVarReplaceTest {
     println("====================")
     println( describe(listType) )
 
-    val listType3 = listType.typeVarBake.thiz("A" -> TypeVariable("B", Type.THIS)).withName("List_2")
+    val listType3 = listType.typeVarBake.thiz("A" -> TypeVariable("B", THIS)).withName("List_2")
     println( describe(listType3) )
   }
 
   implicit class TypeVar(varName:String) {
-    def fn: TypeVariable = TypeVariable(varName,Type.FN)
+    def fn: TypeVariable = TypeVariable(varName,FN)
   }
 
   implicit class Bake(base:Type) {
@@ -231,26 +233,26 @@ class TypeVarReplaceTest {
 object TypeVarReplaceTest {
   val listType = TObject("List")
     .generics(AnyVariant("A"))
-    .fields("size" -> Type.INT)
+    .fields("size" -> INT)
     .methods(
       "add" -> Fn(
         Params(
-          "this" -> Type.THIS,
-          "item" -> TypeVariable("A",Type.THIS),
+          "this" -> THIS,
+          "item" -> TypeVariable("A",THIS),
         ),
-        Type.VOID
+        VOID
       ),
       "get" -> Fn(
         Params(
-          "this" -> Type.THIS,
-          "idx" -> Type.INT,
+          "this" -> THIS,
+          "idx" -> INT,
         ),
-        TypeVariable("A",Type.THIS)
+        TypeVariable("A",THIS)
       ),
     )
     .build
 
   val userType = TObject("User")
-    .fields("name" -> Type.INT)
+    .fields("name" -> INT)
     .build
 }

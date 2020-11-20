@@ -6,6 +6,7 @@ class FunsTest {
   @Test
   def duplicateParamNames():Unit = {
     import Type._
+    import JvmType._
     var catched = false
 
     val f1=Fn(Params("a" -> INT),INT)

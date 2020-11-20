@@ -1,6 +1,6 @@
 package xyz.cofe.stsl.types
 
-case class Fields( val fields:List[Field]=List(), val owner:Type=Type.VOID ) extends Seq[Field] {
+class Fields( val fields:List[Field]=List(), val owner:Type=Type.VOID ) extends Seq[Field] {
   require(fields!=null)
   require(owner!=null)
   fields.groupBy(p=>p.name).foreach( p=>

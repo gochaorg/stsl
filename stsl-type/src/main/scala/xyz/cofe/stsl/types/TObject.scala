@@ -4,20 +4,31 @@ class TObject( Name:String,
                ogenerics:GenericParams=GenericParams(),
                oextend:Option[Type] = Some(Type.ANY),
                ofields:Fields=Fields(),
-               omethods:Methods=Methods()
-             ) extends Obj with TypeVarReplace[TObject] {
+               omethods:MutableMethods=new MutableMethods()
+             ) extends Obj with TypeVarReplace[TObject] with Freezing {
   require(Name!=null)
   require(ogenerics!=null)
   require(ofields!=null)
   require(omethods!=null)
   require(oextend!=null)
 
+  private var freezedValue : Boolean = false
+  def freezed : Boolean = freezedValue
+
+  def freeze:Unit = {
+    freezedValue = true
+    omethods match {
+      case fz: Freezing => fz.freeze
+      case _ =>
+    }
+  }
+
   override val name: String = Name
 
   override lazy val extend: Option[Type] = oextend
   override lazy val generics: GenericParams = ogenerics
   override lazy val fields: Fields = ofields
-  override lazy val methods: Methods = omethods
+  override lazy val methods: MutableMethods = omethods
 
   private val fieldsTypeVariablesMap = fields.filter(f => f.tip.isInstanceOf[TypeVariable]).map(f => f.name -> f.tip.asInstanceOf[TypeVariable]).toMap
   private val fieldsTypeVariables = fieldsTypeVariablesMap.values
@@ -95,7 +106,7 @@ class TObject( Name:String,
       )
     )
     val newFields = Fields( (asIsFields ++ newTvFields).toList )
-    val newMethods = Methods(
+    val newMethods = new Methods(
       methods.funs.map({case(name, funs)=>
         name -> new Funs(funs.map( fun => {
           fun.typeVarReplace(replacement)
@@ -129,7 +140,7 @@ object TObject {
            , ogenerics: GenericParams
            , oextend:Option[Type]
            , ofields: Fields
-           , omethods: Methods): TObject = new TObject(Name, ogenerics, oextend, ofields, omethods)
+           , omethods: Methods): TObject = new TObject(Name, ogenerics, oextend, ofields, new MutableMethods(omethods.funs))
 
   class Builder( val name:String ) {
     private var oextend:Option[Type] = Some(Type.ANY)
@@ -166,7 +177,7 @@ object TObject {
       ofields = Fields( newFields.map(f=>Field(f._1,f._2)).toList )
       this
     }
-    private var omethods = Methods()
+    private var omethods = new Methods()
     def methods(newMethods:Methods):Builder = {
       require(newMethods!=null)
       omethods = newMethods
@@ -175,12 +186,12 @@ object TObject {
     def methods(newMethods:(String,Fun)*):Builder = {
       require(newMethods!=null)
       val map1:Map[String,Seq[Fun]] = newMethods.toList.groupBy(_._1).map({case(name,ls)=> name -> ls.map(_._2)}).toMap
-      val map2 = map1.map({case(name,ls)=> name -> Funs(ls.toList)})
-      omethods = Methods(map2)
+      val map2 = map1.map({case(name,ls)=> name -> new Funs(ls.toList)})
+      omethods = new Methods(map2)
       this
     }
     def build:TObject = {
-      new TObject(name,ogenerics,oextend,ofields,omethods)
+      new TObject(name,ogenerics,oextend,ofields,new MutableMethods(omethods.funs))
     }
   }
 

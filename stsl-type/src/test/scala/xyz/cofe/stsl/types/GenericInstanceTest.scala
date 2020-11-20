@@ -1,31 +1,33 @@
 package xyz.cofe.stsl.types
 
 import org.junit.jupiter.api.Test
+import Type._
+import JvmType._
 
 class GenericInstanceTest {
   val listType = TObject("List")
     .generics(AnyVariant("A"))
-    .fields("size" -> Type.INT)
+    .fields("size" -> INT)
     .methods(
       "add" -> Fn(
         Params(
-          "this" -> Type.THIS,
-          "item" -> TypeVariable("A",Type.THIS),
+          "this" -> THIS,
+          "item" -> TypeVariable("A",THIS),
         ),
-        Type.VOID
+        VOID
       ),
       "get" -> Fn(
         Params(
-          "this" -> Type.THIS,
-          "idx" -> Type.INT,
+          "this" -> THIS,
+          "idx" -> INT,
         ),
-        TypeVariable("A",Type.THIS)
+        TypeVariable("A",THIS)
       ),
     )
     .build
 
   val userType = TObject("User")
-    .fields("name" -> Type.INT)
+    .fields("name" -> INT)
     .build
 
   @Test
@@ -41,13 +43,13 @@ class GenericInstanceTest {
     println(gi1)
 
     val gi2 = GenericInstance(
-      Map("A" -> TypeVariable("B", Type.THIS)),
+      Map("A" -> TypeVariable("B", THIS)),
       listType
     )
 
     println(gi2)
 
-    val gi3 = gi2.typeVarReplace("B" -> TypeVariable("C",Type.THIS))
+    val gi3 = gi2.typeVarReplace("B" -> TypeVariable("C",THIS))
 
     println(gi3)
   }

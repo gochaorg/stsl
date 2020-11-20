@@ -1,13 +1,15 @@
 package xyz.cofe.stsl.types
 
-case class Funs( val funs: List[Fun] ) extends Seq[Fun] {
-  require(funs!=null)
-  funs.foreach( f => require(f!=null, "funs contains null") )
+class Funs( private val functions: List[Fun] ) extends Seq[Fun] {
+  require(functions!=null)
+  functions.foreach( f => require(f!=null, "funs contains null") )
 
-  private val matched = funs.indices.flatMap(fi => {
-    ((fi + 1) until funs.length).flatMap(fj => {
-      val f1 = funs(fi)
-      val f2 = funs(fj)
+  def funs: List[Fun] = functions
+
+  private val matched = functions.indices.flatMap(fi => {
+    ((fi + 1) until functions.length).flatMap(fj => {
+      val f1 = functions(fi)
+      val f2 = functions(fj)
       if (f1.sameTypes(f2)) {
         List((fi, f1, fj, f2))
       } else {
@@ -30,5 +32,5 @@ case class Funs( val funs: List[Fun] ) extends Seq[Fun] {
 
 object Funs {
   //def apply(funs: List[Fun]): Funs = new Funs(funs)
-  def apply(funs: Fun*): Funs = Funs(funs.toList)
+  def apply(funs: Fun*): Funs = new Funs(funs.toList)
 }

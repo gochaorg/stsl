@@ -6,7 +6,7 @@ package xyz.cofe.stsl.types
 class CallableFn( fgParams: GenericParams
                 , fParams: Params
                 , fReturn: Type
-                , val call : Seq[_] => _
+                , val call : Seq[Any] => Any
                 ) extends Fn( fgParams, fParams, fReturn ) with Invoke {
   require(call!=null)
 

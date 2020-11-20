@@ -1,6 +1,7 @@
 package xyz.cofe.stsl.types
 
 import Type._
+import JvmType._
 import org.junit.jupiter.api.Test
 
 class GenericParamTest {

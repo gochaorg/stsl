@@ -7,6 +7,7 @@ class ExtendableTest {
   @Test
   def test01():Unit = {
     import Type._
+    import JvmType._
 
     assert(ANY.assignable(ANY))
     assert(VOID.assignable(VOID))
