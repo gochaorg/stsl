@@ -1,11 +1,26 @@
 package xyz.cofe.stsl.types
 
-class Fields( val fields:List[Field]=List(), val owner:Type=Type.VOID ) extends Seq[Field] {
-  require(fields!=null)
+/**
+ * Имутабельный список полей класса
+ * @param fieldList поля
+ * @param owner владелец, по умолчанию VOID
+ */
+class Fields( private val fieldList:List[Field]=List(), val owner:Type=Type.VOID ) extends Seq[Field] {
+  require(fieldList!=null)
   require(owner!=null)
-  fields.groupBy(p=>p.name).foreach( p=>
-    if(p._2.size>1)throw TypeError(s"field name ${p._1} duplicate")
-  )
+
+  def fields:List[Field]=fieldList
+
+  /**
+   * Проверка на отсуствие дубликатов полей/аттрибутов с одинаковыми именами
+   */
+  protected def validateDuplicates():Unit = {
+    fields.groupBy(p=>p.name).foreach( p=>
+      if(p._2.size>1)throw TypeError(s"field name ${p._1} duplicate")
+    )
+  }
+
+  validateDuplicates()
 
   override def length: Int = fields.length
   override def iterator: Iterator[Field] = fields.iterator

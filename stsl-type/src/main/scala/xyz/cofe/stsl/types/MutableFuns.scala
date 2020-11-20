@@ -1,15 +1,22 @@
 package xyz.cofe.stsl.types
 
+/**
+ * Мутабельный список функций
+ * @param functions1 функции
+ */
 class MutableFuns(
                    private var functions1: List[Fun] = List()
                  ) extends Funs(List()) with Freezing {
   require(functions1!=null)
+
+  //region "Заморозка"
 
   private var freezedValue : Boolean = false
   def freezed : Boolean = freezedValue
   def freeze:Unit = {
     freezedValue = true
   }
+  //endregion
 
   private var functions : List[Fun] = List()
   override def funs: List[Fun] = functions

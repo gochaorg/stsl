@@ -18,6 +18,8 @@ class TObjectMutableTest {
     tobj.methods.append("abc", Fn(Params("self" -> THIS),VOID))
     tobj.methods += "abc2" -> Fn(Params("self" -> THIS),VOID)
     tobj.methods += "abc2" -> Fn(Params("self" -> THIS),INT)
+    tobj.fields += "fld" -> INT
+    tobj.fields += "fld" -> LONG
     println(describe(tobj))
 
     var catched = false

@@ -1,10 +1,20 @@
 package xyz.cofe.stsl.types
 
+/**
+ * Иммутабельный список функций
+ * @param functions функции
+ */
 class Funs( private val functions: List[Fun] ) extends Seq[Fun] {
   require(functions!=null)
   functions.foreach( f => require(f!=null, "funs contains null") )
 
+  /**
+   * Возвращает список функций
+   * @return список функций
+   */
   def funs: List[Fun] = functions
+
+  //region Проверка чтоб в одном списке функций не попадались функции с одинаковыми сигнатурами
 
   private val matched = functions.indices.flatMap(fi => {
     ((fi + 1) until functions.length).flatMap(fj => {
@@ -24,10 +34,14 @@ class Funs( private val functions: List[Fun] ) extends Seq[Fun] {
     }).reduce((a,b)=>a+"\n"+b)
     throw TypeError("has duplicate type params in functons:\n"+matchedStr)
   }
+  //endregion
+
+  //region Методы Seq[Fun]
 
   override def length: Int = funs.length
   override def iterator: Iterator[Fun] = funs.iterator
   override def apply(idx: Int): Fun = funs.apply(idx)
+  //endregion
 }
 
 object Funs {

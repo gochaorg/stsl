@@ -1,9 +1,17 @@
 package xyz.cofe.stsl.types
 
+/**
+ * Определение класса данных/объектов
+ * @param Name Имя класса
+ * @param ogenerics Параметры типа
+ * @param oextend Какой тип расширяет
+ * @param ofields Атрибуты/поля класса
+ * @param omethods Методы класса
+ */
 class TObject( Name:String,
                ogenerics:GenericParams=GenericParams(),
                oextend:Option[Type] = Some(Type.ANY),
-               ofields:Fields=Fields(),
+               ofields:MutableFields=new MutableFields(),
                omethods:MutableMethods=new MutableMethods()
              ) extends Obj with TypeVarReplace[TObject] with Freezing {
   require(Name!=null)
@@ -12,44 +20,66 @@ class TObject( Name:String,
   require(omethods!=null)
   require(oextend!=null)
 
+  //region "Заморозка"
+
   private var freezedValue : Boolean = false
   def freezed : Boolean = freezedValue
 
   def freeze:Unit = {
+    validateTypeVariables()
     freezedValue = true
-    omethods match {
-      case fz: Freezing => fz.freeze
-      case _ =>
-    }
+    methods.freeze
+    fields.freeze
   }
+  //endregion
 
   override val name: String = Name
 
   override lazy val extend: Option[Type] = oextend
   override lazy val generics: GenericParams = ogenerics
-  override lazy val fields: Fields = ofields
+  override lazy val fields: MutableFields = ofields
   override lazy val methods: MutableMethods = omethods
 
-  private val fieldsTypeVariablesMap = fields.filter(f => f.tip.isInstanceOf[TypeVariable]).map(f => f.name -> f.tip.asInstanceOf[TypeVariable]).toMap
-  private val fieldsTypeVariables = fieldsTypeVariablesMap.values
-  private val methodsTypeVariables = methods.funs.values.flatMap(f => f.funs).flatMap(f => f.typeVariables)
-  private val typeVariables = fieldsTypeVariables ++ methodsTypeVariables
-  typeVariables
-    .filter( tv => tv.owner==Type.THIS )
-    .foreach( vname =>
-      if( !generics.params.map(_.name).contains(vname.name) ){
-        throw TypeError(s"bind undeclared type variable $vname into Object")
-      }
-    )
+  private def fieldsTypeVariablesMap = fields.filter(f => f.tip.isInstanceOf[TypeVariable]).map(f => f.name -> f.tip.asInstanceOf[TypeVariable]).toMap
+  private def fieldsTypeVariables  = fieldsTypeVariablesMap.values
+  private def methodsTypeVariables = methods.funs.values.flatMap(f => f.funs).flatMap(f => f.typeVariables)
+  private def typeVariables = fieldsTypeVariables ++ methodsTypeVariables
 
+  /**
+   * Проверка что указанные типы-переменных соответствуют объявленным
+   */
+  private def validateTypeVariables():Unit = {
+    typeVariables
+      .filter( tv => tv.owner==Type.THIS )
+      .foreach( vname =>
+        if( !generics.params.map(_.name).contains(vname.name) ){
+          throw TypeError(s"bind undeclared type variable $vname into Object")
+        }
+      )
+  }
+
+  validateTypeVariables()
+
+  /**
+   * Клонирует объект с новыым именем
+   * @param name новое имя
+   * @return клон
+   */
   def withName(name:String):TObject = {
     require(name!=null)
     new TObject(name,generics,extend,fields,methods)
   }
+
   override def toString: String = {
     s"${name}${generics}"
   }
 
+  //region typeVarReplace() - Замена переменных типа
+  /**
+   * Замена переменных типа в данном классе
+   * @param recipe правило замены переменных
+   * @return клон с замененными переменными-типами
+   */
   override def typeVarReplace(recipe: TypeVariable => Option[Type]): TObject = {
     require(recipe!=null)
     var replaceTypeVarMap : Map[String,Type] = Map()
@@ -133,6 +163,7 @@ class TObject( Name:String,
 
     newTObj
   }
+  //endregion
 }
 
 object TObject {
@@ -140,7 +171,19 @@ object TObject {
            , ogenerics: GenericParams
            , oextend:Option[Type]
            , ofields: Fields
-           , omethods: Methods): TObject = new TObject(Name, ogenerics, oextend, ofields, new MutableMethods(omethods.funs))
+           , omethods: Methods): TObject = new TObject(
+    Name,
+    ogenerics,
+    oextend,
+    ofields match {
+      case m: MutableFields => m
+      case _ => new MutableFields(ofields.fields)
+    },
+    omethods match {
+      case m:MutableMethods => m
+      case _ => new MutableMethods(omethods.funs)
+    }
+  )
 
   class Builder( val name:String ) {
     private var oextend:Option[Type] = Some(Type.ANY)
@@ -191,7 +234,12 @@ object TObject {
       this
     }
     def build:TObject = {
-      new TObject(name,ogenerics,oextend,ofields,new MutableMethods(omethods.funs))
+      new TObject(
+        name,
+        ogenerics,
+        oextend,
+        new MutableFields(ofields.fields),
+        new MutableMethods(omethods.funs))
     }
   }
 
