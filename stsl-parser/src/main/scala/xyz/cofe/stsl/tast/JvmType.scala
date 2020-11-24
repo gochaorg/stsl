@@ -229,6 +229,114 @@ object JvmType {
 
   INT.freeze
   //endregion
+  //region LONG implementation
+  LONG.methods += "+" -> Fn(Params("self" -> THIS, "value" -> BYTE),THIS).invoke[Long,Byte,Long]((self,value)=>self + value)
+  LONG.methods += "+" -> Fn(Params("self" -> THIS, "value" -> SHORT),THIS).invoke[Long,Short,Long]((self,value)=>self + value)
+  LONG.methods += "+" -> Fn(Params("self" -> THIS, "value" -> INT),THIS).invoke[Long,Int,Long]((self,value)=>self + value)
+  LONG.methods += "+" -> Fn(Params("self" -> THIS, "value" -> THIS),THIS).invoke[Long,Long,Long]((self,value)=>self + value)
+  LONG.methods += "+" -> Fn(Params("self" -> THIS, "value" -> FLOAT),FLOAT).invoke[Long,Float,Float]((self,value)=>self + value)
+  LONG.methods += "+" -> Fn(Params("self" -> THIS, "value" -> DOUBLE),DOUBLE).invoke[Long,Double,Double]((self,value)=>self + value)
+  LONG.methods += "+" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BIGINT).invoke[Long,BigInt,BigInt]((self,value)=>self + value)
+  LONG.methods += "+" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),DECIMAL).invoke[Long,BigDecimal,BigDecimal]((self,value)=>self + value)
+
+  LONG.methods += "-" -> Fn(Params("self" -> THIS, "value" -> BYTE),THIS).invoke[Long,Byte,Long]((self,value)=>self - value)
+  LONG.methods += "-" -> Fn(Params("self" -> THIS, "value" -> SHORT),THIS).invoke[Long,Short,Long]((self,value)=>self - value)
+  LONG.methods += "-" -> Fn(Params("self" -> THIS, "value" -> INT),THIS).invoke[Long,Int,Long]((self,value)=>self - value)
+  LONG.methods += "-" -> Fn(Params("self" -> THIS, "value" -> THIS),THIS).invoke[Long,Long,Long]((self,value)=>self - value)
+  LONG.methods += "-" -> Fn(Params("self" -> THIS, "value" -> FLOAT),FLOAT).invoke[Long,Float,Float]((self,value)=>self - value)
+  LONG.methods += "-" -> Fn(Params("self" -> THIS, "value" -> DOUBLE),DOUBLE).invoke[Long,Double,Double]((self,value)=>self - value)
+  LONG.methods += "-" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BIGINT).invoke[Long,BigInt,BigInt]((self,value)=>self - value)
+  LONG.methods += "-" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),DECIMAL).invoke[Long,BigDecimal,BigDecimal]((self,value)=>self - value)
+
+  LONG.methods += "*" -> Fn(Params("self" -> THIS, "value" -> BYTE),THIS).invoke[Long,Byte,Long]((self,value)=>self * value)
+  LONG.methods += "*" -> Fn(Params("self" -> THIS, "value" -> SHORT),THIS).invoke[Long,Short,Long]((self,value)=>self * value)
+  LONG.methods += "*" -> Fn(Params("self" -> THIS, "value" -> INT),THIS).invoke[Long,Int,Long]((self,value)=>self * value)
+  LONG.methods += "*" -> Fn(Params("self" -> THIS, "value" -> THIS),THIS).invoke[Long,Long,Long]((self,value)=>self * value)
+  LONG.methods += "*" -> Fn(Params("self" -> THIS, "value" -> FLOAT),FLOAT).invoke[Long,Float,Float]((self,value)=>self * value)
+  LONG.methods += "*" -> Fn(Params("self" -> THIS, "value" -> DOUBLE),DOUBLE).invoke[Long,Double,Double]((self,value)=>self * value)
+  LONG.methods += "*" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BIGINT).invoke[Long,BigInt,BigInt]((self,value)=>self * value)
+  LONG.methods += "*" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),DECIMAL).invoke[Long,BigDecimal,BigDecimal]((self,value)=>self * value)
+
+  LONG.methods += "/" -> Fn(Params("self" -> THIS, "value" -> BYTE),THIS).invoke[Long,Byte,Long]((self,value)=>self / value)
+  LONG.methods += "/" -> Fn(Params("self" -> THIS, "value" -> SHORT),THIS).invoke[Long,Short,Long]((self,value)=>self / value)
+  LONG.methods += "/" -> Fn(Params("self" -> THIS, "value" -> INT),THIS).invoke[Long,Int,Long]((self,value)=>self / value)
+  LONG.methods += "/" -> Fn(Params("self" -> THIS, "value" -> THIS),THIS).invoke[Long,Long,Long]((self,value)=>self / value)
+  LONG.methods += "/" -> Fn(Params("self" -> THIS, "value" -> FLOAT),FLOAT).invoke[Long,Float,Float]((self,value)=>self / value)
+  LONG.methods += "/" -> Fn(Params("self" -> THIS, "value" -> DOUBLE),DOUBLE).invoke[Long,Double,Double]((self,value)=>self / value)
+  LONG.methods += "/" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BIGINT).invoke[Long,BigInt,BigInt]((self,value)=>self / value)
+  LONG.methods += "/" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),DECIMAL).invoke[Long,BigDecimal,BigDecimal]((self,value)=>self / value)
+
+  LONG.methods += "%" -> Fn(Params("self" -> THIS, "value" -> BYTE),THIS).invoke[Long,Byte,Long]((self,value)=>self % value)
+  LONG.methods += "%" -> Fn(Params("self" -> THIS, "value" -> SHORT),THIS).invoke[Long,Short,Long]((self,value)=>self % value)
+  LONG.methods += "%" -> Fn(Params("self" -> THIS, "value" -> INT),THIS).invoke[Long,Int,Long]((self,value)=>self % value)
+  LONG.methods += "%" -> Fn(Params("self" -> THIS, "value" -> THIS),THIS).invoke[Long,Long,Long]((self,value)=>self % value)
+  LONG.methods += "%" -> Fn(Params("self" -> THIS, "value" -> FLOAT),FLOAT).invoke[Long,Float,Float]((self,value)=>self % value)
+  LONG.methods += "%" -> Fn(Params("self" -> THIS, "value" -> DOUBLE),DOUBLE).invoke[Long,Double,Double]((self,value)=>self % value)
+  LONG.methods += "%" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BIGINT).invoke[Long,BigInt,BigInt]((self,value)=>self % value)
+  LONG.methods += "%" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),DECIMAL).invoke[Long,BigDecimal,BigDecimal]((self,value)=>self % value)
+
+  LONG.methods += "==" -> Fn(Params("self" -> THIS, "value" -> BYTE),BOOLEAN).invoke[Long,Byte,Boolean]((self,value) => self==value)
+  LONG.methods += "==" -> Fn(Params("self" -> THIS, "value" -> SHORT),BOOLEAN).invoke[Long,Short,Boolean]((self,value) => self==value)
+  LONG.methods += "==" -> Fn(Params("self" -> THIS, "value" -> INT),BOOLEAN).invoke[Long,Int,Boolean]((self,value) => self==value)
+  LONG.methods += "==" -> Fn(Params("self" -> THIS, "value" -> THIS),BOOLEAN).invoke[Long,Long,Boolean]((self,value) => self==value)
+  LONG.methods += "==" -> Fn(Params("self" -> THIS, "value" -> FLOAT),BOOLEAN).invoke[Long,Float,Boolean]((self,value) => self==value)
+  LONG.methods += "==" -> Fn(Params("self" -> THIS, "value" -> DOUBLE),BOOLEAN).invoke[Long,Double,Boolean]((self,value) => self==value)
+  LONG.methods += "==" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BOOLEAN).invoke[Long,BigInt,Boolean]((self,value) => self==value)
+  LONG.methods += "==" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),BOOLEAN).invoke[Long,BigDecimal,Boolean]((self,value) => self==value)
+
+  LONG.methods += "!=" -> Fn(Params("self" -> THIS, "value" -> BYTE),BOOLEAN).invoke[Long,Byte,Boolean]((self,value) => self!=value)
+  LONG.methods += "!=" -> Fn(Params("self" -> THIS, "value" -> SHORT),BOOLEAN).invoke[Long,Short,Boolean]((self,value) => self!=value)
+  LONG.methods += "!=" -> Fn(Params("self" -> THIS, "value" -> INT),BOOLEAN).invoke[Long,Int,Boolean]((self,value) => self!=value)
+  LONG.methods += "!=" -> Fn(Params("self" -> THIS, "value" -> THIS),BOOLEAN).invoke[Long,Long,Boolean]((self,value) => self!=value)
+  LONG.methods += "!=" -> Fn(Params("self" -> THIS, "value" -> FLOAT),BOOLEAN).invoke[Long,Float,Boolean]((self,value) => self!=value)
+  LONG.methods += "!=" -> Fn(Params("self" -> THIS, "value" -> DOUBLE),BOOLEAN).invoke[Long,Double,Boolean]((self,value) => self!=value)
+  LONG.methods += "!=" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BOOLEAN).invoke[Long,BigInt,Boolean]((self,value) => self!=value)
+  LONG.methods += "!=" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),BOOLEAN).invoke[Long,BigDecimal,Boolean]((self,value) => self!=value)
+
+  LONG.methods += "<" -> Fn(Params("self" -> THIS, "value" -> BYTE),BOOLEAN).invoke[Long,Byte,Boolean]((self,value) => self<value)
+  LONG.methods += "<" -> Fn(Params("self" -> THIS, "value" -> SHORT),BOOLEAN).invoke[Long,Short,Boolean]((self,value) => self<value)
+  LONG.methods += "<" -> Fn(Params("self" -> THIS, "value" -> INT),BOOLEAN).invoke[Long,Int,Boolean]((self,value) => self<value)
+  LONG.methods += "<" -> Fn(Params("self" -> THIS, "value" -> THIS),BOOLEAN).invoke[Long,Long,Boolean]((self,value) => self<value)
+  LONG.methods += "<" -> Fn(Params("self" -> THIS, "value" -> FLOAT),BOOLEAN).invoke[Long,Float,Boolean]((self,value) => self<value)
+  LONG.methods += "<" -> Fn(Params("self" -> THIS, "value" -> DOUBLE),BOOLEAN).invoke[Long,Double,Boolean]((self,value) => self<value)
+  LONG.methods += "<" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BOOLEAN).invoke[Long,BigInt,Boolean]((self,value) => self<value)
+  LONG.methods += "<" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),BOOLEAN).invoke[Long,BigDecimal,Boolean]((self,value) => self<value)
+
+  LONG.methods += ">" -> Fn(Params("self" -> THIS, "value" -> BYTE),BOOLEAN).invoke[Long,Byte,Boolean]((self,value) => self>value)
+  LONG.methods += ">" -> Fn(Params("self" -> THIS, "value" -> SHORT),BOOLEAN).invoke[Long,Short,Boolean]((self,value) => self>value)
+  LONG.methods += ">" -> Fn(Params("self" -> THIS, "value" -> INT),BOOLEAN).invoke[Long,Int,Boolean]((self,value) => self>value)
+  LONG.methods += ">" -> Fn(Params("self" -> THIS, "value" -> THIS),BOOLEAN).invoke[Long,Long,Boolean]((self,value) => self>value)
+  LONG.methods += ">" -> Fn(Params("self" -> THIS, "value" -> FLOAT),BOOLEAN).invoke[Long,Float,Boolean]((self,value) => self>value)
+  LONG.methods += ">" -> Fn(Params("self" -> THIS, "value" -> DOUBLE),BOOLEAN).invoke[Long,Double,Boolean]((self,value) => self>value)
+  LONG.methods += ">" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BOOLEAN).invoke[Long,BigInt,Boolean]((self,value) => self>value)
+  LONG.methods += ">" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),BOOLEAN).invoke[Long,BigDecimal,Boolean]((self,value) => self>value)
+
+  LONG.methods += "<=" -> Fn(Params("self" -> THIS, "value" -> BYTE),BOOLEAN).invoke[Long,Byte,Boolean]((self,value) => self<=value)
+  LONG.methods += "<=" -> Fn(Params("self" -> THIS, "value" -> SHORT),BOOLEAN).invoke[Long,Short,Boolean]((self,value) => self<=value)
+  LONG.methods += "<=" -> Fn(Params("self" -> THIS, "value" -> INT),BOOLEAN).invoke[Long,Int,Boolean]((self,value) => self<=value)
+  LONG.methods += "<=" -> Fn(Params("self" -> THIS, "value" -> THIS),BOOLEAN).invoke[Long,Long,Boolean]((self,value) => self<=value)
+  LONG.methods += "<=" -> Fn(Params("self" -> THIS, "value" -> FLOAT),BOOLEAN).invoke[Long,Float,Boolean]((self,value) => self<=value)
+  LONG.methods += "<=" -> Fn(Params("self" -> THIS, "value" -> DOUBLE),BOOLEAN).invoke[Long,Double,Boolean]((self,value) => self<=value)
+  LONG.methods += "<=" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BOOLEAN).invoke[Long,BigInt,Boolean]((self,value) => self<=value)
+  LONG.methods += "<=" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),BOOLEAN).invoke[Long,BigDecimal,Boolean]((self,value) => self<=value)
+
+  LONG.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> BYTE),BOOLEAN).invoke[Long,Byte,Boolean]((self,value) => self>=value)
+  LONG.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> SHORT),BOOLEAN).invoke[Long,Short,Boolean]((self,value) => self>=value)
+  LONG.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> INT),BOOLEAN).invoke[Long,Int,Boolean]((self,value) => self>=value)
+  LONG.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> THIS),BOOLEAN).invoke[Long,Long,Boolean]((self,value) => self>=value)
+  LONG.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> FLOAT),BOOLEAN).invoke[Long,Float,Boolean]((self,value) => self>=value)
+  LONG.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> DOUBLE),BOOLEAN).invoke[Long,Double,Boolean]((self,value) => self>=value)
+  LONG.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BOOLEAN).invoke[Long,BigInt,Boolean]((self,value) => self>=value)
+  LONG.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),BOOLEAN).invoke[Long,BigDecimal,Boolean]((self,value) => self>=value)
+
+  LONG.freeze
+  //endregion
+
+  STRING.fields ++= "length"-> INT -> ((str:Any)=>str.asInstanceOf[String].length) -> ((str:Any, l:Any)=>throw new RuntimeException("immutable"))
+  STRING.methods += "substring" -> Fn(Params("self"->THIS, "beginIndex"->INT),THIS).invoke[String,Int,String]((self,idx)=>self.substring(idx))
+  STRING.methods += "substring" -> Fn(Params("self"->THIS, "beginIndex"->INT, "endIndex"->INT),THIS).invoke[String,Int,Int,String]((self,idx,eidx)=>self.substring(idx,eidx))
+  STRING.methods += "+" -> Fn(Params("self"->THIS, "value"->THIS),THIS).invoke[String,String,String]((self,value)=>self + value)
+  STRING.freeze
 
   val implicitConversion = List(
     Fn( Params( "value" -> BYTE ), SHORT ).invoke[Byte,Short]( value => value.toShort ),

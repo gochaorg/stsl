@@ -8,20 +8,11 @@ import scala.collection.immutable
 
 /**
  * Варианты вызова метода объекта для занных аргументов
- * @param thiz тип объекта
- * @param method имя метода
- * @param args типы аргументов
+ * @param ctypes Типы данных для возможных вариантов вызова
  * @param typeScope Область типов
  */
-class CallCases(val thiz:TObject, val method: String, val args:List[Type], val typeScope: TypeScope ){
-  require(thiz!=null)
-  require(args!=null)
-  require(method!=null)
-
-  /**
-   * Типы данных для возможных вариантов вызова
-   */
-  val ctypes : List[CallType] = typeScope.callTypes(thiz, method, args)
+class CallCases(val ctypes : List[CallType], val typeScope: TypeScope ){
+  require(ctypes!=null)
 
   /**
    * Типы вариантов вызовов

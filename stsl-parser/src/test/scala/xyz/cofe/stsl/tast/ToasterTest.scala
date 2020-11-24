@@ -164,4 +164,40 @@ class ToasterTest {
     assert( computedValue!=null && computedValue.isInstanceOf[Int] )
     assert( (per1.age + per2.age) == computedValue )
   }
+
+  @Test
+  def methCallTest:Unit = {
+    println("methCallTest")
+    println("="*30)
+
+    val vs = new VarScope();
+    vs.put("str" -> STRING -> "string" )
+
+    val ts = new TypeScope()
+    ts.implicits = JvmType.implicitConversion
+
+    val ast = Parser.parse("str.substring( 0, 3 )")
+    println("AST")
+    ast.foreach( ASTDump.dump )
+    assert( ast.isDefined )
+    test(ast, call, property, identifier, literal, literal)
+
+    val tst = new Toaster(ts,vs)
+    val tast = tst.compile(ast.get)
+    assert(tast!=null)
+    println("TAST")
+    TASTDump.dump(tast)
+
+    println("exec")
+    println("-"*30)
+
+    println( tast.supplierType )
+
+    val computedValue =  tast.supplier.get()
+    println( computedValue )
+
+    assert( tast.supplierType == STRING )
+    assert( computedValue!=null && computedValue.isInstanceOf[String] )
+    assert( "str" == computedValue )
+  }
 }

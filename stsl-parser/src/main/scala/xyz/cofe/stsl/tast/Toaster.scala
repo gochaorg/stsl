@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import xyz.cofe.stsl.ast._
 import xyz.cofe.stsl.tok._
 import JvmType._
-import xyz.cofe.stsl.types.{TObject, Type, WriteableField}
+import xyz.cofe.stsl.types.{CallableFn, Fun, TObject, Type, WriteableField}
 
 /**
  * "Тостер" - Компиляция AST выражений
@@ -15,14 +15,14 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
   def compile( ast:AST ):TAST = {
     require(ast!=null)
     ast match {
-//      case a:StackedArgumentAST => compile(a)
+      case a:StackedArgumentAST => compile(a)
       case a:LiteralAST => compile(a)
       case a:IdentifierAST => compile(a)
       case a:BinaryAST => compile(a)
       case a:DelegateAST => compile(a)
       case a:TernaryAST => compile(a)
       case a:PropertyAST => compile(a)
-//      case a:CallAST => compile(a)
+      case a:CallAST => compile(a)
 //      case a:LambdaAST => compile(a)
       case _ => ???
     }
@@ -74,6 +74,11 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     }
 
     cases.preferred.head
+  }
+
+  protected def call(functions:Seq[Fun], args:List[Type]):CallCase = {
+    typeScope.callCases(functions,args);
+    ???
   }
 
   /**
@@ -168,5 +173,80 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
       val objInst = obj.supplier.get()
       prop.reading(objInst)
     },List(obj))
+  }
+
+  def compile( stackedArgumentAST: StackedArgumentAST ):TAST = {
+    require(stackedArgumentAST!=null)
+    TAST( stackedArgumentAST, stackedArgumentAST.argumentType, ()=>stackedArgumentAST.value )
+  }
+
+  def compile( callAST: CallAST ):TAST = {
+    require(callAST!=null)
+    callAST.callable match {
+      case fname:StackedArgumentAST => compileFunCall(callAST,fname)
+      case fname:IdentifierAST => compileFunCall(callAST,fname.tok.text)
+      case prop:PropertyAST => compileMethCall(callAST,prop.obj,prop.name.tok.text)
+    }
+  }
+  private def compileFunCall( callAST: CallAST, callable:StackedArgumentAST ):TAST = {
+    val callTast : TAST = compile(callable)
+
+    val targetFn = callTast.supplierType match {
+      case f:CallableFn => f
+      case _=> throw ToasterError(s"function ${callable.argumentName} is not CallableFn", callable)
+    }
+    val argumentsTast = callAST.arguments.map( a => compile(a) )
+
+    // checking types
+    val calling = this.call(List(targetFn), argumentsTast.map(_.supplierType)).invoking()
+
+    TAST( callAST, calling._2,
+      () => {
+        val callFn = callTast.supplier.get() match {
+          case f:CallableFn => f
+          case _=> throw new ClassCastException(s"can't cast stacked argument ${callable.argumentName} to CallableFn")
+        }
+        callFn.invoke(argumentsTast.map(a => a.supplier.get()))
+      }, argumentsTast
+    )
+  }
+  private def compileFunCall( callAST: CallAST, funtionName:String ):TAST = {
+    val fnVar = varScope.get(funtionName)
+    if( fnVar.isEmpty ) throw ToasterError(s"function ${funtionName} not defined", callAST)
+
+    val targetFn = fnVar.get.tip match {
+      case f:CallableFn => f
+      case _=> throw ToasterError(s"function ${funtionName} is not CallableFn", callAST)
+    }
+
+    val argumentsTast = callAST.arguments.map( a => compile(a) )
+
+    // checking types
+    val calling = this.call(List(targetFn), argumentsTast.map(_.supplierType)).invoking()
+
+    TAST( callAST, calling._2,
+      () => {
+        val callFn = fnVar.get match {
+          case f:CallableFn => f
+          case _=> throw new ClassCastException(s"can't cast variable ${funtionName} to CallableFn")
+        }
+        callFn.invoke(argumentsTast.map(a => a.supplier.get()))
+      }, argumentsTast
+    )
+  }
+  private def compileMethCall( callAST: CallAST, objAst:AST, methodName:String ):TAST = {
+    val objTast = compile(objAst)
+    val objType = objTast.supplierType match {
+      case o:TObject => o
+      case _=> throw ToasterError("callable obj is not TObject", objAst)
+    }
+
+    val argumentsTast = objTast :: callAST.arguments.map( a => compile(a) )
+    val calling = call(objType,methodName,argumentsTast.map(_.supplierType)).invoking()
+    TAST(
+      callAST, calling._2,
+      ()=>calling._1.invoke(argumentsTast.map(a => a.supplier.get())),
+      argumentsTast
+    )
   }
 }

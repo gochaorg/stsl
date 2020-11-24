@@ -2,7 +2,6 @@ package xyz.cofe.stsl.tast
 
 import java.util.function.Supplier
 
-import xyz.cofe.sel.cmpl.rt.TAST
 import xyz.cofe.stsl.types.Type
 import xyz.cofe.stsl.ast.AST
 

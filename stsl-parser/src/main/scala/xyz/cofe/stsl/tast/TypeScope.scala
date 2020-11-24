@@ -149,6 +149,46 @@ class TypeScope {
   scn.listen { graphInst = null }
   //endregion
 
+  private def callType( fun:Fun, args:List[Type], thiz:Option[TObject] ):CallType = {
+    new CallType( fun,
+      fun.parameters.map( p => p.tip match {
+        case Type.FN => fun
+        case THIS => thiz.getOrElse(p.tip)
+        case _ => p.tip
+      }).toList,
+      args,
+      fun.returns match {
+        case Type.FN => fun
+        case THIS => thiz.getOrElse(fun.returns)
+        case _ => fun.returns
+      }
+    )
+  }
+
+  private def imports(ctypes : List[CallType]):List[CallType] = {
+    ctypes.foreach( ct => (ct.actual ++ ct.expected ++ List(ct.result)).foreach( t => {
+      if( !contains(t) ){
+        imports(t)
+      }
+    }))
+    ctypes
+  }
+
+  /**
+   * Получение типов вызовов для метода объекта
+   * @param functions функции
+   * @param args ожидаемые типы аргментов
+   * @return варианты типов вызовов
+   */
+  def callTypes( functions:Seq[Fun], args:List[Type] ):List[CallType] = {
+    require(functions!=null)
+    functions.foreach( f => require(f!=null) )
+    require(args!=null)
+
+    val ctypes : List[CallType] = functions.map( fun => callType(fun, args, None) ).toList
+    imports(ctypes)
+  }
+
   /**
    * Получение типов вызовов для метода объекта
    * @param thiz объект (класс)
@@ -161,36 +201,15 @@ class TypeScope {
     require(method!=null)
     require(args!=null)
 
-    (List(thiz) ++ args).foreach( t => {
-      if( !contains(t) ){
-        imports(t)
-      }
-    })
-
     val ctypes : List[CallType] = thiz.methods.get(method).map(
-      funs => funs.funs.map( fun =>
-        new CallType( fun,
-          fun.parameters.map( p => p.tip match {
-            case THIS => thiz
-            case _ => p.tip
-          }).toList,
-          args,
-          fun.returns match {
-            case THIS => thiz
-            case _ => fun.returns
-          }
-        )
+      funs => funs.funs.map( fun => callType( fun, args, Some(thiz) )
       )
     ).getOrElse( List() )
 
-    ctypes.foreach( ct => (ct.actual ++ ct.expected ++ List(ct.result)).foreach( t => {
-      if( !contains(t) ){
-        imports(t)
-      }
-    }))
-
-    ctypes
+    imports(ctypes)
   }
+
+  //region callCasesCache
 
   protected var typeIdSeq = 0
   protected var typeIdCache : Map[Type,Int] = Map()
@@ -223,6 +242,7 @@ class TypeScope {
   protected var callCasesCache : Map[String,CallCases] = Map()
 
   scn.listen { callCasesCache=Map() }
+  //endregion
 
   /**
    * Ищет варианты как можно вызвать метод указанного объекта с указанными типами аргментов
@@ -240,9 +260,21 @@ class TypeScope {
     if( callCasesCache.contains(caseId) ){
       callCasesCache(caseId)
     }else {
-      val cases = new CallCases(thiz, method, args, this)
+      val cases = new CallCases( callTypes(thiz, method, args), this)
       callCasesCache = callCasesCache + (caseId -> cases)
       cases
     }
+  }
+
+  /**
+   * Ищет варианты какую функцию можно вызвать с указанными типами аргментов
+   * @param functions функции
+   * @param args ожидаемые типы аргментов
+   * @return варианты вызовов
+   */
+  def callCases( functions:Seq[Fun], args:List[Type] ):CallCases = {
+    require(functions!=null)
+    require(args!=null)
+    new CallCases( callTypes(functions, args), this)
   }
 }
