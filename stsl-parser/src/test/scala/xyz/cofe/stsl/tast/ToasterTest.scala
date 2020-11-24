@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import org.junit.jupiter.api.Test
 import xyz.cofe.stsl.tast.JvmType._
 import xyz.cofe.stsl.ast.{ASTDump, AstTest, Parser}
-import xyz.cofe.stsl.types.{Fn, Params, TObject}
+import xyz.cofe.stsl.types.{CallableFn, Fn, Params, TObject, Type}
 
 //noinspection UnitMethodIsParameterless
 class ToasterTest {
@@ -238,5 +238,47 @@ class ToasterTest {
     assert( tast.supplierType == STRING )
     assert( computedValue!=null && computedValue.isInstanceOf[String] )
     assert( "stringstring" == computedValue )
+  }
+
+  @Test
+  def lambdaCall01:Unit = {
+    println("lambdaCall01")
+    println("="*30)
+
+    val vs = new VarScope();
+
+    val ts = new TypeScope()
+    ts.implicits = JvmType.implicitConversion
+    ts.imports(List(INT))
+
+    val ast = Parser.parse("a:int , b:int => a+b")
+    println("AST")
+    ast.foreach( ASTDump.dump )
+    assert( ast.isDefined )
+    //test(ast, call, property, identifier, literal, literal)
+
+    val tst = new Toaster(ts,vs)
+    val tast = tst.compile(ast.get)
+    assert(tast!=null)
+    println("TAST")
+    TASTDump.dump(tast)
+
+    println("exec")
+    println("-"*30)
+
+    println( tast.supplierType )
+
+    val computedValue =  tast.supplier.get()
+    println( computedValue )
+
+    assert( computedValue!=null && computedValue.isInstanceOf[CallableFn] )
+
+    println("call 1,2")
+    val lambdaComputedValue = computedValue.asInstanceOf[CallableFn].invoke(List(1,2))
+
+    println(s"result = $lambdaComputedValue")
+    assert(lambdaComputedValue!=null)
+    assert(lambdaComputedValue.isInstanceOf[Int])
+    assert(3 == lambdaComputedValue)
   }
 }

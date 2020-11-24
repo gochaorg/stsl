@@ -159,7 +159,7 @@ class Fn( fgParams: GenericParams
    * @param impl реализация функции
    * @return вызываемая функция
    */
-  def invoking[Z]( impl: Seq[_]=>_ ):CallableFn = {
+  def invoking[Z]( impl: Seq[Any]=>Any ):CallableFn = {
     require(impl!=null)
     new CallableFn(generics,parameters,returns,impl)
   }

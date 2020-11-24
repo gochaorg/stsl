@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import xyz.cofe.stsl.tast.JvmType.INT
 import xyz.cofe.stsl.types.Type.THIS
 import xyz.cofe.stsl.types.pset.PartialSet
-import xyz.cofe.stsl.types.{Fun, Obj, TObject, Type}
+import xyz.cofe.stsl.types.{Fun, Named, Obj, TObject, Type}
 
 /**
  * Область "видимых" типов данных
@@ -149,6 +149,22 @@ class TypeScope {
   scn.listen { graphInst = null }
   //endregion
 
+  def apply(name:String): Type = {
+    require(name!=null)
+    types.filter( t => t match {
+      case n:Named => n.name == name
+      case _=> false
+    }).head
+  }
+
+  def get(name:String): Option[Type] = {
+    require(name!=null)
+    types.find {
+      case n: Named => n.name == name
+      case _ => false
+    }
+  }
+
   private def callType( fun:Fun, args:List[Type], thiz:Option[TObject] ):CallType = {
     new CallType( fun,
       fun.parameters.map( p => p.tip match {
@@ -164,7 +180,6 @@ class TypeScope {
       }
     )
   }
-
   private def imports(ctypes : List[CallType]):List[CallType] = {
     ctypes.foreach( ct => (ct.actual ++ ct.expected ++ List(ct.result)).foreach( t => {
       if( !contains(t) ){

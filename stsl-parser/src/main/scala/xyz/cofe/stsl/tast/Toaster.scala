@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import xyz.cofe.stsl.ast._
 import xyz.cofe.stsl.tok._
 import JvmType._
-import xyz.cofe.stsl.types.{CallableFn, Fun, TObject, Type, WriteableField}
+import xyz.cofe.stsl.types.{CallableFn, Fn, Fun, Params, Param, TObject, Type, WriteableField}
 
 /**
  * "Тостер" - Компиляция AST выражений
@@ -23,7 +23,7 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
       case a:TernaryAST => compile(a)
       case a:PropertyAST => compile(a)
       case a:CallAST => compile(a)
-//      case a:LambdaAST => compile(a)
+      case a:LambdaAST => compile(a)
       case _ => ???
     }
   }
@@ -264,5 +264,169 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
       ()=>calling._1.invoke(argumentsTast.map(a => a.supplier.get())),
       argumentsTast
     )
+  }
+
+  def compile( lambdaAST: LambdaAST ):TAST = {
+    require(lambdaAST!=null)
+    val debug = false
+
+    // имена параметров не должны повторяться
+    val argNameDuplicates = (lambdaAST.params.map(_.name.tok.name) ++ {
+      if( lambdaAST.recursion.isEmpty ) {
+        List[String]()
+      } else {
+        List[String](lambdaAST.recursion.get.name.tok.name)
+      }
+    }).groupBy(name=>name).map(_._2.size).toList.filter( cnt => cnt>1)
+
+    val hasDuplicateArgNames : Boolean = argNameDuplicates.nonEmpty
+    if( hasDuplicateArgNames ) throw ToasterError("has duplicate arg names", null, lambdaAST.params)
+
+    // типы переменных должны присуствовать в области видимости
+    val xxx1 = (lambdaAST.params.map( p => (p.typeName, typeScope.get(p.typeName.name)) ) ++ (
+      if( lambdaAST.recursion.isEmpty ) {
+        List()
+      } else {
+        List((lambdaAST.recursion.get.typeName, typeScope.get(lambdaAST.recursion.get.typeName.name)))
+      }
+      ))
+    val undefinedTypes = xxx1.filter( p => p._2.isEmpty )
+
+    if( undefinedTypes.nonEmpty ){
+      throw ToasterError("undefined argument types", undefinedTypes.map(_._1))
+    }
+
+    // используемые перменные должны быть
+    //   вариант 1 - аргументами
+    //   вариант 2 - аргументами + быть взяты из контекста
+
+    var bodyIdentifiers = lambdaAST.body.tree.map(_.last).filter( _.isInstanceOf[IdentifierAST] ).map( _.asInstanceOf[IdentifierAST] ).toList
+    val bodyIdentifiersUniqNames = bodyIdentifiers.map(_.tok.name).distinct
+
+    // реализация варианта 1
+    // внешние переменные не должны быть задействованы
+    val externalIdentifierNames = bodyIdentifiersUniqNames.diff(
+      lambdaAST.params.map(p=>p.name.tok.name) ++ (
+        if( lambdaAST.recursion.isEmpty )
+          List[String]()
+        else
+          List[String]( lambdaAST.recursion.get.name.tok.name )
+        )
+    )
+    if( externalIdentifierNames.nonEmpty ){
+      throw ToasterError("body contains external identifiers",
+        bodyIdentifiers.filter( id=> externalIdentifierNames.contains(id.tok.name) )
+      )
+    }
+
+    // стек
+    val callStack = new CallStack()
+
+    // стековые аргументы
+    var stackArgs = lambdaAST.params.map( p =>
+      p.name.tok.name -> StackedArgumentAST(callStack, p.name, typeScope(p.typeName.name))
+    ).toMap
+
+    var selfFn : Fun = null
+
+    if( lambdaAST.recursion.isDefined ){
+      val fn = Fn(
+        new Params(
+          lambdaAST.params.map( p => {
+            val stArg = stackArgs(p.name.tok.name)
+            Param(stArg.argumentName,stArg.argumentType)
+          })
+        ),
+        typeScope(lambdaAST.recursion.get.typeName.name)
+      )
+
+      val stAST = StackedArgumentAST(callStack, lambdaAST.recursion.get.name, fn)
+      stackArgs = stackArgs + ( lambdaAST.recursion.get.name.tok.name -> stAST )
+    }
+
+    // замена IdentifierAST на StackedArgumentAST
+    var bodyAst = lambdaAST.body
+    var bodyIdentifiersCount = bodyIdentifiers.size
+    while( bodyIdentifiers.nonEmpty ){
+      if( debug ) {
+        println(s"bodyIdentifiers size: ${bodyIdentifiers.size}")
+        println(s"before")
+        ASTDump.dump(bodyAst)
+      }
+
+      val from = bodyIdentifiers.head
+      val to = stackArgs(from.tok.name)
+      if( debug ){
+        println( s"replace $from ---> $to" )
+      }
+
+      bodyAst = bodyAst.replace(from,to)
+      if( debug ) {
+        println(s"after")
+        ASTDump.dump(bodyAst)
+      }
+
+      bodyIdentifiers = bodyAst.tree.map(_.last).
+        filter( a => a.isInstanceOf[IdentifierAST] && !a.isInstanceOf[StackedArgumentAST] ).
+        map( _.asInstanceOf[IdentifierAST] ).toList
+
+      val bodyIdentifiersCountChanged = bodyIdentifiers.size
+      if( bodyIdentifiersCountChanged >= bodyIdentifiersCount )
+        throw ToasterError("internal bug!, check implementations of AST.replace in children")
+
+      bodyIdentifiersCount = bodyIdentifiersCountChanged
+    }
+
+    // тело
+    val bodyTast = compile(bodyAst)
+
+    val fnImpl:(Seq[Any])=>Any = (args) => {
+      require(args!=null)
+
+      require(
+        lambdaAST.params.size == args.size
+      )
+
+      val stackArgs : Map[String,Any] = args.indices.map(argi => {
+        val argName = lambdaAST.params(argi).name.tok.name
+        val argValue = args(argi)
+        argName -> argValue
+      }).toMap
+
+      val selfArg : Map[String,Any] = if( lambdaAST.recursion.isDefined ){
+        Map( lambdaAST.recursion.get.name.tok.name -> selfFn )
+      }else {
+        Map()
+      }
+
+      val passArgs : Map[String,Any] = stackArgs ++ selfArg
+
+      callStack.push(passArgs)
+      try {
+        bodyTast.supplier.get()
+      } finally {
+        callStack.pop()
+      }
+    }
+
+    val retType: Type = bodyTast.supplierType
+    val params: List[Param] = lambdaAST.params.map( p => {
+      val stArg = stackArgs(p.name.tok.name)
+      Param(stArg.argumentName, stArg.argumentType)
+    })
+
+    val fn = Fn( Params(params), retType ).invoking(fnImpl)
+
+    if( lambdaAST.recursion.isDefined ){
+      selfFn = fn
+      val retType = typeScope.get(lambdaAST.recursion.get.typeName.name)
+      if( retType.isEmpty ){
+        throw ToasterError("return type not found")
+      }else if( !retType.get.assignable(fn.returns) ){
+        throw ToasterError("return type not matched")
+      }
+    }
+
+    TAST( lambdaAST, fn,()=>fn, List(bodyTast))
   }
 }
