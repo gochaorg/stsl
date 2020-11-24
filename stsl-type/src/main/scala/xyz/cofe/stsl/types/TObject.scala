@@ -127,7 +127,7 @@ class TObject( Name:String,
     val asIsFields : Seq[Field] = fields.filter( f=> !fieldsTypeVariablesMap.contains(f.name) )
     val newTvFields : Seq[Field] = fields
       .filter( f=> fieldsTypeVariablesMap.contains(f.name) )
-      .map( f => Field(f.name,
+      .map( f => new Field(f.name,
         f.tip match {
           case tv:TypeVariable =>
             replacement(tv).getOrElse(
@@ -229,7 +229,7 @@ object TObject {
     }
     def fields(newFields:(String,Type)*):Builder = {
       require(newFields!=null)
-      ofields = Fields( newFields.map(f=>Field(f._1,f._2)).toList )
+      ofields = new Fields( newFields.map(f=> new Field(f._1,f._2)).toList )
       this
     }
     private var omethods = new Methods()

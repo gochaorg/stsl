@@ -11,6 +11,7 @@ import xyz.cofe.stsl.tok.{BigIntNumberTok, ByteNumberTok, DecimalNumberTok, Doub
 /**
  * "Тостер" - Компиляция AST выражений
  */
+@Deprecated
 class Toaster( val scope: Scope ) {
   require(scope!=null)
 

@@ -2,6 +2,7 @@ package xyz.cofe.sel.cmpl.rt
 
 import xyz.cofe.stsl.ast.{CallAST, PropertyAST}
 
+@Deprecated
 object TASTDump {
   def dump(out: Appendable, tast: TAST, level:Int):Unit = {
     require(out!=null)

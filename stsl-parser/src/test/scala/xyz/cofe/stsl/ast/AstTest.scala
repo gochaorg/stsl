@@ -2,17 +2,51 @@ package xyz.cofe.stsl.ast
 
 import org.junit.jupiter.api.Test
 
-class AstTest {
-  @Test
-  def test01(): Unit ={
-    val astRoot = Parser.parse("123 + 234d * 345l")
-    assert(astRoot.isDefined)
+object AstTest {
+  //noinspection TypeAnnotation
+  val delegate = (ast:AST) => ast.isInstanceOf[DelegateAST]
 
-    println("ast")
-    ASTDump.dump(astRoot.get)
+  //noinspection TypeAnnotation
+  val binary = (ast:AST) => ast.isInstanceOf[BinaryAST]
 
-    println("....."*4)
-    val literalASTs = astRoot.get.tree.map(_.last).filter( a => a.isInstanceOf[LiteralAST] ).map( _.asInstanceOf[LiteralAST] )
-    literalASTs.foreach(println)
+  //noinspection TypeAnnotation
+  val literal = (ast:AST) => ast.isInstanceOf[LiteralAST]
+
+  //noinspection TypeAnnotation
+  val identifier = (ast:AST) => ast.isInstanceOf[IdentifierAST]
+
+  //noinspection TypeAnnotation
+  val ternary = (ast:AST) => ast.isInstanceOf[TernaryAST]
+
+  //noinspection TypeAnnotation
+  val property = (ast:AST) => ast.isInstanceOf[PropertyAST]
+
+  //noinspection TypeAnnotation
+  val call = (ast:AST) => ast.isInstanceOf[CallAST]
+
+  //noinspection TypeAnnotation
+  val lamda = (ast:AST) => ast.isInstanceOf[LambdaAST]
+
+  //noinspection TypeAnnotation
+  val param = (ast:AST) => ast.isInstanceOf[ParamAST]
+
+  //noinspection TypeAnnotation
+  val typename = (ast:AST) => ast.isInstanceOf[TypeNameAST]
+
+  def test(ast: AST, nodes:(AST=>Boolean)*):Unit = {
+    require(ast!=null)
+    require(nodes!=null)
+
+    val ftree = ast.tree.map(_.last).toList
+    assert(ftree.size==nodes.size)
+    nodes.indices.foreach( ni => {
+      assert( nodes(ni).apply(ftree(ni)) )
+    })
+  }
+
+  def test(ast:Option[AST], nodes:(AST=>Boolean)*):Unit = {
+    require(ast!=null)
+    assert(ast.isDefined)
+    test(ast.get, nodes: _*)
   }
 }

@@ -3,6 +3,7 @@ package xyz.cofe.sel.cmpl.rt
 /**
  * Стек вызовов для Lamda
  */
+@Deprecated
 class CallStack {
   private var stackInst : List[Map[String,Any]] = List()
   def stack : List[Map[String,Any]] = stackInst

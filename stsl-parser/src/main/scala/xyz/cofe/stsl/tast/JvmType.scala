@@ -12,7 +12,7 @@ object JvmType {
   /**
    * Соответствует jvm типу boolean
    */
-  val BOOLEAN : Type = TObject("bool")
+  val BOOLEAN : TObject = TObject("bool")
     .extend(ANY)
     .methods(
       "&&" -> Fn(
@@ -42,7 +42,7 @@ object JvmType {
   /**
    * Соответствует jvm типу char
    */
-  val CHAR : Type = TObject("char")
+  val CHAR : TObject = TObject("char")
     .extend(ANY)
     .build
   //endregion
@@ -50,7 +50,7 @@ object JvmType {
   /**
    * Соответствует jvm типу number
    */
-  val NUMBER : Type = TObject("number")
+  val NUMBER : TObject = TObject("number")
     .extend(ANY)
     .build
   //endregion
@@ -58,7 +58,7 @@ object JvmType {
   /**
    * Соответствует jvm типу byte
    */
-  val BYTE : Type = TObject("byte")
+  val BYTE : TObject = TObject("byte")
     .extend(NUMBER)
     .build
   //endregion
@@ -66,7 +66,7 @@ object JvmType {
   /**
    * Соответствует jvm типу short
    */
-  val SHORT : Type = TObject("short")
+  val SHORT : TObject = TObject("short")
     .extend(NUMBER)
     .build
   //endregion
@@ -89,7 +89,7 @@ object JvmType {
   /**
    * Соответствует jvm типу float
    */
-  val FLOAT : Type = TObject("float")
+  val FLOAT : TObject = TObject("float")
     .extend(NUMBER)
     .build
   //endregion
@@ -97,7 +97,7 @@ object JvmType {
   /**
    * Соответствует jvm типу double
    */
-  val DOUBLE : Type = TObject("double")
+  val DOUBLE : TObject = TObject("double")
     .extend(NUMBER)
     .build
   //endregion
@@ -105,7 +105,7 @@ object JvmType {
   /**
    * Соответствует jvm типу BigInteger
    */
-  val BIGINT : Type = TObject("BigInt")
+  val BIGINT : TObject = TObject("BigInt")
     .extend(NUMBER)
     .build
   //endregion
@@ -113,7 +113,7 @@ object JvmType {
   /**
    * Соответствует jvm типу BigDecimal
    */
-  val DECIMAL : Type = TObject("decimal")
+  val DECIMAL : TObject = TObject("decimal")
     .extend(NUMBER)
     .build
   //endregion
@@ -121,7 +121,7 @@ object JvmType {
   /**
    * Соответствует jvm типу string
    */
-  val STRING : Type = TObject("string")
+  val STRING : TObject = TObject("string")
     .extend(ANY)
     .build
   //endregion

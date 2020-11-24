@@ -37,5 +37,5 @@ class Fields( private val fieldList:List[Field]=List(), val owner:Type=Type.VOID
 
 object Fields {
   def apply(fields: List[Field], owner: Type=Type.VOID): Fields = new Fields(fields, owner)
-  def apply(fields: (String,Type)*): Fields = new Fields(fields.map(f=>Field(f._1,f._2)).toList)
+  def apply(fields: (String,Type)*): Fields = new Fields(fields.map(f=>new Field(f._1,f._2)).toList)
 }

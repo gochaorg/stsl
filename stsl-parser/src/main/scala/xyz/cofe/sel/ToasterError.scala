@@ -2,10 +2,12 @@ package xyz.cofe.sel
 
 import xyz.cofe.stsl.ast.AST
 
+@Deprecated
 class ToasterError( message:String, cause:Throwable, val locations:List[AST]=List() ) extends Error(message,cause) {
 
 }
 
+@Deprecated
 object ToasterError {
   def apply(message: String, cause: Throwable=null, locations: List[AST]=List()): ToasterError = new ToasterError(message, cause, locations)
 

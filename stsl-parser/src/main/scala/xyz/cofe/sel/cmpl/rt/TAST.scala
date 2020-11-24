@@ -12,6 +12,7 @@ import xyz.cofe.stsl.ast.AST
  * @param supplier "Поставщик" значения
  * @param children Дочерние узлы
  */
+@Deprecated
 class TAST (
              val ast:AST,
              val supplierType:Type,

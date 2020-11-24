@@ -53,7 +53,7 @@ class MutableFields( private var fieldList:List[Field]=List() ) extends Fields(f
     if( freezed )throw TypeError("freezed")
     require(name!=null)
     require(tip!=null)
-    append(Field(name,tip))
+    append(new Field(name,tip))
   }
 
   def += (field:(String,Type)):Unit = {
@@ -61,6 +61,17 @@ class MutableFields( private var fieldList:List[Field]=List() ) extends Fields(f
     require(field!=null)
     require(field._1!=null)
     require(field._2!=null)
-    append(Field(field._1,field._2))
+    append(new Field(field._1,field._2))
+  }
+
+  def ++= (field: (((String,Type),Any=>Any),(Any,Any)=>Any)):Unit = {
+    if( freezed )throw TypeError("freezed")
+    require(field!=null)
+    require(field._1!=null)
+    require(field._1._1!=null)
+    require(field._1._1._1!=null)
+    require(field._1._1._2!=null)
+    require(field._2!=null)
+    append(new Field(field._1._1._1,field._1._1._2).writeable(field._1._2, field._2))
   }
 }

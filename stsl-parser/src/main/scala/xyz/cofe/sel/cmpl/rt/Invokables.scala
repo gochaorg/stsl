@@ -4,6 +4,7 @@ package xyz.cofe.sel.cmpl.rt
  * Варианты вызовов
  * @param funs вызываемые варианты
  */
+@Deprecated
 class Invokables( val funs : List[Invokable] ) extends Iterable[Invokable] {
   override def iterator: Iterator[Invokable] = funs.iterator
 

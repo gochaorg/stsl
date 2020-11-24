@@ -8,5 +8,6 @@ import xyz.cofe.sel.types.Type
  * @param varType Тип переменной
  * @param readOnly true - Только для чтения / false - Для чтения и записи
  */
+@Deprecated
 class Variable(var value : Any, var varType : Type, var readOnly : Boolean=false, var overridable:Boolean=true ) {
 }

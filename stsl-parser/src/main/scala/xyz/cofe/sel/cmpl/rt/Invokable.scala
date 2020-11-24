@@ -10,6 +10,7 @@ import xyz.cofe.sel.types.Type
  * @param expectedReturn ожидаемый результат
  * @param implicitParams имплицитное преобразование параметров
  */
+@Deprecated
 class Invokable(
                  val fn:Fun,
                  val expectedParams:List[Type],

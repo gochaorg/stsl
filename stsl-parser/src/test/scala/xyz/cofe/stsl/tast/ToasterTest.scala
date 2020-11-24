@@ -1,12 +1,17 @@
 package xyz.cofe.stsl.tast
 
 import org.junit.jupiter.api.Test
-import xyz.cofe.stsl.ast.{ASTDump, Parser}
+import xyz.cofe.stsl.tast.JvmType._
+import xyz.cofe.stsl.ast.{ASTDump, AstTest, Parser}
+import xyz.cofe.stsl.types.TObject
 
+//noinspection UnitMethodIsParameterless
 class ToasterTest {
+  import AstTest._
+
   @Test
-  def test01:Unit = {
-    println("test01")
+  def listeralAndBinary:Unit = {
+    println("listeralAndBinary")
     println("="*30)
 
     val ts = new TypeScope()
@@ -16,6 +21,7 @@ class ToasterTest {
     println("AST")
     ast.foreach( ASTDump.dump )
     assert( ast.isDefined )
+    test(ast, binary, literal, binary, literal, literal)
 
     val tst = new Toaster(ts)
     val tast = tst.compile(ast.get)
@@ -27,6 +33,135 @@ class ToasterTest {
     println("-"*30)
 
     println( tast.supplierType )
-    println( tast.supplier.get() )
+
+    val computedValue =  tast.supplier.get()
+    println( computedValue )
+
+    assert( tast.supplierType == INT )
+    assert( computedValue!=null && computedValue.isInstanceOf[Int] )
+    assert( 30 == computedValue )
+  }
+
+  @Test
+  def delegateAstTest:Unit = {
+    println("delegateAstTest")
+    println("="*30)
+
+    val ts = new TypeScope()
+    ts.implicits = JvmType.implicitConversion
+
+    val ast = Parser.parse("( 10 - 5 ) * 5")
+    println("AST")
+    ast.foreach( ASTDump.dump )
+    assert( ast.isDefined )
+    test(ast, binary, delegate, binary, literal, literal, literal)
+
+    val tst = new Toaster(ts)
+    val tast = tst.compile(ast.get)
+    assert(tast!=null)
+    println("TAST")
+    TASTDump.dump(tast)
+
+    println("exec")
+    println("-"*30)
+
+    println( tast.supplierType )
+
+    val computedValue =  tast.supplier.get()
+    println( computedValue )
+
+    assert( tast.supplierType == INT )
+    assert( computedValue!=null && computedValue.isInstanceOf[Int] )
+    assert( 25 == computedValue )
+  }
+
+  @Test
+  def varTest:Unit = {
+    println("varTest")
+    println("="*30)
+
+    val vs = new VarScope();
+    vs.put(
+    "a" -> INT -> 12,
+    "b" -> INT -> 13,
+    "c" -> INT -> 2,
+    )
+
+    val ts = new TypeScope()
+    ts.implicits = JvmType.implicitConversion
+
+    val ast = Parser.parse("a + b * c")
+    println("AST")
+    ast.foreach( ASTDump.dump )
+    assert( ast.isDefined )
+    //test(ast, binary, delegate, binary, literal, literal, literal)
+
+    val tst = new Toaster(ts,vs)
+    val tast = tst.compile(ast.get)
+    assert(tast!=null)
+    println("TAST")
+    TASTDump.dump(tast)
+
+    println("exec")
+    println("-"*30)
+
+    println( tast.supplierType )
+
+    val computedValue =  tast.supplier.get()
+    println( computedValue )
+
+    assert( tast.supplierType == INT )
+    assert( computedValue!=null && computedValue.isInstanceOf[Int] )
+    assert( (12 + 13 * 2) == computedValue )
+  }
+
+  class Person( var age:Int = 10 ) {
+  }
+
+  @Test
+  def propTest:Unit = {
+    println("propTest")
+    println("="*30)
+
+    val userType = new TObject("Person");
+    userType.fields ++=
+      "age" -> INT ->
+        ((p:Any) => p.asInstanceOf[Person].age) ->
+        ((thiz:Any, pvalue:Any) => pvalue)
+
+    val per1 = new Person(5)
+    val per2 = new Person(7)
+
+    val vs = new VarScope();
+    vs.put("per1" -> userType -> per1 )
+    vs.put("per2" -> userType -> per2 )
+
+    val ts = new TypeScope()
+    ts.implicits = JvmType.implicitConversion
+    ts.imports(userType)
+
+    val ast = Parser.parse("per1.age + per2.age")
+    println("AST")
+    ast.foreach( ASTDump.dump )
+    assert( ast.isDefined )
+    test(ast, binary, property, identifier, property, identifier)
+
+    val tst = new Toaster(ts,vs)
+    val tast = tst.compile(ast.get)
+    assert(tast!=null)
+    println("TAST")
+    TASTDump.dump(tast)
+
+    println("exec")
+    println("-"*30)
+
+    println( tast.supplierType )
+
+    val computedValue =  tast.supplier.get()
+    println( computedValue )
+
+    assert( tast.supplierType == INT )
+    assert( computedValue!=null && computedValue.isInstanceOf[Int] )
+    assert( (per1.age + per2.age) == computedValue )
   }
 }

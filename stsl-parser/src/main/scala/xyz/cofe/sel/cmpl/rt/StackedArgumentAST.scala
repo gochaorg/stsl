@@ -6,6 +6,7 @@ import xyz.cofe.stsl.ast.IdentifierAST
 /**
  * Переменная аргумент, переданная через стек
  */
+@Deprecated
 class StackedArgumentAST( val callStack: CallStack,
                           identifier:IdentifierAST,
                           val argumentTypeFn : ()=>Type

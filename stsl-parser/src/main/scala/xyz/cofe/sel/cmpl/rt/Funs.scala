@@ -6,6 +6,7 @@ import xyz.cofe.sel.types.Type
 /**
  * Коллекция функций
  */
+@Deprecated
 class Funs ( val funs : List[Fun], sameReturn:Boolean=false, sameArgs:Boolean=true ) extends Seq[Fun] {
   require(funs!=null)
 
