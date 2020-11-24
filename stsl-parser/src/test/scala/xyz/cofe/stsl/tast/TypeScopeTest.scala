@@ -86,7 +86,10 @@ class TypeScopeTest {
       fromInt2BigInt, fromInt2Decimal
     )
 
-    val cases = new CallCases(INT, "+", List(INT, INT), implConversion)
+    val tscope = new TypeScope
+    tscope.implicits = implConversion
+
+    val cases = tscope.callCases(INT, "+", List(INT, INT)) //new CallCases(INT, "+", List(INT, INT), tscope)
     cases.cases.foreach( println )
 
     println( "preferred ")
@@ -99,8 +102,11 @@ class TypeScopeTest {
       println("try call")
       println("-"*30)
 
-      val result = prefCases.head.invoke(List(1,2))
-      println(result)
+      val invoke = prefCases.head.invoking()
+      println(s"expected type=${invoke._2}")
+
+      val result = invoke._1.invoke(List(1,2))
+      println(s"result ${result} : ${if(result!=null){ result.getClass.getName }}")
     }
   }
 }

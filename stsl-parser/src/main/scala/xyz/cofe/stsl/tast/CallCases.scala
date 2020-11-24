@@ -9,41 +9,21 @@ import xyz.cofe.stsl.types.pset.PartialSet
  * @param thiz тип объекта
  * @param method имя метода
  * @param args типы аргументов
- * @param implicitConversion неявное преобразование
+ * @param typeScope Область типов
  */
-class CallCases(val thiz:TObject, val method: String, val args:List[Type], val implicitConversion:Seq[Fun]=List() ){
-  lazy val ctypes : List[CallType] = thiz.methods.get(method).map(
-    funs => funs.funs.map( fun =>
-      new CallType( fun,
-        fun.parameters.map( p => p.tip match {
-          case THIS => thiz
-          case _ => p.tip
-        }).toList,
-        args,
-        fun.returns match {
-          case THIS => thiz
-          case _ => fun.returns
-        }
-      )
-    )
-  ).getOrElse( List() )
+class CallCases(val thiz:TObject, val method: String, val args:List[Type], val typeScope: TypeScope ){
+  require(thiz!=null)
+  require(args!=null)
+  require(method!=null)
 
-  lazy val usedTypes:Set[Type] = (
-    ctypes.flatMap(_.actual) ++ ctypes.flatMap(_.expected) ++ ctypes.map(_.result)
-    ).toSet
+  val ctypes : List[CallType] = typeScope.callTypes(thiz, method, args)
 
-  lazy val typeGraph : PartialSet[Type] = PartialSet[Type](
-    usedTypes,
-    (a,b) => a == b,
-    (a,b) => a.assignable(b)
-  )
-
-  lazy val cases : List[CallCase] = ctypes.map( c => new CallCase(c.fun, c.actual, c.expected, c.result, typeGraph, implicitConversion))
-  lazy val minCost: Int = cases
+  val cases : List[CallCase] = ctypes.map( c => new CallCase(c.fun, c.actual, c.expected, c.result, typeScope ))
+  val minCost: Int = cases
     .filter( c => c.cost.isDefined )
     .map( c => c.cost.get )
     .min;
 
-  lazy val preferred : List[CallCase] = cases
+  val preferred : List[CallCase] = cases
     .filter( c => c.cost.isDefined && c.cost.get==minCost )
 }

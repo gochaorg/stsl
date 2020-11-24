@@ -9,15 +9,19 @@ import xyz.cofe.stsl.types.pset.PartialSet
  * @param actual актуальные параметры метода
  * @param expected ожидаемые параметры метода
  * @param result результат вызова метода
- * @param typeGraph граф преобразвания
- * @param implicitConversion список имплицитных функций для преобразования типа аргументов
+ * @param typeScope Область типов
  */
 class CallCase( val fun:Fun
                 , val actual:List[Type]
                 , val expected:List[Type]
                 , val result:Type
-                , val typeGraph:PartialSet[Type]
-                , val implicitConversion:Seq[Fun]=List() ) extends Invoke {
+                , val typeScope: TypeScope ) {
+  require(fun!=null)
+  require(actual!=null)
+  require(expected!=null)
+  require(result!=null)
+  require(typeScope!=null)
+
   val argCountMatched: Boolean = actual.size == expected.size
 
   //region passing
@@ -34,10 +38,10 @@ class CallCase( val fun:Fun
             if( actualParam==expectedParam ){
               new CallPassing(actualParam,expectedParam)
             }else{
-              new CallPassing(actualParam,expectedParam,typeGraph.ascending(actualParam,expectedParam))
+              new CallPassing(actualParam,expectedParam, typeScope.graph.ascending(actualParam,expectedParam))
             }
           }else{
-            val conv = implicitConversion
+            val conv = typeScope.implicits
               .filter(f => f.parameters.length == 1)
               .filter(f => f.parameters.head.tip.assignable(expectedParam))
               .find(f => actualParam.assignable(f.returns))
@@ -72,35 +76,36 @@ class CallCase( val fun:Fun
         |  expected= $expected
         |  result=   ${result}""".stripMargin
 
-  /**
-   * Вызов функции
-   *
-   * @param args аргументы
-   * @return результат
-   */
-  override def invoke(args: Seq[Any]): Any = {
-    if( passing.isDefined ){
-      val psng = passing.get
-      val passArg = psng.indices.zip(psng).map({case (pi,ps)=>
+  def invoking(): (Invoke,Type) = {
+    if( !callable ){
+      throw ToasterError("not callable")
+    }
+
+    val passingList = passing.get
+    val passingFuns : List[Seq[Any]=>Any] =
+      passingList.indices.zip(passingList).map({ case(pi,ps) =>
         if( ps.conversion.isDefined ){
           val fc = ps.conversion.get
           fc match {
             case invoke1: Invoke =>
-              invoke1.invoke(List(args(pi)))
+              (args:Seq[Any]) => invoke1.invoke(List(args(pi)))
             case _ =>
-              throw new RuntimeException(s"can't invoke implicit fun=${fc}")
+              throw ToasterError(s"can't invoke implicit fun=${fc}")
           }
         }else{
-          args(pi)
+          (args:Seq[Any]) => args(pi)
         }
-      })
+      }).toList
 
-      fun match {
-        case invoke1: Invoke =>
-          invoke1.invoke(passArg)
-        case _ =>
-          throw new RuntimeException(s"can't invoke fun=${fun}")
-      }
+    val invkTrgt : Invoke = fun match {
+      case i:Invoke => i
+      case _ => throw ToasterError(s"can't invoke fun=${fun}")
     }
+
+    val invk : Invoke = new Invoke {
+      override def invoke(args: Seq[Any]): Any = invkTrgt.invoke(passingFuns.map( pf => pf(args)))
+    }
+
+    (invk, result)
   }
 }
