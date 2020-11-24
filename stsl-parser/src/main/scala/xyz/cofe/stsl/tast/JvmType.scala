@@ -229,4 +229,41 @@ object JvmType {
 
   INT.freeze
   //endregion
+
+  val implicitConversion = List(
+    Fn( Params( "value" -> BYTE ), SHORT ).invoke[Byte,Short]( value => value.toShort ),
+    Fn( Params( "value" -> BYTE ), INT ).invoke[Byte,Int]( value => value.toInt ),
+    Fn( Params( "value" -> BYTE ), LONG ).invoke[Byte,Long]( value => value.toLong ),
+    Fn( Params( "value" -> BYTE ), FLOAT ).invoke[Byte,Float]( value => value.toFloat ),
+    Fn( Params( "value" -> BYTE ), DOUBLE ).invoke[Byte,Double]( value => value.toDouble ),
+    Fn( Params( "value" -> BYTE ), BIGINT ).invoke[Byte,BigInt]( value => BigInt(value) ),
+    Fn( Params( "value" -> BYTE ), DECIMAL ).invoke[Byte,BigDecimal]( value => BigDecimal(value) ),
+
+    Fn( Params( "value" -> SHORT ), INT ).invoke[Short,Int]( value => value.toInt ),
+    Fn( Params( "value" -> SHORT ), LONG ).invoke[Short,Long]( value => value.toLong ),
+    Fn( Params( "value" -> SHORT ), FLOAT ).invoke[Short,Float]( value => value.toFloat ),
+    Fn( Params( "value" -> SHORT ), DOUBLE ).invoke[Short,Double]( value => value.toDouble ),
+    Fn( Params( "value" -> SHORT ), BIGINT ).invoke[Short,BigInt]( value => BigInt(value) ),
+    Fn( Params( "value" -> SHORT ), DECIMAL ).invoke[Short,BigDecimal]( value => BigDecimal(value) ),
+
+    Fn( Params( "value" -> INT ), LONG ).invoke[Int,Long]( value => value.toLong ),
+    Fn( Params( "value" -> INT ), FLOAT ).invoke[Int,Float]( value => value.toFloat ),
+    Fn( Params( "value" -> INT ), DOUBLE ).invoke[Int,Double]( value => value.toDouble ),
+    Fn( Params( "value" -> INT ), BIGINT ).invoke[Int,BigInt]( value => BigInt(value) ),
+    Fn( Params( "value" -> INT ), DECIMAL ).invoke[Int,BigDecimal]( value => BigDecimal(value) ),
+
+    Fn( Params( "value" -> LONG ), FLOAT ).invoke[Long,Float]( value => value.toFloat ),
+    Fn( Params( "value" -> LONG ), DOUBLE ).invoke[Long,Double]( value => value.toDouble ),
+    Fn( Params( "value" -> LONG ), BIGINT ).invoke[Long,BigInt]( value => BigInt(value) ),
+    Fn( Params( "value" -> LONG ), DECIMAL ).invoke[Long,BigDecimal]( value => BigDecimal(value) ),
+
+    Fn( Params( "value" -> FLOAT ), DOUBLE ).invoke[Float,Double]( value => value.toDouble ),
+    Fn( Params( "value" -> FLOAT ), BIGINT ).invoke[Float,BigInt]( value => BigInt(value.toLong) ),
+    Fn( Params( "value" -> FLOAT ), DECIMAL ).invoke[Float,BigDecimal]( value => BigDecimal(value) ),
+
+    Fn( Params( "value" -> DOUBLE ), BIGINT ).invoke[Double,BigInt]( value => BigInt(value.toLong) ),
+    Fn( Params( "value" -> DOUBLE ), DECIMAL ).invoke[Double,BigDecimal]( value => BigDecimal(value) ),
+
+    Fn( Params( "value" -> BIGINT ), DECIMAL ).invoke[BigInt,BigDecimal]( value => BigDecimal(value) ),
+  )
 }
