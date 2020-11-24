@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import org.junit.jupiter.api.Test
 import xyz.cofe.stsl.tast.JvmType._
 import xyz.cofe.stsl.ast.{ASTDump, AstTest, Parser}
-import xyz.cofe.stsl.types.TObject
+import xyz.cofe.stsl.types.{Fn, Params, TObject}
 
 //noinspection UnitMethodIsParameterless
 class ToasterTest {
@@ -199,5 +199,44 @@ class ToasterTest {
     assert( tast.supplierType == STRING )
     assert( computedValue!=null && computedValue.isInstanceOf[String] )
     assert( "str" == computedValue )
+  }
+
+  @Test
+  def funCallTest:Unit = {
+    println("funCallTest")
+    println("="*30)
+
+    val repeatFn = Fn(Params("str" -> STRING, "count" -> INT),STRING).invoke[String,Int,String]((str:String,cnt:Int)=>str*cnt)
+
+    val vs = new VarScope();
+    vs.put("str" -> STRING -> "string" )
+    vs.put("repeat" -> repeatFn -> repeatFn )
+
+    val ts = new TypeScope()
+    ts.implicits = JvmType.implicitConversion
+
+    val ast = Parser.parse("repeat( str, 2 )")
+    println("AST")
+    ast.foreach( ASTDump.dump )
+    assert( ast.isDefined )
+    //test(ast, call, property, identifier, literal, literal)
+
+    val tst = new Toaster(ts,vs)
+    val tast = tst.compile(ast.get)
+    assert(tast!=null)
+    println("TAST")
+    TASTDump.dump(tast)
+
+    println("exec")
+    println("-"*30)
+
+    println( tast.supplierType )
+
+    val computedValue =  tast.supplier.get()
+    println( computedValue )
+
+    assert( tast.supplierType == STRING )
+    assert( computedValue!=null && computedValue.isInstanceOf[String] )
+    assert( "stringstring" == computedValue )
   }
 }

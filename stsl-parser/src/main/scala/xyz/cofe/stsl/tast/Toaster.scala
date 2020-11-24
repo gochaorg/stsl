@@ -76,9 +76,25 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     cases.preferred.head
   }
 
-  protected def call(functions:Seq[Fun], args:List[Type]):CallCase = {
-    typeScope.callCases(functions,args);
-    ???
+  protected def call(functions:Seq[Fun], args:List[Type], funName:Option[String]=None):CallCase = {
+    val cases = typeScope.callCases(functions,args);
+
+    val implArgNames = if( args.isEmpty ){
+      ""
+    } else if( args.size==1 ){
+      s"${args.head}"
+    } else {
+      s"${args.map(a=>a.toString).reduce((a,b)=>a+","+"b")}"
+    }
+    val implName = s"${funName.getOrElse("")}(${implArgNames})"
+
+    if( cases.preferred.isEmpty ){
+      throw ToasterError(s"implementation of $implName not found")
+    }else if( cases.preferred.size>1 ){
+      throw ToasterError(s"ambiguous implementation of $implName not found")
+    }
+
+    cases.preferred.head
   }
 
   /**
@@ -198,7 +214,7 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     val argumentsTast = callAST.arguments.map( a => compile(a) )
 
     // checking types
-    val calling = this.call(List(targetFn), argumentsTast.map(_.supplierType)).invoking()
+    val calling = this.call(List(targetFn), argumentsTast.map(_.supplierType), Some(callable.argumentName)).invoking()
 
     TAST( callAST, calling._2,
       () => {
@@ -222,11 +238,11 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     val argumentsTast = callAST.arguments.map( a => compile(a) )
 
     // checking types
-    val calling = this.call(List(targetFn), argumentsTast.map(_.supplierType)).invoking()
+    val calling = this.call(List(targetFn), argumentsTast.map(_.supplierType), Some(funtionName)).invoking()
 
     TAST( callAST, calling._2,
       () => {
-        val callFn = fnVar.get match {
+        val callFn = fnVar.get.read() match {
           case f:CallableFn => f
           case _=> throw new ClassCastException(s"can't cast variable ${funtionName} to CallableFn")
         }
