@@ -14,6 +14,11 @@ class CallPassing(val from:Type
                   , val ascending:List[List[Type]] = List()
                   , val conversion:Option[Fun]=None
                  ) {
+  /**
+   * Подсчет цены вызова
+   * @param chance вариант вызова
+   * @return цена передачи аргмента в функцию
+   */
   def cost( chance:CallCase ):Int = {
     if( from==to ){
       0

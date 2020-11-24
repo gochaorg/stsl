@@ -2,6 +2,9 @@ package xyz.cofe.stsl.tast
 
 import xyz.cofe.stsl.ast.{CallAST, PropertyAST}
 
+/**
+ * Отображает дерево TAST
+ */
 object TASTDump {
   def dump(out: Appendable, tast: TAST, level:Int):Unit = {
     require(out!=null)

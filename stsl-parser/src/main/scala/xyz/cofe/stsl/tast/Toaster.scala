@@ -27,6 +27,11 @@ class Toaster( val typeScope: TypeScope ) {
     }
   }
 
+  /**
+   * Компиляция литерального выражения
+   * @param literalAST выражение
+   * @return типизрованный узел AST
+   */
   def compile( literalAST: LiteralAST ):TAST = {
     require(literalAST!=null)
     literalAST.tok match {
@@ -43,6 +48,13 @@ class Toaster( val typeScope: TypeScope ) {
     }
   }
 
+  /**
+   * Компиляция вызова метода
+   * @param thiz вызываемый объект (класс)
+   * @param method вызываемый метод
+   * @param args аргументы вызова
+   * @return вариант вызова
+   */
   protected def call(thiz:TObject, method:String, args:List[Type] ):CallCase = {
     val cases = typeScope.callCases(thiz,method,args)
     val implArgNames = if( args.isEmpty ){
@@ -63,6 +75,11 @@ class Toaster( val typeScope: TypeScope ) {
     cases.preferred.head
   }
 
+  /**
+   * Компиляция бинарного выражения
+   * @param binaryAST бинарное выражение
+   * @return типизрованный узел AST
+   */
   def compile( binaryAST: BinaryAST ):TAST = {
     require(binaryAST!=null)
     val left = compile(binaryAST.left)

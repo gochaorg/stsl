@@ -22,10 +22,16 @@ class CallCase( val fun:Fun
   require(result!=null)
   require(typeScope!=null)
 
+  /**
+   * Совпало-ли кол-во ожидаемых и актульаных аргументов
+   */
   val argCountMatched: Boolean = actual.size == expected.size
 
   //region passing
 
+  /**
+   * Описывает правила передачи аргументов в функцию
+   */
   val passing : Option[List[CallPassing]] = if( !argCountMatched ){
     None
   }else{
@@ -62,8 +68,19 @@ class CallCase( val fun:Fun
   }
   //endregion
 
+  /**
+   * Имеется ли возможность передачи аргументов в функцию
+   */
   val passable : Boolean = passing.isDefined
+
+  /**
+   * Функцию можно вызвать с указанными аргументами
+   */
   val callable : Boolean = argCountMatched && passable
+
+  /**
+   * "Цена" вызова из расчета преобразований типов
+   */
   val cost: Option[Int] = passing.map(chances => chances.map(ch => ch.cost(this) ).sum )
 
   override def toString: String =
@@ -76,6 +93,10 @@ class CallCase( val fun:Fun
         |  expected= $expected
         |  result=   ${result}""".stripMargin
 
+  /**
+   * Возвращает интерфейс вызова и тип возвращаемого значения
+   * @return интерфейс вызова и тип
+   */
   def invoking(): (Invoke,Type) = {
     if( !callable ){
       throw ToasterError("not callable")
