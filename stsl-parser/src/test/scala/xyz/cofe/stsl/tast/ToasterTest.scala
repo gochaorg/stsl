@@ -329,4 +329,35 @@ class ToasterTest {
       assert(resultExpect == lambdaComputedValue)
     })
   }
+
+  @Test
+  def lambdaCall03:Unit = {
+    println("lambdaCall03")
+    println("="*30)
+
+    val vs = new VarScope();
+    vs.put("a", INT, 1)
+    vs.put("b", INT, 1)
+
+    val ts = new TypeScope()
+    ts.implicits = JvmType.implicitConversion
+    ts.imports(List(INT))
+
+    val ast = Parser.parse("() => a+b")
+    println("AST")
+    ast.foreach( ASTDump.dump )
+    assert( ast.isDefined )
+
+    var catched = false
+    try {
+      val tst = new Toaster(ts, vs)
+      val tast = tst.compile(ast.get)
+    } catch {
+      case err:ToasterError =>
+        println(err)
+        catched = true
+    }
+
+    assert(catched)
+  }
 }
