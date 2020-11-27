@@ -34,17 +34,34 @@ class TObject( Name:String,
   }
   //endregion
 
-  private var name_value : String = Name
-  override def name: String = name_value
+  private var nameValue : String = Name
+  override def name: String = nameValue
   def name_=( value:String ):String = {
     require(value!=null)
     require(value.trim.length>0)
     if( freezed )throw TypeError("freezed")
-    name_value = value
+    nameValue = value
     value
   }
+  def setName( value:String ):TObject = {
+    this.name = value
+    this
+  }
 
-  override def extend: Option[Type] = oextend
+  private var extendValue = oextend
+  override def extend: Option[Type] = extendValue
+  def extend_=( value:Option[Type] ):Option[Type] = {
+    require(value!=null)
+    if( freezed )throw TypeError("freezed")
+    extendValue = value
+    extendValue
+  }
+  def extend( parentType:Type ):TObject = {
+    require(parentType!=null)
+    this.extend = Some(parentType)
+    this
+  }
+
   override lazy val generics: MutableGenericParams = ogenerics
   override lazy val fields: MutableFields = ofields
   override lazy val methods: MutableMethods = omethods

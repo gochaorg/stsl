@@ -115,11 +115,11 @@ class ToasterTest {
     assert( (12 + 13 * 2) == computedValue )
   }
 
-  class Person( var age:Int = 10 ) {
-  }
-
   @Test
   def propTest:Unit = {
+    class Person( var age:Int = 10 ) {
+    }
+
     println("propTest")
     println("="*30)
 
