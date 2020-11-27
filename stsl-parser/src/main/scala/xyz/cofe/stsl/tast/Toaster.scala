@@ -338,7 +338,7 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
           })
         ),
         typeScope(lambdaAST.recursion.get.typeName.name)
-      )
+      ).invoking( _ => ??? )
 
       val stAST = StackedArgumentAST(callStack, lambdaAST.recursion.get.name, fn)
       stackArgs = stackArgs + ( lambdaAST.recursion.get.name.tok.name -> stAST )

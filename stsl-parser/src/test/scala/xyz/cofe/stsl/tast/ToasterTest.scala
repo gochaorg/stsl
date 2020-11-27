@@ -281,4 +281,52 @@ class ToasterTest {
     assert(lambdaComputedValue.isInstanceOf[Int])
     assert(3 == lambdaComputedValue)
   }
+
+  @Test
+  def lambdaCall02:Unit = {
+    println("lambdaCall02")
+    println("="*30)
+
+    val vs = new VarScope();
+
+    val ts = new TypeScope()
+    ts.implicits = JvmType.implicitConversion
+    ts.imports(List(INT))
+
+    val ast = Parser.parse("a:int , r :: int => a < 0 ? 0 : r(a-1) + a")
+    println("AST")
+    ast.foreach( ASTDump.dump )
+    assert( ast.isDefined )
+    //test(ast, call, property, identifier, literal, literal)
+
+    val tst = new Toaster(ts,vs)
+    val tast = tst.compile(ast.get)
+    assert(tast!=null)
+    println("TAST")
+    TASTDump.dump(tast)
+
+    println("exec")
+    println("-"*30)
+
+    println( tast.supplierType )
+
+    val computedValue =  tast.supplier.get()
+    println( computedValue )
+
+    assert( computedValue!=null && computedValue.isInstanceOf[CallableFn] )
+
+    List(
+      (1,1),
+      (2,3),
+      (3,6),
+      (4,10),
+      (5,15),
+    ).foreach({case(input,resultExpect)=>
+      val lambdaComputedValue = computedValue.asInstanceOf[CallableFn].invoke(List(input))
+      println(s"call $input result = $lambdaComputedValue")
+      assert(lambdaComputedValue!=null)
+      assert(lambdaComputedValue.isInstanceOf[Int])
+      assert(resultExpect == lambdaComputedValue)
+    })
+  }
 }
