@@ -34,4 +34,22 @@ class TObjectMutableTest {
 
     assert(catched)
   }
+
+  @Test
+  def test02(): Unit ={
+    val obj = TObject("A").build
+    obj.fields.append(new Field("a", INT))
+
+    println(obj.fields)
+    val fld = obj.fields
+    println(fld)
+
+    println("."*30)
+    obj.freeze
+
+    println(obj.fields)
+    println(fld)
+
+    assert(fld.nonEmpty)
+  }
 }

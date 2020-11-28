@@ -29,10 +29,24 @@ class MutableFields( private var fieldList:List[Field]=List() ) extends Fields(f
     fieldList = field :: fieldList.filter( f => !f.name.equals(field.name) )
   }
 
-  override def filter(fltr:Field => Boolean):MutableFields = {
-    require(fltr!=null)
+//  override def filter(fltr:Field => Boolean):MutableFields = {
+//    require(fltr!=null)
+//    if( freezed )throw TypeError("freezed")
+//    fieldList = fieldList.filter(fltr)
+//    this
+//  }
+
+  def remove( filter:Field=>Boolean ):MutableFields = {
     if( freezed )throw TypeError("freezed")
-    fieldList = fieldList.filter(fltr)
+    require(filter!=null)
+    fieldList = fieldList.filterNot(filter)
+    this
+  }
+
+  def retain( filter:Field=>Boolean ):MutableFields = {
+    if( freezed )throw TypeError("freezed")
+    require(filter!=null)
+    fieldList = fieldList.filter(filter)
     this
   }
 
