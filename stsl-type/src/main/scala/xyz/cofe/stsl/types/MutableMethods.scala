@@ -63,10 +63,11 @@ class MutableMethods( private var functions:Map[String,Funs]=Map() ) extends Met
   }
 
   /**
-   * Фильтрация методов
-   * @param filter фильтр
+   * Удаление методов
+   * @param filter фильтр <b>удержания</b> - указывает на элементы, которые следует оставить
+   * @return SELF ссылка
    */
-  def filter( filter:(String,Fun)=>Boolean ):Unit = {
+  def retain( filter:(String,Fun)=>Boolean ):MutableMethods = {
     if( freezed )throw TypeError("freezed")
     functions = functions.map({case(name,funz)=>
       val mfunz : MutableFuns = funz match {
@@ -79,6 +80,18 @@ class MutableMethods( private var functions:Map[String,Funs]=Map() ) extends Met
       name -> mfunz
     })
     functions = functions.filter({case(name,funz)=>funz.funs.nonEmpty})
+    this
+  }
+
+  /**
+   * Удаление методов
+   * @param filter фильтр - указывает на удаляемые элементы
+   * @return SELF ссылка
+   */
+  def remove( filter:(String,Fun)=>Boolean ):MutableMethods = {
+    if( freezed )throw TypeError("freezed")
+    require(filter!=null)
+    retain( (n,f) => !filter(n,f) )
   }
   //endregion
 }

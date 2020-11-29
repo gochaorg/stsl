@@ -40,10 +40,27 @@ class MutableFuns(
     this
   }
 
-  override def filter(filter:(Fun)=>Boolean ):MutableFuns = {
+  /**
+   * Удаление функций
+   * @param filter фильтр <b>удержания</b> - указывает на элементы, которые следует оставить
+   * @return SELF ссылка
+   */
+  def retain(filter:(Fun)=>Boolean):MutableFuns = {
     require(filter!=null)
     if( freezed )throw new IllegalStateException("freezed")
     functions = functions.filter( filter )
+    this
+  }
+
+  /**
+   * Удаление функций
+   * @param filter фильтр - указывает на удаляемые элементы
+   * @return SELF ссылка
+   */
+  def remove(filter:(Fun)=>Boolean):MutableFuns = {
+    require(filter!=null)
+    if( freezed )throw new IllegalStateException("freezed")
+    functions = functions.filterNot( filter )
     this
   }
 }

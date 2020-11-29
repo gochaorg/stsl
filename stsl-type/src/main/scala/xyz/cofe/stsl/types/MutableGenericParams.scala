@@ -71,14 +71,25 @@ class MutableGenericParams( private var parameters: List[GenericParam]=List() ) 
   }
 
   /**
-   * Фильтрация параметров
-   * @param fltr фильтр
+   * Удаление параметров
+   * @param fltr фильтр <b>удержания</b> - указывает на элементы, которые следует оставить
    * @return SELF ссылка
    */
-  override def filter( fltr:GenericParam => Boolean ):MutableGenericParams = {
+  def retain( fltr:GenericParam => Boolean ):MutableGenericParams = {
     require(fltr!=null)
     if( freezed )throw new IllegalStateException("freezed")
     parameters = parameters.filter(fltr)
     this
+  }
+
+  /**
+   * Удаление параметров
+   * @param fltr фильтр - указывает на удаляемые элементы
+   * @return SELF ссылка
+   */
+  def remove( fltr:GenericParam => Boolean ):MutableGenericParams = {
+    require(fltr!=null)
+    if( freezed )throw new IllegalStateException("freezed")
+    retain( x => !fltr(x) )
   }
 }
