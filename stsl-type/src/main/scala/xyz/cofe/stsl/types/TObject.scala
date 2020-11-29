@@ -113,7 +113,7 @@ class TObject( Name:String,
     val replacement : TypeVariable => Option[Type] = (tv) => {
       val trgt = recipe(tv)
       if( trgt.isDefined ){
-        println( s"replacement ${tv} => ${trgt.get}" )
+        //println( s"replacement ${tv} => ${trgt.get}" )
         if( replaceTypeVarMap.contains(tv.name) ){
           //
         }else{
