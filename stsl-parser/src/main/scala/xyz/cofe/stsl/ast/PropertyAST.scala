@@ -49,6 +49,6 @@ class PropertyAST( begin:PTR,
     else if( what==name && to.isInstanceOf[IdentifierAST] )
       new PropertyAST(begin,end,obj,to.asInstanceOf[IdentifierAST])
     else
-      this
+      new PropertyAST(begin,end, obj.replace(what, to), name)
   }
 }
