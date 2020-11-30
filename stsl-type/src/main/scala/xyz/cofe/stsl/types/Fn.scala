@@ -14,6 +14,34 @@ class Fn( fgParams: GenericParams
   require(fParams!=null)
   require(fReturn!=null)
 
+
+  override def assignable(t: Type): Boolean = {
+    require(t!=null)
+    if(!t.isInstanceOf[Fun]){
+      false
+    }else{
+      val fn = t.asInstanceOf[Fun]
+      val genericAssignable : Boolean = generics.assignable(fn.generics)
+      val paramsCountMatched : Boolean = parameters.length == fn.parameters.length
+      val paramsAssignable : Boolean = paramsCountMatched match {
+        case true =>
+          if( parameters.length==0 ){
+            true
+          }else{
+            parameters.indices.map( pi=> {
+              val toParam = parameters(pi)
+              val fromParam = fn.parameters(pi)
+              toParam.tip.assignable(fromParam.tip)
+            }).reduce((a,b)=> a&&b)
+          }
+        case false =>
+          false
+      }
+      val returnAssignable = fn.returns.assignable(returns)
+      genericAssignable && paramsCountMatched && paramsAssignable && returnAssignable
+    }
+  }
+
   // Переменные типа обявленные для owner = FN, должны указывать на  GenericParams
   lazy val inputTypeVariables: Seq[TypeVariable] =
     fParams.params.map( p => p.tip match {

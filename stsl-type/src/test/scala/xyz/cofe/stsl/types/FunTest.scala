@@ -62,4 +62,17 @@ class FunTest {
     }
     assert(catched)
   }
+
+  @Test
+  def assignableFun01():Unit = {
+    import JvmType._
+
+    println("assignableFun01")
+    println("="*40)
+
+    val f1 = Fn(Params("a" -> INT),BOOLEAN)
+    val f2 = Fn(Params("b" -> INT),BOOLEAN)
+    val asg1_2 = f1.assignable(f2)
+    println(asg1_2)
+  }
 }
