@@ -29,15 +29,15 @@ class Fn( fgParams: GenericParams
             true
           }else{
             parameters.indices.map( pi=> {
-              val toParam = parameters(pi)
-              val fromParam = fn.parameters(pi)
+              val toParam = fn.parameters(pi)
+              val fromParam = parameters(pi)
               toParam.tip.assignable(fromParam.tip)
             }).reduce((a,b)=> a&&b)
           }
         case false =>
           false
       }
-      val returnAssignable = fn.returns.assignable(returns)
+      val returnAssignable = returns.assignable(fn.returns)
       genericAssignable && paramsCountMatched && paramsAssignable && returnAssignable
     }
   }

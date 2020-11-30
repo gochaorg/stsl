@@ -1,6 +1,7 @@
 package xyz.cofe.stsl.types
 
 import org.junit.jupiter.api.Test
+import xyz.cofe.stsl.types.JvmType.BOOLEAN
 
 class FunTest {
   @Test
@@ -74,5 +75,19 @@ class FunTest {
     val f2 = Fn(Params("b" -> INT),BOOLEAN)
     val asg1_2 = f1.assignable(f2)
     println(asg1_2)
+  }
+
+  @Test
+  def assignable02(): Unit ={
+    println("assignable02()")
+    println("="*40)
+
+    import JvmType._
+    import Type._
+    val f1 = Fn(Params("a" -> INT),ANY)
+    val f2 = Fn(Params("a" -> NUMBER),BOOLEAN)
+
+    println(NUMBER.assignable(INT))
+    println(f1.assignable(f2))
   }
 }
