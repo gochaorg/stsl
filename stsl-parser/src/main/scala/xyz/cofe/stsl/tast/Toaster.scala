@@ -56,7 +56,7 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
    * @param args аргументы вызова
    * @return вариант вызова
    */
-  protected def call(thiz:TObject, method:String, args:List[Type] ):CallCase = {
+  def call(thiz:TObject, method:String, args:List[Type] ):CallCase = {
     val cases = typeScope.callCases(thiz,method,args)
     val implArgNames = if( args.isEmpty ){
       ""
@@ -76,7 +76,7 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     cases.preferred.head
   }
 
-  protected def call(functions:Seq[Fun], args:List[Type], funName:Option[String]=None):CallCase = {
+  def call(functions:Seq[Fun], args:List[Type], funName:Option[String]=None):CallCase = {
     val cases = typeScope.callCases(functions,args);
 
     val implArgNames = if( args.isEmpty ){
