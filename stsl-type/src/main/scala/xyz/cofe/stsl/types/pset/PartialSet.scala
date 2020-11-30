@@ -21,7 +21,9 @@ class PartialSet[A](
     require(to!=null)
     require(direction!=null)
 
-    if( from==to ){
+    if( from==to ) {
+      List(List(from))
+    }else if( relation(from,to) && relation(to,from) ) {
       List(List(from))
     }else{
       var matched : List[List[A]] = List()
