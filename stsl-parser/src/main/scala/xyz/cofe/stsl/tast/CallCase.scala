@@ -22,17 +22,26 @@ class CallCase( val fun:Fun
   require(result!=null)
   require(typeScope!=null)
 
+  protected def log(message:String):Unit = {
+    //println("CallCase "+message)
+  }
+
+  log(s"fun=${fun} actual=${actual} expected=${expected}")
+
   /**
    * Совпало-ли кол-во ожидаемых и актульаных аргументов
    */
   val argCountMatched: Boolean = actual.size == expected.size
+  log(s"argCountMatched=$argCountMatched")
 
   //region passing
 
+  log("compute passing")
   /**
    * Описывает правила передачи аргументов в функцию
    */
   val passing : Option[List[CallPassing]] = if( !argCountMatched ){
+    log("!! argCountMatched")
     None
   }else{
     if( actual.isEmpty ){
@@ -55,6 +64,7 @@ class CallCase( val fun:Fun
             if( conv.isDefined ){
               new CallPassing(actualParam,expectedParam,List(),conv)
             }else{
+              log(s"!! not found implicit between actualParam=$actualParam expectedParam=$expectedParam")
               null
             }
           }
@@ -66,22 +76,26 @@ class CallCase( val fun:Fun
       }
     }
   }
+  log(s"passing=${passing}")
   //endregion
 
   /**
    * Имеется ли возможность передачи аргументов в функцию
    */
   val passable : Boolean = passing.isDefined
+  log(s"passable=$passable")
 
   /**
    * Функцию можно вызвать с указанными аргументами
    */
   val callable : Boolean = argCountMatched && passable
+  log(s"callable=$callable")
 
   /**
    * "Цена" вызова из расчета преобразований типов
    */
   val cost: Option[Int] = passing.map(chances => chances.map(ch => ch.cost(this) ).sum )
+  log(s"cost=$cost")
 
   override def toString: String =
     s"""|fun=$fun
