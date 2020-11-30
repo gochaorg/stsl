@@ -1,7 +1,7 @@
 package xyz.cofe.stsl.tast
 
 import xyz.cofe.stsl.types.Type.{ANY, THIS}
-import xyz.cofe.stsl.types.{Fn, Params, TObject, Type}
+import xyz.cofe.stsl.types.{Fn, Params, TObject, Type, TypeVariable}
 
 /**
  * Предопределенные типы
@@ -12,31 +12,30 @@ object JvmType {
   /**
    * Соответствует jvm типу boolean
    */
-  val BOOLEAN : TObject = TObject("bool")
-    .extend(ANY)
-    .methods(
-      "&&" -> Fn(
-        Params(
-          "self" -> THIS,
-          "value" -> THIS
-        ),
-        THIS
-      ).invoke[Boolean,Boolean,Boolean]((self,value)=>self && value),
-      "||" -> Fn(
-        Params(
-          "self" -> Type.THIS,
-          "value" -> Type.THIS
-        ),
-        Type.THIS
-      ).invoke[Boolean,Boolean,Boolean]((self,value)=>self || value),
-      "!" -> Fn(
-        Params(
-          "self" -> Type.THIS
-        ),
-        Type.THIS
-      ).invoke[Boolean,Boolean](self => !self)
-    )
-    .build
+  val BOOLEAN: TObject = new TObject("bool")
+  BOOLEAN.extend(ANY)
+  BOOLEAN.methods += "&&" -> Fn(
+    Params(
+      "self" -> THIS,
+      "value" -> THIS
+    ),
+    THIS
+  ).invoke[Boolean,Boolean,Boolean]((self,value)=>self && value)
+  BOOLEAN.methods += "||" -> Fn(
+    Params(
+      "self" -> Type.THIS,
+      "value" -> Type.THIS
+    ),
+    Type.THIS
+  ).invoke[Boolean,Boolean,Boolean]((self,value)=>self || value)
+  BOOLEAN.methods += "!" -> Fn(
+    Params(
+      "self" -> Type.THIS
+    ),
+    Type.THIS
+  ).invoke[Boolean,Boolean](self => !self)
+  BOOLEAN.freeze
+
   //endregion
   //region CHAR
   /**
