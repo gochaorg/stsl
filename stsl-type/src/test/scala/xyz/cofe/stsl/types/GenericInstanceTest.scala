@@ -35,14 +35,14 @@ class GenericInstanceTest {
     println("test01()")
     println("===============")
 
-    val gi1 = GenericInstance(
+    val gi1 = new GenericInstance(
       Map("A" -> userType),
       listType
     )
 
     println(gi1)
 
-    val gi2 = GenericInstance(
+    val gi2 = new GenericInstance(
       Map("A" -> TypeVariable("B", THIS)),
       listType
     )

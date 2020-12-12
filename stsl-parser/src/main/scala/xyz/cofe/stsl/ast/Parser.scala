@@ -337,6 +337,9 @@ object Parser {
             } else {
               val exp = expression(prev.end())
               if (exp.isDefined) {
+                if( args.exists(arg => arg.begin().compare(exp.get.begin()) == 0) ){
+                  throw ParseError("bug at parser!, consume duplicate arg", exp.get.begin());
+                }
                 args = exp.get :: args
                 val cStop2 = callEnd(exp.get.end())
                 if (cStop2.isDefined) {
@@ -347,6 +350,8 @@ object Parser {
                   if (cArgDelim.isDefined) {
                     prev = cArgDelim.get
                     expectArg = true
+                  } else {
+                    throw ParseError("Parse error, expect delimiter, of finish call", exp.get.end())
                   }
                 }
               } else {

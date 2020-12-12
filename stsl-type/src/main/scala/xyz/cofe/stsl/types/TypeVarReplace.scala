@@ -18,6 +18,17 @@ trait TypeVarReplace[A] {
         }
       })
     }
+    def thiz(recipe:Map[String,Type]):A = {
+      require(recipe!=null)
+      val rmap:Map[String,Type] = recipe
+      typeVarReplace((tv:TypeVariable)=>{
+        if( tv.owner==Type.THIS ) {
+          rmap.get(tv.name)
+        }else{
+          None
+        }
+      })
+    }
     def thiz(recipe:(String,Type)*):A = {
       require(recipe!=null)
       val rmap:Map[String,Type] = recipe.toMap

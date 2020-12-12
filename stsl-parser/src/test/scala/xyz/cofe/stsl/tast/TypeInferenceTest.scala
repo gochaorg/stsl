@@ -1,9 +1,9 @@
 package xyz.cofe.stsl.tast
 
 import org.junit.jupiter.api.Test
-import xyz.cofe.stsl.ast.Parser
+import xyz.cofe.stsl.ast.{ASTDump, Parser}
 import xyz.cofe.stsl.tast.JvmType._
-import xyz.cofe.stsl.types.{CallableFn, Fn, Fun, Params, TObject, TypeVariable}
+import xyz.cofe.stsl.types.{CallableFn, Fn, Fun, GenericInstance, Params, TObject, TypeVariable}
 import xyz.cofe.stsl.types.Type._
 import xyz.cofe.stsl.types.TypeDescriber.describe
 
@@ -167,5 +167,50 @@ class TypeInferenceTest {
     val invk = callCase.invoking()
     val invkRes = invk._1.invoke(List(userList1, filterTast.supplier.get()))
     println(invkRes)
+  }
+
+  @Test
+  def test02():Unit = {
+    println( "test02()" )
+    println("="*40)
+
+    val src = s"lst.filter( x : ${userType.name} => x.name.length > 2 )"
+    println("source: "+"-"*20)
+    println(src)
+
+    val ast = Parser.parse(src)
+    println("\nast: "+"-"*20)
+    ast.foreach( ASTDump.dump )
+
+    val typeScope = new TypeScope
+    typeScope.imports(List(STRING,INT))
+    typeScope.imports(List(userType,listType))
+
+    val userListGenInstType = new GenericInstance( Map("A" -> userType), listType )
+    typeScope.imports(userListGenInstType)
+    println(s"generic instance: $userListGenInstType")
+
+    val userList1 = new AList[User](
+      List(
+        new User("Vova"),
+        new User("Yu"),
+        new User("Peter"),
+      )
+    )
+
+    val varScope = new VarScope
+    varScope.put("lst", userListGenInstType, userList1)
+
+    val to = userListGenInstType.source.typeVarBake.thiz(userListGenInstType.recipe)
+    println("baked:")
+    println(describe(to))
+
+    println("\ntry tast compile:")
+    val toaster = new Toaster(typeScope,varScope)
+    val tast = toaster.compile(ast.get)
+    println("TAST")
+    TASTDump.dump(tast)
+
+    println(tast.supplier.get())
   }
 }

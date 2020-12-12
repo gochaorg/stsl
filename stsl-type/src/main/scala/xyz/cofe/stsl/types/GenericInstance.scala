@@ -1,6 +1,6 @@
 package xyz.cofe.stsl.types
 
-case class GenericInstance( recipe:Map[String,Type], source:Type ) extends Type with TypeVarReplace[GenericInstance] {
+class GenericInstance[A <: Type with TypeVarReplace[A]]( val recipe:Map[String,Type], val source:A ) extends Type with TypeVarReplace[GenericInstance[A]] {
   require(recipe!=null)
   require(source!=null)
   recipe.foreach({case(name,trgt)=>
@@ -31,9 +31,9 @@ case class GenericInstance( recipe:Map[String,Type], source:Type ) extends Type 
     sb.toString()
   }
 
-  override def typeVarReplace(trecipe: TypeVariable => Option[Type]): GenericInstance = {
+  override def typeVarReplace(trecipe: TypeVariable => Option[Type]): GenericInstance[A] = {
     require(trecipe!=null)
-    GenericInstance(
+    new GenericInstance(
       recipe.map({case(key,src)=>
         key -> (src match {
           case tv:TypeVariable =>

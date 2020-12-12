@@ -182,10 +182,16 @@ class TypeVarReplaceTest {
     def fn: TypeVariable = TypeVariable(varName,FN)
   }
 
-  implicit class Bake(base:Type) {
-    def bake(r:(String,Type)*):GenericInstance = {
+  implicit class Bake(base:TObject) {
+    def bake(r:(String,Type)*):GenericInstance[TObject] = {
       val m:Map[String,Type] = r.toMap
-      GenericInstance(m,base)
+      new GenericInstance(m,base)
+    }
+  }
+  implicit class BakeFn(base:Fun) {
+    def bake(r:(String,Type)*):GenericInstance[Fun] = {
+      val m:Map[String,Type] = r.toMap
+      new GenericInstance(m,base)
     }
   }
 

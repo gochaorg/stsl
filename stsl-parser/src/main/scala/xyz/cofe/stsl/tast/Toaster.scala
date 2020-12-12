@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import xyz.cofe.stsl.ast._
 import xyz.cofe.stsl.tok._
 import JvmType._
-import xyz.cofe.stsl.types.{CallableFn, Fn, Fun, Params, Param, TObject, Type, WriteableField}
+import xyz.cofe.stsl.types.{CallableFn, Fn, Fun, GenericInstance, Param, Params, TObject, Type, WriteableField}
 
 /**
  * "Тостер" - Компиляция AST выражений
@@ -254,10 +254,18 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     val objTast = compile(objAst)
     val objType = objTast.supplierType match {
       case o:TObject => o
+      case gi:GenericInstance[_] =>
+        gi.source match {
+          case so:TObject => gi.source.typeVarBake.thiz(gi.recipe).asInstanceOf[TObject].withName(gi.toString+"$")
+          case _=> throw ToasterError("GenericInstance.source is not TObject", objAst)
+        }
       case _=> throw ToasterError("callable obj is not TObject", objAst)
     }
+    //val argumentsTast = objTast :: callAST.arguments.map( a => compile(a) )
 
-    val argumentsTast = objTast :: callAST.arguments.map( a => compile(a) )
+    val callObjTast = TAST(objTast.ast,objType,objTast.supplier,objTast.children)
+    val argumentsTast = callObjTast :: callAST.arguments.map( a => compile(a) )
+
     val calling = call(objType,methodName,argumentsTast.map(_.supplierType)).invoking()
     TAST(
       callAST, calling._2,
