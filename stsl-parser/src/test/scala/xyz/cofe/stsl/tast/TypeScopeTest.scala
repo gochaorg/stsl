@@ -109,4 +109,19 @@ class TypeScopeTest {
       println(s"result ${result} : ${if(result!=null){ result.getClass.getName }}")
     }
   }
+
+  @Test
+  def ts01():Unit = {
+    println("ts01()")
+
+    import JvmType._
+    val ts = new TypeScope()
+    ts.imports(List(BOOLEAN,CHAR,ANY,NUMBER,INT,LONG))
+
+    println("....")
+    ts.graph.ascending(BOOLEAN,BOOLEAN).foreach(println)
+
+    println("....")
+    ts.graph.ascending(BOOLEAN,ANY).foreach(println)
+  }
 }
