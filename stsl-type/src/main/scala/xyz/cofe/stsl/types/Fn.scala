@@ -119,7 +119,7 @@ class Fn( fgParams: GenericParams
     })
 
     val grp = genericReplacements.groupBy(_._1).map(r=>r._1.name -> r._2.map(x=>x._2))
-    val genericMap = grp.map({ case (name, types) =>
+    val genericReplaceMap = grp.map({ case (name, types) =>
       if( types.length>1 ){
         val tis = types.indices
         tis.foreach( ti1 =>
@@ -138,34 +138,46 @@ class Fn( fgParams: GenericParams
     val ngenerics = new GenericParams(
       generics.map {
         case av: AnyVariant =>
-          if( !av.assignable(genericMap(av.name)) ){
-            throw TypeError(s"can't assign generic param $av from ${genericMap(av.name)}")
-          }else {
-            if( replaceTypeVarsName.contains(av.name) ) {
-              AnyVariant(replaceTypeVarsName(av.name))
-            }else{
-              null
+          if( genericReplaceMap.contains(av.name) ) {
+            if (!av.assignable(genericReplaceMap(av.name))) {
+              throw TypeError(s"can't assign generic param $av from ${genericReplaceMap(av.name)}")
+            } else {
+              if (replaceTypeVarsName.contains(av.name)) {
+                AnyVariant(replaceTypeVarsName(av.name))
+              } else {
+                null
+              }
             }
+          }else{
+            av
           }
         case cov: CoVariant =>
-          if( !cov.assignable(genericMap(cov.name)) ){
-            throw TypeError(s"can't assign generic param $cov from ${genericMap(cov.name)}")
-          }else {
-            if( replaceTypeVarsName.contains(cov.name) ) {
-              CoVariant(replaceTypeVarsName(cov.name), cov.tip)
-            }else{
-              null
+          if( genericReplaceMap.contains(cov.name) ) {
+            if (!cov.assignable(genericReplaceMap(cov.name))) {
+              throw TypeError(s"can't assign generic param $cov from ${genericReplaceMap(cov.name)}")
+            } else {
+              if (replaceTypeVarsName.contains(cov.name)) {
+                CoVariant(replaceTypeVarsName(cov.name), cov.tip)
+              } else {
+                null
+              }
             }
+          }else{
+            cov
           }
         case ctr: ContraVariant =>
-          if( !ctr.assignable(genericMap(ctr.name)) ){
-            throw TypeError(s"can't assign generic param $ctr from ${genericMap(ctr.name)}")
-          }else {
-            if( replaceTypeVarsName.contains(ctr.name) ){
-              ContraVariant(replaceTypeVarsName(ctr.name), ctr.tip)
-            }else{
-              null
+          if( genericReplaceMap.contains(ctr.name) ) {
+            if (!ctr.assignable(genericReplaceMap(ctr.name))) {
+              throw TypeError(s"can't assign generic param $ctr from ${genericReplaceMap(ctr.name)}")
+            } else {
+              if (replaceTypeVarsName.contains(ctr.name)) {
+                ContraVariant(replaceTypeVarsName(ctr.name), ctr.tip)
+              } else {
+                null
+              }
             }
+          }else{
+            ctr
           }
       }.filter(_!=null).toList
     )

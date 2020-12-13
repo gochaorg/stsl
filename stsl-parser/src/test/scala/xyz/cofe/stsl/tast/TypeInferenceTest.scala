@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import org.junit.jupiter.api.Test
 import xyz.cofe.stsl.ast.{ASTDump, Parser}
 import xyz.cofe.stsl.tast.JvmType._
-import xyz.cofe.stsl.types.{CallableFn, Fn, Fun, GenericInstance, Params, TObject, TypeVariable}
+import xyz.cofe.stsl.types.{AnyVariant, CallableFn, Fn, Fun, GenericInstance, GenericParams, Params, TObject, TypeVariable}
 import xyz.cofe.stsl.types.Type._
 import xyz.cofe.stsl.types.TypeDescriber.describe
 
@@ -53,6 +53,10 @@ class TypeInferenceTest {
       require(f!=null)
       new AList[A]( list.filter(f) )
     }
+    def map[B](f:A=>B):AList[B] = {
+      require(f!=null)
+      new AList[B]( list.map(f) )
+    }
 
     override def toString: String = {
       val sb = new StringBuilder
@@ -101,6 +105,23 @@ class TypeInferenceTest {
     //args.head.asInstanceOf[AList[_]].clear()
     args.head.asInstanceOf[AList[Any]].filter( el => {
       args(1).asInstanceOf[CallableFn].invoke(List(el)).asInstanceOf[Boolean]
+    })
+  })
+  listType.methods += "map" -> Fn(
+    GenericParams(AnyVariant("B")),
+    Params(
+      "self" -> THIS,
+      "f" -> Fn(
+        GenericParams(AnyVariant("B")),
+        Params("a" -> TypeVariable("A", THIS)),
+        TypeVariable("B",FN)
+      )
+    ),
+    new GenericInstance[TObject](Map("A"->TypeVariable("B",FN)),listType)
+  ).invoking(args=>{
+    //args.head.asInstanceOf[AList[_]].clear()
+    args.head.asInstanceOf[AList[Any]].map( el => {
+      args(1).asInstanceOf[CallableFn].invoke(List(el))
     })
   })
   listType.freeze
@@ -212,5 +233,68 @@ class TypeInferenceTest {
     TASTDump.dump(tast)
 
     println(tast.supplier.get())
+  }
+
+  @Test
+  def map01(): Unit ={
+    println("map01()")
+    println("="*40)
+
+    println("types:")
+    println(describe(listType))
+    println(describe(userType))
+
+    println("\nmap:")
+    val mapFn = listType.methods("map").head
+    println(mapFn)
+
+    val userList1 = new AList[User](
+      List(
+        new User("Vova"),
+        new User("Yu"),
+        new User("Peter"),
+      )
+    )
+
+    val userListGenInstType = new GenericInstance( Map("A" -> userType), listType )
+
+    val typeScope = new TypeScope
+    typeScope.imports(List(STRING,INT))
+    typeScope.imports(List(userType,listType))
+
+    val varScope = new VarScope
+    varScope.put("lst", userListGenInstType, userList1)
+
+    val toaster = new Toaster(typeScope,varScope)
+
+    /////////////////
+    val mapLmbSrc = "x : User => x.name"
+    println(s"\nlambda source: $mapLmbSrc")
+    val mapLmbAST = Parser.parse(mapLmbSrc)
+
+    println("ast:")
+    mapLmbAST.foreach(ASTDump.dump)
+
+    val mapLmbTAST = toaster.compile(mapLmbAST.get)
+    println("tast:")
+    TASTDump.dump(mapLmbTAST)
+
+    println("\ngeneric instance:")
+    val userListType = userListGenInstType.source.typeVarBake.thiz("A"->userType)
+    println(describe(userListType))
+
+    val userMapFn = userListType.methods("map").head
+
+    println("\nuser map fn:")
+    println( "  "+userMapFn )
+    println( "  generics:"+userMapFn.generics )
+    println( "  returns:"+userMapFn.returns )
+
+    val mapParam = mapLmbTAST.supplierType.asInstanceOf[Fun]
+    println("map param: "+mapParam)
+
+    println("typeVarBake:")
+    println( userMapFn.typeVarBake.fn("B" -> mapParam.returns ) );
+    //println(mapFn.typeVarBake.fn("B" -> malLmbTAST.supplierType ))
   }
 }
