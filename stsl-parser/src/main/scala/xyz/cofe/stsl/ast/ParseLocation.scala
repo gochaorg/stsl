@@ -7,7 +7,11 @@ import xyz.cofe.stsl.ast.Parser.PTR
  * @param begin начало в тексте
  * @param end конец в тексте
  */
-case class ParseLocation( val begin:PTR, val end:PTR ) {
+class ParseLocation( val begin:PTR, val end:PTR ) {
   require(begin!=null)
   require(end!=null)
+}
+
+object ParseLocation {
+  def apply(begin: PTR, end: PTR): ParseLocation = new ParseLocation(begin, end)
 }
