@@ -135,7 +135,7 @@ class Fn( fgParams: GenericParams
 
     val replaceTypeVarsName = replaceTypeVarsNames.filter( _._2.nonEmpty ).map( r => r._1 -> r._2.head )
 
-    val ngenerics = new GenericParams(
+    var ngenerics = new GenericParams(
       generics.map {
         case av: AnyVariant =>
           if( genericReplaceMap.contains(av.name) ) {
@@ -181,6 +181,14 @@ class Fn( fgParams: GenericParams
           }
       }.filter(_!=null).toList
     )
+
+    val retTypeVar : List[TypeVarLocator] = ret match {
+      case tv:TypeVariable => List(new TypeVarLocator(tv))
+      case tvf:TypeVarFetch => tvf.typeVarFetch
+      case _ => List()
+    }
+    val usedTypeVars = (paramz.typeVarFetch ++ retTypeVar).map({t => t.typeVar })
+    ngenerics = new GenericParams((ngenerics.filter { gp => usedTypeVars.exists{ tv => tv.name == gp.name } }).toList)
 
     clone(ngenerics,paramz,ret)
   }

@@ -1,6 +1,18 @@
 package xyz.cofe.stsl.types
 
-class GenericInstance[A <: Type with TypeVarReplace[A]]( val recipe:Map[String,Type], val source:A ) extends Type with TypeVarReplace[GenericInstance[A]] {
+/**
+ * Тип данных - экземпляр переменной параметрезированного типа
+ * @param recipe правило параметризации
+ * @param source исходный параметризированный тип
+ * @tparam A Объект реализующий TypeVarReplace
+ * @see TypeVarReplace
+ */
+class GenericInstance[A <: Type with TypeVarReplace[A]](
+                                                         val recipe:Map[String,Type],
+                                                         val source:A
+                                                       )
+  extends Type with TypeVarReplace[GenericInstance[A]] with TypeVarFetch
+{
   require(recipe!=null)
   require(source!=null)
   recipe.foreach({case(name,trgt)=>
@@ -49,5 +61,19 @@ class GenericInstance[A <: Type with TypeVarReplace[A]]( val recipe:Map[String,T
       }),
       source
     )
+  }
+
+  /**
+   * Извлечение переменных
+   * @return список переменных
+   */
+  override def typeVarFetch: List[TypeVarLocator] = {
+    recipe.flatMap { case (param, trgt) =>
+      trgt match {
+        case tv: TypeVariable => List(new TypeVarLocator(tv))
+        case tvf: TypeVarFetch => tvf.typeVarFetch
+        case _ => List()
+      }
+    }.toList
   }
 }
