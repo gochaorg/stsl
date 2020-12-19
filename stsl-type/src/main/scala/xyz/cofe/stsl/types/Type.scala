@@ -1,5 +1,8 @@
 package xyz.cofe.stsl.types
 
+/**
+ * Описывает тип данных
+ */
 trait Type extends Assignable with Extendable with Genericable {
 }
 
@@ -7,6 +10,7 @@ trait Type extends Assignable with Extendable with Genericable {
  * Предопределенные типы
  */
 object Type {
+  //TODO убрать отсюда
   /**
    * Системный, именнованый примитив
    */
