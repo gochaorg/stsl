@@ -1,6 +1,6 @@
 package xyz.cofe.stsl.types
 
-case class Param(name:String, tip: Type) extends Named with TypeVarReplace[Param] {
+class Param(val name:String, val tip: Type) extends Named with TypeVarReplace[Param] {
   require(name!=null)
   require(tip!=null)
   override def toString: String = s"${name}:${tip}"
@@ -20,4 +20,8 @@ case class Param(name:String, tip: Type) extends Named with TypeVarReplace[Param
     }
     //this
   }
+}
+
+object Param {
+  def apply(name: String, tip: Type): Param = new Param(name, tip)
 }
