@@ -4,7 +4,7 @@ package xyz.cofe.stsl.types
  * Параметры метода/функции
  * @param params список параметров
  */
-case class Params( params:List[Param]=List() ) extends Seq[Param] with TypeVarReplace[Params] with TypeVarFetch {
+class Params( val params:List[Param]=List() ) extends Seq[Param] with TypeVarReplace[Params] with TypeVarFetch {
   require(params!=null)
 
   params.groupBy(p=>p.name).foreach( p=>
