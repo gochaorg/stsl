@@ -1,7 +1,7 @@
 package xyz.cofe.stsl.types
 
 /**
- * Переменная типа - т.е переменная для подстановки типов
+ * Переменная типа - т.е переменная для подстановки типов {@link xyz.cofe.stsl.types.TypeVarReplace}
  * @param name Имя переменной
  * @param owner Владелей переменной, допускается владаец FN, THIS
  */

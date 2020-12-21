@@ -64,7 +64,17 @@ trait TypeVarReplace[A] {
     val rmap:Map[String,Type] = recipe.toMap
     typeVarReplace((tv:TypeVariable)=>rmap.get(tv.name))
   }
+
+  /**
+   * Замена переменных
+   */
   object typeVarBake {
+
+    /**
+     * Замена переменых чей владелец (owner) FN
+     * @param recipe правило замены
+     * @return новый тип
+     */
     def fn(recipe:(String,Type)*):A = {
       require(recipe!=null)
       val rmap:Map[String,Type] = recipe.toMap
@@ -76,6 +86,12 @@ trait TypeVarReplace[A] {
         }
       })
     }
+
+    /**
+     * Замена переменых чей владелец (owner) THIS
+     * @param recipe правило замены
+     * @return новый тип
+     */
     def thiz(recipe:Map[String,Type]):A = {
       require(recipe!=null)
       val rmap:Map[String,Type] = recipe
@@ -87,6 +103,12 @@ trait TypeVarReplace[A] {
         }
       })
     }
+
+    /**
+     * Замена переменых чей владелец (owner) THIS
+     * @param recipe правило замены
+     * @return новый тип
+     */
     def thiz(recipe:(String,Type)*):A = {
       require(recipe!=null)
       val rmap:Map[String,Type] = recipe.toMap
