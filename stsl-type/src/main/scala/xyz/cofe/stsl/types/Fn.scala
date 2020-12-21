@@ -9,11 +9,11 @@ package xyz.cofe.stsl.types
 class Fn( fgParams: GenericParams
              , fParams: Params
              , fReturn: Type
-             ) extends Fun {
+             ) extends Fun
+{
   require(fgParams!=null)
   require(fParams!=null)
   require(fReturn!=null)
-
 
   override def assignable(t: Type): Boolean = {
     require(t!=null)
@@ -56,6 +56,26 @@ class Fn( fgParams: GenericParams
       case gv:TypeVariable => List(gv)
       case _ => List()
     }
+
+  private def inputTypeVarFetch(from:List[Any] = List()) : List[TypeVarLocator] = fParams.params.flatMap { p =>
+    p.tip match {
+      case tv:TypeVariable => List(new TypeVarLocator(tv, p::this::from))
+      case tvf:TypeVarFetch => tvf.typeVarFetch(p::this::from)
+      case _ => List()
+    }
+  }
+  private def outputTypeVarFetch(from:List[Any] = List()) : List[TypeVarLocator] = fReturn match {
+    case tv:TypeVariable => List(new TypeVarLocator(tv, "returns"::this::from))
+    case tvf:TypeVarFetch => tvf.typeVarFetch("returns"::this::from)
+    case _ => List()
+  }
+  private def inoutTypeVarFetch(from:List[Any] = List()) : List[TypeVarLocator] = inputTypeVarFetch(from) ++ outputTypeVarFetch(from)
+
+  /**
+   * Извлечение переменных
+   * @return список переменных
+   */
+  override def typeVarFetch(from:List[Any] = List()): List[TypeVarLocator] = inoutTypeVarFetch(from)
 
   /**
    * Экземепляры переменных типа
@@ -184,10 +204,10 @@ class Fn( fgParams: GenericParams
 
     val retTypeVar : List[TypeVarLocator] = ret match {
       case tv:TypeVariable => List(new TypeVarLocator(tv))
-      case tvf:TypeVarFetch => tvf.typeVarFetch
+      case tvf:TypeVarFetch => tvf.typeVarFetch()
       case _ => List()
     }
-    val usedTypeVars = (paramz.typeVarFetch ++ retTypeVar).map({t => t.typeVar })
+    val usedTypeVars = (paramz.typeVarFetch() ++ retTypeVar).map({t => t.typeVar })
     ngenerics = new GenericParams((ngenerics.filter { gp => usedTypeVars.exists{ tv => tv.name == gp.name } }).toList)
 
     clone(ngenerics,paramz,ret)

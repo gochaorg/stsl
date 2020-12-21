@@ -67,11 +67,11 @@ class GenericInstance[A <: Type with TypeVarReplace[A]](
    * Извлечение переменных
    * @return список переменных
    */
-  override def typeVarFetch: List[TypeVarLocator] = {
+  override def typeVarFetch(from:List[Any] = List()): List[TypeVarLocator] = {
     recipe.flatMap { case (param, trgt) =>
       trgt match {
-        case tv: TypeVariable => List(new TypeVarLocator(tv))
-        case tvf: TypeVarFetch => tvf.typeVarFetch
+        case tv: TypeVariable => List(new TypeVarLocator(tv, param::this::from))
+        case tvf: TypeVarFetch => tvf.typeVarFetch(param::this::from)
         case _ => List()
       }
     }.toList

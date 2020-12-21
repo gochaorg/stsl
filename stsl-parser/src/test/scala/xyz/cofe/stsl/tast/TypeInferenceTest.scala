@@ -283,18 +283,30 @@ class TypeInferenceTest {
     val userListType = userListGenInstType.source.typeVarBake.thiz("A"->userType)
     println(describe(userListType))
 
-    val userMapFn = userListType.methods("map").head
+    val listMapFn = userListType.methods("map").head
 
-    println("\nuser map fn:")
-    println( "  "+userMapFn )
-    println( "  generics:"+userMapFn.generics )
-    println( "  returns:"+userMapFn.returns )
+    println("\nlist map fn:")
+    println( "  "+listMapFn )
+    println( "  generics:"+listMapFn.generics )
+    println( "  returns:"+listMapFn.returns )
+    println( "typeVarFetch:" )
+
+    val typeVarLocators = listMapFn.typeVarFetch()
+    typeVarLocators.foreach( tvl => {
+      println(s"locator ${tvl} t.var ${tvl.typeVar}")
+      println(s"  resolve ${tvl.resolve(listMapFn)}")
+    })
 
     val mapParam = mapLmbTAST.supplierType.asInstanceOf[Fun]
-    println("map param: "+mapParam)
+    println("\nmap param: "+mapParam)
 
-    println("typeVarBake:")
-    println( userMapFn.typeVarBake.fn("B" -> mapParam.returns ) );
-    //println(mapFn.typeVarBake.fn("B" -> malLmbTAST.supplierType ))
+    println("\ntypeVarBake:")
+    val usrListMapFn = listMapFn.typeVarBake.fn("B" -> mapParam.returns )
+    println( usrListMapFn )
+
+    typeVarLocators.foreach( tvl => {
+      println(s"locator ${tvl} t.var ${tvl.typeVar}")
+      println(s"  resolve ${tvl.resolve(usrListMapFn)}")
+    })
   }
 }

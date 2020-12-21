@@ -61,11 +61,12 @@ class Params( val params:List[Param]=List() ) extends Seq[Param] with TypeVarRep
    * Извлечение переменных
    * @return список переменных
    */
-  override def typeVarFetch: List[TypeVarLocator] = {
+  override def typeVarFetch(from:List[Any] = List()): List[TypeVarLocator] = {
+    val self = this
     params.flatMap { param =>
       param.tip match {
-        case tv:TypeVariable => List(new TypeVarLocator(tv))
-        case tvf:TypeVarFetch => tvf.typeVarFetch
+        case tv:TypeVariable => List(new TypeVarLocator(tv,param::self::from))
+        case tvf:TypeVarFetch => tvf.typeVarFetch(param::self::from)
         case _ => List()
       }
     }
