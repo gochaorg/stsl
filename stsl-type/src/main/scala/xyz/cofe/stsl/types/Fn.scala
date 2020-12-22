@@ -1,7 +1,38 @@
 package xyz.cofe.stsl.types
 
 /**
- * Функция
+ * Функция.
+ * <p>
+ *   Для создания вызываемой функции используйте invoke / invoking
+ *
+ * <p>
+ *   Пример создания функции
+ *   <ul>
+ *     <li> <code> Fn(Params("a" -> INT),INT) </code>
+ *     <ul>
+ *        <li> Создает функцию с одним аргментом
+ *        <li> имя аргумента <b>a</b>,
+ *        <li> тип аргмента <b>INT</b>
+ *        <li> возвращает тип <b>INT<b>
+ *     </ul>
+ *     <li> <code>
+ *       Fn( <br>
+ *       &nbsp;  GenericParams( <br>
+ *       &nbsp; &nbsp;    AnyVariant("A"), AnyVariant("B") ), <br>
+ *       &nbsp;  Params( <br>
+ *       &nbsp; &nbsp;    "a" -> TypeVariable("A", Type.FN)
+ *         ), <br>
+ *       &nbsp;  TypeVariable("B", Type.FN) <br>
+ *       )
+ *       <code>
+ *       <ul>
+ *         <li> Создает функцию с типа параметрами (GenericParams) A, B
+ *         <li> Один аргумент, с именем <b>a</b> и типом переменной <b>A</b>
+ *         <li> Тип результата - тип переменная <b>B</b>
+ *         <li> сигнатура (toString()) = <code>[A,B](a:A):B</code>
+ *       </ul>
+ *   </ul>
+ *
  * @param fgParams Определение переменных типа - функции
  * @param fParams Параметры функции
  * @param fReturn Результат функции
@@ -91,10 +122,26 @@ class Fn( fgParams: GenericParams
       }
     )
 
+  /**
+   * Список параметров типа
+   */
   override lazy val generics: GenericParams = fgParams
+
+  /**
+   * Параметры функции
+   */
   override lazy val parameters: Params = fParams
+
+  /**
+   * Результат вызова функции
+   */
   override lazy val returns: Type = fReturn
 
+  /**
+   * Замена переменных
+   * @param recipe правило замены
+   * @return новый тип
+   */
   override def typeVarReplace(recipe: TypeVariable => Option[Type]): Fun = {
     val ret : Type = returns match {
       case tv:TypeVariable =>recipe(tv).getOrElse(
@@ -321,6 +368,9 @@ class Fn( fgParams: GenericParams
   }
 }
 
+/**
+ * Создание функции
+ */
 object Fn {
   def apply(fgParams: GenericParams, fParams: Params, fReturn: Type): Fn = new Fn(fgParams, fParams, fReturn)
   def apply(fParams: Params, fReturn: Type): Fn = new Fn(GenericParams(), fParams, fReturn)

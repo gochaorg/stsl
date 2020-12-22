@@ -1,11 +1,18 @@
 package xyz.cofe.stsl.types
 
+/**
+ * Тип параметра - модели ковариантности
+ */
 sealed trait GenericParam extends Type with Named {
   override lazy val extend: Option[Type] = None
   override lazy val generics: GenericParams = GenericParams()
   def sameType(t:GenericParam):Boolean
 }
 
+/**
+ * Тип переменная {@link TypeVariable} может указывать на любой тип.
+ * @param name имя переменной
+ */
 case class AnyVariant(name:String) extends GenericParam {
   require(name!=null)
   override def assignable(t: Type): Boolean = {
@@ -22,6 +29,15 @@ case class AnyVariant(name:String) extends GenericParam {
   }
 }
 
+/**
+ * Тип переменная {@link TypeVariable} указывает на ковариантный тип:
+ * <i style="color: #4a1a9e">selfType</i>.
+ * <i>assignable</i>(
+ * <i style="color: #9e1953">someType</i>
+ * ).
+ * @param name имя переменной
+ * @param tip тип переменной
+ */
 case class CoVariant(name:String, tip:Type) extends GenericParam {
   require(name!=null)
   require(tip!=null)
@@ -44,6 +60,15 @@ case class CoVariant(name:String, tip:Type) extends GenericParam {
   }
 }
 
+/**
+ * Тип переменная {@link TypeVariable} указывает на контрвариантный тип:
+ * <i style="color: #9e1953">someType</i>.
+ * <i>assignable</i>(
+ *  <i style="color: #4a1a9e">selfType</i>
+ * ).
+ * @param name имя переменной
+ * @param tip тип переменной
+ */
 case class ContraVariant(name:String, tip:Type) extends GenericParam {
   require(name!=null)
   require(tip!=null)

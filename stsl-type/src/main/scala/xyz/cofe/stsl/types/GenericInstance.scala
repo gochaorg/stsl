@@ -21,6 +21,10 @@ class GenericInstance[A <: Type with TypeVarReplace[A]](
     }
   })
 
+  /**
+   * Возвращает сигнатуру типа
+   * @return сигнатура
+   */
   override def toString: String = {
     val sb = new StringBuilder()
     if( recipe.isEmpty ){

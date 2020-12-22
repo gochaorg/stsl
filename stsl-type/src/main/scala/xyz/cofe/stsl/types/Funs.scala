@@ -38,8 +38,23 @@ class Funs( private val functions: List[Fun] ) extends Seq[Fun] {
 
   //region Методы Seq[Fun]
 
+  /**
+   * Кол-во элементов в списке
+   * @return Кол-во элементов
+   */
   override def length: Int = funs.length
+
+  /**
+   * Возвращает итератор по функциям
+   * @return итератор по функциям
+   */
   override def iterator: Iterator[Fun] = funs.iterator
+
+  /**
+   * Возвращает функцию по ее индексу в списке
+   * @param idx индекс функции
+   * @return функция
+   */
   override def apply(idx: Int): Fun = funs.apply(idx)
   //endregion
 }

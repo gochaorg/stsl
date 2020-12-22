@@ -9,6 +9,10 @@ class Fields( private val fieldList:List[Field]=List(), val owner:Type=Type.VOID
   require(fieldList!=null)
   require(owner!=null)
 
+  /**
+   * Возвращает список полей класса
+   * @return список полей класса
+   */
   def fields:List[Field]=fieldList
 
   /**
@@ -22,13 +26,40 @@ class Fields( private val fieldList:List[Field]=List(), val owner:Type=Type.VOID
 
   validateDuplicates()
 
+  /**
+   * Возвращает кол-во полей класса
+   * @return кол-во полей класса
+   */
   override def length: Int = fields.length
+
+  /**
+   * Возвращает итератор по полям класса
+   * @return итератор по полям класса
+   */
   override def iterator: Iterator[Field] = fields.iterator
+
+  /**
+   * Возвращает поле класса по его индексу
+   * @param idx индекс поля
+   * @return поле класса
+   */
   def apply(idx:Int):Field = fields(idx)
+
+  /**
+   * Возвращает поле класса по его имени
+   * @param fieldName имя поля
+   * @return поле класса
+   */
   def apply(fieldName:String):Field = {
     require(fieldName!=null)
     filter(_.name == fieldName).head
   }
+
+  /**
+   * Возвращает поле класса по его имени
+   * @param fieldName имя поля
+   * @return поле класса
+   */
   def get(fieldName:String):Option[Field] = {
     require(fieldName!=null)
     filter(_.name == fieldName).headOption

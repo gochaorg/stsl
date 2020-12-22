@@ -2,6 +2,10 @@ package xyz.cofe.stsl.types
 
 /**
  * Функция с возможностью вызова
+ * @param fgParams Список типов параметров
+ * @param fParams Параметры функции
+ * @param fReturn Возвращаемый тип данных
+ * @param call Реализация функции
  */
 class CallableFn( fgParams: GenericParams
                 , fParams: Params
