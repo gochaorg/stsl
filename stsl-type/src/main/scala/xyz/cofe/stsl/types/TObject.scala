@@ -24,8 +24,16 @@ class TObject( Name:String,
   private val intName = Name
 
   private var freezedValue : Boolean = false
+
+  /**
+   * Проверка что объект уже заморожен
+   * @return true - объект уже заморожен, его нельзя изменять
+   */
   def freezed : Boolean = freezedValue
 
+  /**
+   * Заморозка объекта
+   */
   def freeze:Unit = {
     validateTypeVariables()
     freezedValue = true
@@ -36,7 +44,18 @@ class TObject( Name:String,
   //endregion
 
   private var nameValue : String = Name
+
+  /**
+   * Возвращает название класса
+   * @return название класса
+   */
   override def name: String = nameValue
+
+  /**
+   * Указывает название класса
+   * @param value название класса
+   * @return новое название класса
+   */
   def name_=( value:String ):String = {
     require(value!=null)
     require(value.trim.length>0)
@@ -44,19 +63,41 @@ class TObject( Name:String,
     nameValue = value
     value
   }
+
+  /**
+   * Указывает название класса
+   * @param value название класса
+   * @return self ссылка
+   */
   def setName( value:String ):TObject = {
     this.name = value
     this
   }
 
   private var extendValue = oextend
+
+  /**
+   * Возвращает родительский класс/тип данных
+   * @return родительский класс/тип данных
+   */
   override def extend: Option[Type] = extendValue
+
+  /**
+   * Указывает родительский тип данных
+   * @return родительский класс/тип данных
+   */
   def extend_=( value:Option[Type] ):Option[Type] = {
     require(value!=null)
     if( freezed )throw TypeError("freezed")
     extendValue = value
     extendValue
   }
+
+  /**
+   * Указывает родительский тип данных
+   * @param parentType родительский класс/тип данных
+   * @return self ссылка
+   */
   def extend( parentType:Type ):TObject = {
     require(parentType!=null)
     this.extend = Some(parentType)

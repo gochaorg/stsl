@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import org.junit.jupiter.api.Test
 import xyz.cofe.stsl.ast.{ASTDump, Parser}
 import xyz.cofe.stsl.tast.JvmType._
-import xyz.cofe.stsl.types.{AnyVariant, CallableFn, Fn, Fun, GenericInstance, GenericParams, Params, TObject, TypeVariable}
+import xyz.cofe.stsl.types.{AnyVariant, CallableFn, Fn, Fun, GenericInstance, GenericParams, Params, TObject, TypeVarLocator, TypeVariable}
 import xyz.cofe.stsl.types.Type._
 import xyz.cofe.stsl.types.TypeDescriber.describe
 
@@ -289,24 +289,31 @@ class TypeInferenceTest {
     println( "  "+listMapFn )
     println( "  generics:"+listMapFn.generics )
     println( "  returns:"+listMapFn.returns )
-    println( "typeVarFetch:" )
+    println( "  typeVarFetch:" )
 
     val typeVarLocators = listMapFn.typeVarFetch()
     typeVarLocators.foreach( tvl => {
-      println(s"locator ${tvl} t.var ${tvl.typeVar}")
-      println(s"  resolve ${tvl.resolve(listMapFn)}")
+      println(s"  locator ${tvl} t.var ${tvl.typeVar}")
+      println(s"    resolve ${tvl.resolve(listMapFn)}")
     })
 
     val mapParam = mapLmbTAST.supplierType.asInstanceOf[Fun]
     println("\nmap param: "+mapParam)
 
-    println("\ntypeVarBake:")
-    val usrListMapFn = listMapFn.typeVarBake.fn("B" -> mapParam.returns )
-    println( usrListMapFn )
+    val tvlParam1 = typeVarLocators.head
+    val tvlParam2 = new TypeVarLocator(tvlParam1.typeVar, tvlParam1.path.dropRight(2))
+    println( s"  type param relative fn param: $tvlParam2" )
 
-    typeVarLocators.foreach( tvl => {
-      println(s"locator ${tvl} t.var ${tvl.typeVar}")
-      println(s"  resolve ${tvl.resolve(usrListMapFn)}")
-    })
+    val trgtType = tvlParam2.resolve(mapParam)
+    println(s"  target type: $trgtType")
+
+    println("\ntypeVarBake:")
+    val usrListMapFn = listMapFn.typeVarBake.fn("B" -> trgtType.get )
+    println( "  "+usrListMapFn )
+//
+//    typeVarLocators.foreach( tvl => {
+//      println(s"locator ${tvl} t.var ${tvl.typeVar}")
+//      println(s"  resolve ${tvl.resolve(usrListMapFn)}")
+//    })
   }
 }

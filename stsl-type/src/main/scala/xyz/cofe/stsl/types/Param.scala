@@ -1,5 +1,10 @@
 package xyz.cofe.stsl.types
 
+/**
+ * Параметр метода / функции
+ * @param name имя функции
+ * @param tip тип функции
+ */
 class Param(val name:String, val tip: Type) extends Named with TypeVarReplace[Param] {
   require(name!=null)
   require(tip!=null)
