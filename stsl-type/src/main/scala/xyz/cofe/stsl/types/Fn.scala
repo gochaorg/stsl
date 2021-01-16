@@ -1,5 +1,7 @@
 package xyz.cofe.stsl.types
 
+import java.util
+
 /**
  * Функция.
  * <p>
@@ -279,6 +281,15 @@ class Fn( fgParams: GenericParams
     new CallableFn(generics,parameters,returns,impl)
   }
 
+  def callable[Z]( impl: java.util.function.Function[java.util.List[Any],Any] ):CallableFn = {
+    require(impl!=null)
+    new CallableFn(generics,parameters,returns,args => {
+      val list = new util.ArrayList[Any]()
+      args.foreach(list.add)
+      impl.apply(list)
+    })
+  }
+
   /**
    * Указывает реализацию
    * @param impl реализация функции
@@ -374,4 +385,5 @@ class Fn( fgParams: GenericParams
 object Fn {
   def apply(fgParams: GenericParams, fParams: Params, fReturn: Type): Fn = new Fn(fgParams, fParams, fReturn)
   def apply(fParams: Params, fReturn: Type): Fn = new Fn(GenericParams(), fParams, fReturn)
+  def create(fParams: Params, fReturn: Type): Fn = new Fn(GenericParams(), fParams, fReturn)
 }

@@ -1,7 +1,10 @@
 package xyz.cofe.stsl.types
 
+import java.util
+
 /**
  * Определение класса данных/объектов
+ *
  * @param Name Имя класса
  * @param ogenerics Параметры типа
  * @param oextend Какой тип расширяет
@@ -263,6 +266,145 @@ object TObject {
     }
   )
 
+  //region Конструирование объекта
+  class FieldBuilder(
+                      private var fields: Fields,
+                      private val newFields:(Fields)=>Any,
+                      private val fb: FieldsBuilder,
+                      val name:String, val tip:Type ){
+    //def build:Fields = fields
+    private var field = new Field(name,tip)
+    def add:FieldsBuilder = {
+      fields = new Fields((fields.filter( f => f.name != name ) ++ List(field)).toList)
+      newFields(fields)
+      fb
+    }
+    def writeable( read:java.util.function.Function[Any,Any], write:java.util.function.BiFunction[Any,Any,Any]
+                 ):FieldBuilder = {
+      require(read!=null)
+      require(write!=null)
+      field = field.writeable( obj => read.apply(obj), (obj,fldVal)=>write.apply(obj,fldVal) )
+      this
+    }
+    def build:Fields = this.fields
+  }
+  class FieldsBuilder( private var fields:Fields ) {
+    def build:Fields = fields
+    def fileld(name:String, fieldType:Type):FieldBuilder = {
+      require(name!=null)
+      require(fieldType!=null)
+      new FieldBuilder(fields, flds => {
+        fields = flds
+      }, this, name, fieldType)
+    }
+  }
+
+  class ParamsBuilder {
+    private var params:Params = Params()
+    def build:Params = params
+    def param(name:String, tip:Type):ParamsBuilder = {
+      require(name!=null)
+      require(tip!=null)
+      params = Params( params.toList ++ List(Param(name,tip)) )
+      this
+    }
+  }
+
+  class MethodBuilder( private val mb:MethodsBuilder, private val methods:MutableMethods ){
+    private var name:Option[String] = None
+    def getName:String = name.orNull
+    def setName(newName:String):Unit = {
+      require(newName!=null)
+      name = Some(newName)
+    }
+    def name(newName:String):MethodBuilder = {
+      setName(newName)
+      this
+    }
+
+    private var generics:GenericParams = GenericParams()
+    def getGenerics:GenericParams = generics
+    def setGenerics(newGenerics:GenericParams):Unit = {
+      require(newGenerics!=null)
+      generics = newGenerics
+    }
+    def generics(newGenerics:GenericParams):MethodBuilder = {
+      setGenerics(newGenerics)
+      this
+    }
+
+    private var params:Params = Params()
+    def getParams:Params = params
+    def setParams(newParams:Params):Unit = {
+      require(newParams!=null)
+      params = newParams
+    }
+    def params(newParams:Params):MethodBuilder = {
+      require(newParams!=null)
+      params = newParams
+      this
+    }
+    def params(builder: java.util.function.Consumer[ParamsBuilder]):MethodBuilder = {
+      require(builder!=null)
+      val pb = new ParamsBuilder
+      builder.accept(pb)
+      params = pb.build
+      this
+    }
+
+    private var result:Type = Type.VOID
+    def getResult:Type = result
+    def setResult(newResult:Type):Unit = {
+      require(newResult!=null)
+      result = newResult
+    }
+    def result(newResult:Type):MethodBuilder = {
+      require(newResult!=null)
+      result = newResult
+      this
+    }
+
+    private var call : Option[Seq[Any] => Any] = None
+    def getCall:Seq[Any]=>Any = call.orNull
+    def setCall(newCall:Seq[Any]=>Any):Unit = {
+      require(newCall!=null)
+      call = Some(newCall)
+    }
+    def invoking(newCall:Seq[Any]=>Any):MethodBuilder = {
+      require(newCall!=null)
+      call = Some(newCall)
+      this
+    }
+    def callable(newCall:java.util.List[Any]=>Any):MethodBuilder = {
+      require(newCall!=null)
+      call = Some(args=>{
+        val ls = new util.ArrayList[Any]()
+        args.foreach(ls.add)
+        newCall.apply(ls)
+      })
+      this
+    }
+
+    def add:MethodsBuilder = {
+      if( name==null )throw TypeError("name not set")
+      var f = Fn(generics, params, result)
+      if( call.isDefined ){
+        f = f.invoking(call.get)
+      }
+      methods.append(name.get, f)
+      mb
+    }
+  }
+  class MethodsBuilder( private var methods: Methods ){
+    private val mutMethods = new MutableMethods(methods.funs);
+    def build():Methods = mutMethods
+    def method( builder:java.util.function.Consumer[MethodBuilder] ):MethodsBuilder = {
+      require(builder!=null)
+      builder.accept( new MethodBuilder(this, mutMethods))
+      this
+    }
+  }
+
   class Builder( val name:String ) {
     private var oextend:Option[Type] = Some(Type.ANY)
     def extend(ext:Option[Type]):Builder = {
@@ -287,6 +429,7 @@ object TObject {
       ogenerics = new GenericParams(newGenerics.toList)
       this
     }
+
     private var ofields = Fields()
     def fields(newFields:Fields):Builder = {
       require(newFields!=null)
@@ -298,6 +441,14 @@ object TObject {
       ofields = new Fields( newFields.map(f=> new Field(f._1,f._2)).toList )
       this
     }
+    def fileds(builder:java.util.function.Consumer[FieldsBuilder]):Builder = {
+      require(builder!=null)
+      val bld = new FieldsBuilder(ofields)
+      builder.accept(bld)
+      ofields = bld.build
+      this
+    }
+
     private var omethods = new Methods()
     def methods(newMethods:Methods):Builder = {
       require(newMethods!=null)
@@ -311,6 +462,14 @@ object TObject {
       omethods = new Methods(map2)
       this
     }
+    def methods(builder:java.util.function.Consumer[MethodsBuilder]):Builder = {
+      require(builder!=null)
+      val mths = new MethodsBuilder(omethods)
+      builder.accept(mths)
+      omethods = mths.build()
+      this
+    }
+
     def build:TObject = {
       new TObject(
         name,
@@ -325,4 +484,6 @@ object TObject {
   }
 
   def apply(Name: String) = new Builder(Name)
+  def create(Name:String) = new Builder(Name)
+  //endregion
 }

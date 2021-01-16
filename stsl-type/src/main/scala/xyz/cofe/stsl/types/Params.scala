@@ -76,4 +76,25 @@ class Params( val params:List[Param]=List() ) extends Seq[Param] with TypeVarRep
 object Params {
   def apply(params: (String,Type)*): Params = new Params(params.map(p=>Param(p._1, p._2)).toList)
   def apply(params: List[Param]): Params = new Params(params)
+
+  def empty(): Params = new Params()
+
+  class Builder( private val first:Param ) {
+    private var params : List[Param] = List(first)
+    def add( name:String, tip:Type ):Builder = {
+      require(name!=null)
+      require(tip!=null)
+      params = params ++ List( Param(name,tip) )
+      this
+    }
+    def build():Params = {
+      Params(params)
+    }
+  }
+
+  def create(name:String, tip:Type):Builder = {
+    require(name!=null)
+    require(tip!=null)
+    new Builder(Param(name,tip))
+  }
 }

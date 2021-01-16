@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import xyz.cofe.stsl.tast.JvmType.INT
 import xyz.cofe.stsl.types.Type.THIS
 import xyz.cofe.stsl.types.pset.PartialSet
-import xyz.cofe.stsl.types.{Fun, Named, Obj, TObject, Type}
+import xyz.cofe.stsl.types.{CallableFn, Fun, Named, Obj, TObject, Type}
 
 /**
  * Область "видимых" типов данных
@@ -122,6 +122,12 @@ class TypeScope {
     require(value!=null)
     implicitsInst = value
     nextScn
+  }
+
+  def getImplicits():List[Fun] = implicitsInst.toList
+  def setImplicits( implicitsCalls : List[CallableFn] ):Unit = {
+    require(implicitsCalls!=null)
+    implicitsInst = implicitsCalls
   }
   //endregion
   //region graph:PartialSet[Type]
