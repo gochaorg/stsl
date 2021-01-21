@@ -1,7 +1,7 @@
 package xyz.cofe.stsl.types
 
 /**
- * Описывает расположение переменной
+ * Описывает расположение переменной типа {@link TypeVariable} в {@link GenericInstance}, {@link Fun}
  * @param typeVar Переменная
  * @param path Путь
  */
@@ -25,6 +25,11 @@ class TypeVarLocator(
     sb.toString()
   }
 
+  /**
+   * Разрешает вложенный тип относительно указанного типа
+   * @param from корневой тип
+   * @return вложенный тип
+   */
   def resolve(from:Type):Option[Type] = {
     require(from!=null)
     var frm = from
