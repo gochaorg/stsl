@@ -87,6 +87,17 @@ trait TypeVarReplace[A] {
       })
     }
 
+    def fn(recipe:Map[String,Type]):A = {
+      require(recipe!=null)
+      typeVarReplace((tv:TypeVariable)=>{
+        if( tv.owner==Type.FN ) {
+          recipe.get(tv.name)
+        }else{
+          None
+        }
+      })
+    }
+
     /**
      * Замена переменых чей владелец (owner) THIS
      * @param recipe правило замены

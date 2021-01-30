@@ -21,6 +21,39 @@ sealed trait LocatorItem {
   
   lazy val asList:List[LocatorItem] = toList
   //endregion
+
+  /**
+   * Определение вложенного типа среди указанного
+   * @param from функция относительно которой происходит определение
+   * @param args передаваемые типы аргументов в функцию
+   * @return тип
+   */
+  def resolve( from:Fun, args:Seq[Type] ):Option[Type] = {
+    require(from!=null)
+    require(args!=null)
+    var t : Type = from
+    var argz = args
+    var li = this
+    while( t!=null && li!=null ){
+      li match {
+        case fp:LocatorItemFunParam =>
+          if( argz!=null ){
+            t = fp.resolveNext(t, argz).orNull
+            li = li.next.orNull
+            argz = null
+          }else{
+            t = null
+          }
+        case fr:LocatorItemFunResult =>
+          t = fr.resolveNext(t).orNull
+          li = li.next.orNull
+        case gi:LocatorItemGenericInstance[_] =>
+          t = gi.resolveNext(t).orNull
+          li = li.next.orNull
+      }
+    }
+    Option(t)
+  }
 }
 
 /**
@@ -33,7 +66,15 @@ case class LocatorItemGenericInstance[A <: xyz.cofe.stsl.types.Type with xyz.cof
   ( gi:GenericInstance[A]
   , param:String
   , next:Option[LocatorItem]
-  ) extends LocatorItem
+  ) extends LocatorItem {
+  def resolveNext( from:Type ):Option[Type] = {
+    from match {
+      case g:GenericInstance[_] =>
+        g.recipe.get(param)
+      case _ => None
+    }
+  }
+}
 
 /**
  * Компонент указывает на параметр функции
@@ -66,7 +107,14 @@ case class LocatorItemFunParam
 case class LocatorItemFunResult
 ( fun:Fun
   , next:Option[LocatorItem]
-) extends LocatorItem
+) extends LocatorItem {
+  def resolveNext( from:Type ):Option[Type] = {
+    from match {
+      case f:Fun => Some(f.returns)
+      case _ => None
+    }
+  }
+}
 
 object LocatorItem {
   def genericInstance[A <: xyz.cofe.stsl.types.Type with xyz.cofe.stsl.types.TypeVarReplace[A]]

@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import org.junit.jupiter.api.Test
 import xyz.cofe.stsl.ast.{ASTDump, Parser}
 import xyz.cofe.stsl.tast.JvmType._
-import xyz.cofe.stsl.types.{AnyVariant, CallableFn, Fn, Fun, GenericInstance, GenericParams, LocatorItem, LocatorItemFunParam, LocatorItemFunResult, LocatorItemGenericInstance, Params, TObject, TypeVarLocator, TypeVariable}
+import xyz.cofe.stsl.types.{AnyVariant, CallableFn, Fn, Fun, GenericInstance, GenericParams, LocatorItem, LocatorItemFunParam, LocatorItemFunResult, LocatorItemGenericInstance, Params, TObject, Type, TypeVarLocator, TypeVariable}
 import xyz.cofe.stsl.types.Type._
 import xyz.cofe.stsl.types.TypeDescriber.describe
 
@@ -311,12 +311,33 @@ class TypeInferenceTest {
     val usrListMapFn = listMapFn.typeVarBake.fn("B" -> trgtType.get )
     println( "  "+usrListMapFn )
 
+    println("\nLocatorItem parse:")
     val tvlItms = LocatorItem.parse(tvlParam1.path)
-    tvlItms.get.toList.foreach {
-      case fp: LocatorItemFunParam => println(s"fp -> ${fp.param.name}")
-      case fr: LocatorItemFunResult => println(s"fr -> ${fr.fun.returns}")
-      case gi: LocatorItemGenericInstance[_] => println(s"gi -> ${gi.gi.recipe(gi.param)}")
+    tvlItms.get.toList.zipWithIndex.foreach { case(li,lii) =>
+      val ident = ("_"*(lii+1))
+      li match {
+        case fp: LocatorItemFunParam => println( ident+ s"fp -> ${fp.param.name}")
+        case fr: LocatorItemFunResult => println( ident+ s"fr -> ${fr.fun.returns}")
+        case gi: LocatorItemGenericInstance[_] => println( ident+ s"gi -> ${gi.gi.recipe(gi.param)}")
+      }
     }
+
+    if( tvlItms.isDefined ){
+      println(s"Locator item resolving from ${listMapFn}")
+      println(s"  generics: ${listMapFn.generics}")
+
+      val trgt = tvlItms.get.resolve(listMapFn,List(userListType, mapParam))
+      println(s"resolved as ${trgt}")
+    }
+
+    typeVarLocators.map(tvl => LocatorItem.parse(tvl.path))
+      .filter(li=>li.isDefined)
+      .map(li=>li.get)
+      .foreach(li=>{
+        val trgt = li.resolve(listMapFn,List(userListType, mapParam))
+        println(s"Locator ${li}")
+        println(trgt)
+      })
 
     println("- "*30)
     val mapListSrc = "lst.map( x : User => x.name )"
@@ -327,9 +348,9 @@ class TypeInferenceTest {
     println("ast:")
     mapListAst.foreach(ASTDump.dump)
 
-//    val mapListTAST = toaster.compile(mapListAst.get)
-//    println("tast:")
-//    TASTDump.dump(mapListTAST)
+    val mapListTAST = toaster.compile(mapListAst.get)
+    println("tast:")
+    TASTDump.dump(mapListTAST)
 
 //    typeVarLocators.foreach( tvl => {
 //      println(s"locator ${tvl} t.var ${tvl.typeVar}")

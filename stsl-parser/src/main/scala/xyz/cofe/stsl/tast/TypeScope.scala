@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import xyz.cofe.stsl.tast.JvmType.INT
 import xyz.cofe.stsl.types.Type.THIS
 import xyz.cofe.stsl.types.pset.PartialSet
-import xyz.cofe.stsl.types.{CallableFn, Fun, Named, Obj, TObject, Type}
+import xyz.cofe.stsl.types.{CallableFn, Fun, LocatorItem, LocatorItemFunParam, Named, Obj, TObject, Type}
 
 /**
  * Область "видимых" типов данных
@@ -172,17 +172,45 @@ class TypeScope {
   }
 
   private def callType( fun:Fun, args:List[Type], thiz:Option[TObject] ):CallType = {
-    new CallType( fun,
-      fun.parameters.map( p => p.tip match {
-        case Type.FN => fun
+    var tfun = fun
+    if( fun.generics.nonEmpty ){
+      //println(s"DEBUG calltype() generic fun ${fun} with args ${args}")
+      //val typeVarLocators = fun.typeVarFetch()
+      val locators = fun.typeVarFetch()
+        .map( tvf => (tvf.typeVar,LocatorItem.parse(tvf.path)) )
+        .filter( _._2.isDefined )
+        .map( i => (i._1, i._2.get) )
+        .filter( i => i._2.isInstanceOf[LocatorItemFunParam] )
+        .map( i => (i._1, i._2.asInstanceOf[LocatorItemFunParam]) )
+        .groupBy( i => i._1 )
+        .mapValues( l => l.map(_._2) )
+        .mapValues( l => l.map( _.resolve(fun,args)) )
+        .mapValues( l => l.filter(_.isDefined).map(_.get) )
+
+      locators.foreach{ case(tv,tps)=>
+        //println(s"DEBUG tv ${tv.name} to ${tps}")
+      }
+
+      val singleVariant = locators.filter{ case (tv,ls)=>ls.size==1 }.mapValues( _.head )
+      val nfun = fun.typeVarBake.fn(
+        singleVariant.map({case (k,v) => (k.name, v)})
+      )
+
+      //println(s"DEBUG target fun $nfun")
+      tfun = nfun
+    }
+
+    new CallType( tfun,
+      tfun.parameters.map( p => p.tip match {
+        case Type.FN => tfun
         case THIS => thiz.getOrElse(p.tip)
         case _ => p.tip
       }).toList,
       args,
-      fun.returns match {
-        case Type.FN => fun
-        case THIS => thiz.getOrElse(fun.returns)
-        case _ => fun.returns
+      tfun.returns match {
+        case Type.FN => tfun
+        case THIS => thiz.getOrElse(tfun.returns)
+        case _ => tfun.returns
       }
     )
   }

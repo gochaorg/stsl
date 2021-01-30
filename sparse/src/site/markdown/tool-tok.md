@@ -25,3 +25,34 @@ trait Tok[P <: Pointer[_,_,_] ] {
   def end():P
 }
 ```
+
+Примеры
+-----------------------------
+
+Для удобства использования введен дополнительный класс `CToken`
+
+```scala
+class CToken( val begin : CharPointer
+            , val end : CharPointer 
+            ) extends Tok[CharPointer] {
+  lazy val text : String
+}
+```
+
+Пример лексемы обозначающей цифру:
+
+```scala
+class DigitToken( begin:CharPointer
+                  , end:CharPointer
+                  , val value:Int )
+  extends CToken(begin,end)
+```
+
+Пример лексемы обозначающей число:
+
+```scala
+class IntergerTok(begin:CharPointer
+                  , end:CharPointer
+                  , val value:Int = 0 )
+  extends CToken(begin,end)
+```

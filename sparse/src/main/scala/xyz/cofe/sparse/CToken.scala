@@ -5,7 +5,7 @@ package xyz.cofe.sparse
  * @param begin начало лексемы
  * @param end конец лексемы
  */
-case class CToken( val begin : CharPointer, val end : CharPointer ) extends Tok[CharPointer] {
+class CToken( val begin : CharPointer, val end : CharPointer ) extends Tok[CharPointer] {
   lazy val text = {
     begin.text( end.pointer() - begin.pointer() )
   }
@@ -24,4 +24,6 @@ object CToken {
    * @return Лексема
    */
   def apply[A <: CToken](toks:Seq[A]):CToken = new CToken(toks.head.begin, toks.last.end)
+
+  def apply(begin:CharPointer, end:CharPointer) = new CToken(begin, end)
 }
