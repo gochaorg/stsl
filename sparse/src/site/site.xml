@@ -6,10 +6,12 @@
     </skin>
     <body>
         <menu name="Overview">
-            <item name="Foo" href="foo.html" />
-            <item name="FAQ" href="faq.html" />
+            <item name="Парсинг" href="parse.html" />
+            <item name="Указатели" href="tool-ptr.html" />
+            <item name="Лексемы" href="tool-tok.html" />
+            <item name="Синтаксическое правило" href="tool-gr.html" />
         </menu>
         <menu ref="reports"/>
-        <footer><![CDATA[All rights reserved.]]></footer>
+        <!-- <footer><![CDATA[All rights reserved.]]></footer> -->
     </body>
 </project>

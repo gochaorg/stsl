@@ -352,6 +352,10 @@ class TypeInferenceTest {
     println("tast:")
     TASTDump.dump(mapListTAST)
 
+    val res = mapListTAST.supplier.get()
+    println("\ncall")
+    println(res)
+
 //    typeVarLocators.foreach( tvl => {
 //      println(s"locator ${tvl} t.var ${tvl.typeVar}")
 //      println(s"  resolve ${tvl.resolve(usrListMapFn)}")
