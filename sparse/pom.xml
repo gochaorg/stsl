@@ -52,8 +52,8 @@
                 <configuration>
                     <inputEncoding>UTF-8</inputEncoding>
                     <outputEncoding>UTF-8</outputEncoding>
-<!--                    <generateReports>false</generateReports>-->
-                    <generateReports>true</generateReports>
+                    <generateReports>false</generateReports>
+<!--                    <generateReports>true</generateReports>-->
                 </configuration>
             </plugin>
         </plugins>

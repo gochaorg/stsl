@@ -10,6 +10,7 @@
             <item name="Указатели" href="tool-ptr.html" />
             <item name="Лексемы" href="tool-tok.html" />
             <item name="Синтаксическое правило" href="tool-gr.html" />
+            <item name="Комбинации правил" href="tool-gops.html" />
         </menu>
         <menu ref="reports"/>
         <!-- <footer><![CDATA[All rights reserved.]]></footer> -->
