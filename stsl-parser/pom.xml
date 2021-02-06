@@ -75,6 +75,25 @@
                     <!--                    <groups>Stable, UnStable</groups>-->
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.9.1</version>
+                <dependencies>
+                    <!-- add optional Markdown processor -->
+                    <dependency>
+                        <groupId>org.apache.maven.doxia</groupId>
+                        <artifactId>doxia-module-markdown</artifactId>
+                        <version>1.9.1</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <inputEncoding>UTF-8</inputEncoding>
+                    <outputEncoding>UTF-8</outputEncoding>
+                    <generateReports>false</generateReports>
+                    <!--                    <generateReports>true</generateReports>-->
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
