@@ -25,4 +25,10 @@ class LexerTest {
     val toks = Lexer.tokenizer("10 12f 13d 14w 12.3w")
     toks.foreach(println)
   }
+
+  @Test
+  def unicode01():Unit = {
+    val toks = Lexer.tokenizer("10 'x\\'y' 'x\\u005Dy' \"x\\u005Dy\" ")
+    toks.foreach(println)
+  }
 }

@@ -33,7 +33,7 @@ object Lexer {
       val n2 = UnTypedNumberTok.digitOf(d2.text.charAt(0))
       val n3 = UnTypedNumberTok.digitOf(d3.text.charAt(0))
       val n4 = UnTypedNumberTok.digitOf(d4.text.charAt(0))
-      val n = (n1 << 24) | (n2 << 16) | (n3 << 8) | n4
+      val n = (n1 << 12) | (n2 << 8) | (n3 << 4) | n4
       val ch = n.toChar
       new StringLiteralChar(
         s1.begin, d4.end, ch.toString
@@ -48,7 +48,7 @@ object Lexer {
       case _ => b.text
     }) }
   private val strNonEncChar1 = charTok(c => c!='\\' && c!='\"') ==> { a => new StringLiteralChar(a.begin, a.end, a.text) }
-  private val strInnerChar1 = ( strEncChar | strEncUnicodeChar | strNonEncChar1 ) ==> { a => new StringLiteralChar(a.begin, a.end, a.decoded) }
+  private val strInnerChar1 = ( strEncUnicodeChar | strEncChar  | strNonEncChar1 ) ==> { a => new StringLiteralChar(a.begin, a.end, a.decoded) }
   private val string1 = strBegin1 + strInnerChar1*0 + strBegin1 ==> { (b, c, e) =>
     new StringTok(b.begin, e.end,
       if( c.nonEmpty ) {
@@ -63,7 +63,7 @@ object Lexer {
 
   private val strBegin2 = charTok( _=='\'' )
   private val strNonEncChar2 = charTok(c => c!='\\' && c!='\'') ==> { a => new StringLiteralChar(a.begin, a.end, a.text) }
-  private val strInnerChar2 = ( strEncChar | strNonEncChar2 ) ==> { a => new StringLiteralChar(a.begin, a.end, a.decoded) }
+  private val strInnerChar2 = ( strEncUnicodeChar | strEncChar | strNonEncChar2 ) ==> { a => new StringLiteralChar(a.begin, a.end, a.decoded) }
   private val string2 = strBegin2 + strInnerChar2*0 + strBegin2 ==> { (b, c, e) =>
     new StringTok(b.begin, e.end,
       if( c.nonEmpty ) {
@@ -117,7 +117,7 @@ object Lexer {
   private val digitPoint = charTok(_=='.')
   private val doubleSuf = charTok(c=>c=='d' || c=='D')
   private val floatSuf = charTok(c=>c=='f' || c=='F')
-  private val decimalSuf = charTok(c=>c=='w' || c=='w')
+  private val decimalSuf = charTok(c=>c=='w' || c=='W')
 
   private val doubleNumber1: GR[CharPointer, NumberTok] = untypedNum + digitPoint + untypedNum ==> {
     case( int,d,flt ) => new DoubleNumberTok(int.begin, flt.end, int.toLong.toDouble + flt.toFloatPart)
