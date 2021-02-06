@@ -8,4 +8,9 @@ class LexerSampleTest {
     val ptr = CharPointer.of("1234")
     println(LexerSample.intNumber(ptr))
   }
+
+  @Test
+  def sample02():Unit = {
+    LexerSample.tokenizer("12 * ( / + - )").toList.foreach(println)
+  }
 }
