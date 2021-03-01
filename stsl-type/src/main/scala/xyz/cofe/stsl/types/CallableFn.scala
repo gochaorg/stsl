@@ -14,6 +14,13 @@ class CallableFn( fgParams: GenericParams
                 ) extends Fn( fgParams, fParams, fReturn ) with Invoke {
   require(call!=null)
 
+  def call( args:java.lang.Iterable[_] ):Any = {
+    require(args!=null)
+    var ls : List[Any] = List()
+    args.forEach( a => {ls = a :: ls} )
+    this.call.apply(ls.reverse)
+  }
+
   /**
    * Вызов функции
    *

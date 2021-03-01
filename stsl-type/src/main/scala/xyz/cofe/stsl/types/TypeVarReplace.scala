@@ -65,6 +65,13 @@ trait TypeVarReplace[A] {
     typeVarReplace((tv:TypeVariable)=>rmap.get(tv.name))
   }
 
+  def typeVarReplacer(recipe:java.util.function.Consumer[TypeVarReplacer]):A = {
+    require(recipe!=null)
+    val rpl = new TypeVarReplacer
+    recipe.accept(rpl)
+    typeVarReplace(rpl.build())
+  }
+
   /**
    * Замена переменных
    */

@@ -78,7 +78,7 @@ class TypeScope {
    * Импортирует набор типов
    * @param types набор типов
    */
-  def imports( types:Seq[Type] ):Unit = {
+  def imports( types:Seq[ _ <: Type] ):Unit = {
     require(types!=null)
     typeSet = types.toSet ++ typeSet
     nextScn
@@ -91,6 +91,22 @@ class TypeScope {
   def imports( tip:Type ):Unit = {
     require(tip!=null)
     typeSet = Set(tip) ++ typeSet
+    nextScn
+  }
+
+  /**
+   * Импортирует набор типов
+   * @param types набор типов
+   */
+  def imports( types:java.lang.Iterable[_ <: Type] ):Unit = {
+    require(types!=null)
+    var ls : List[Type] = List()
+    types.forEach( t => {
+      require(t!=null)
+      ls = t :: ls
+    })
+
+    imports(ls)
     nextScn
   }
 

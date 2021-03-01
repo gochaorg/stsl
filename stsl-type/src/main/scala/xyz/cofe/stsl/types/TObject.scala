@@ -332,6 +332,13 @@ object TObject {
       setGenerics(newGenerics)
       this
     }
+    def generics(builder: java.util.function.Consumer[Fn.GenericsBuilder]):MethodBuilder = {
+      require(builder!=null)
+      val b = new Fn.GenericsBuilder(generics)
+      builder.accept(b)
+      generics = b.build()
+      this
+    }
 
     private var params:Params = Params()
     def getParams:Params = params
@@ -392,6 +399,10 @@ object TObject {
         f = f.invoking(call.get)
       }
       methods.append(name.get, f)
+      call = None
+      result = Type.VOID
+      params = Params()
+      generics = GenericParams()
       mb
     }
   }
@@ -403,6 +414,9 @@ object TObject {
       builder.accept( new MethodBuilder(this, mutMethods))
       this
     }
+  }
+
+  class GenericBuilder( var generics : GenericParams ) {
   }
 
   class Builder( val name:String ) {
@@ -427,6 +441,14 @@ object TObject {
     def generics(newGenerics:GenericParam*):Builder = {
       require(newGenerics!=null)
       ogenerics = new GenericParams(newGenerics.toList)
+      this
+    }
+    def generics(builder:java.util.function.Consumer[GenericBuilder]):Builder = {
+      require(builder!=null)
+      val bld = new GenericBuilder(ogenerics)
+      builder.accept(bld)
+      val ogen = bld.generics
+      ogenerics = if( ogen!=null )ogen else ogenerics
       this
     }
 
@@ -485,5 +507,28 @@ object TObject {
 
   def apply(Name: String) = new Builder(Name)
   def create(Name:String) = new Builder(Name)
+
+  class TBuilder( val tobj : TObject ) {
+    require(tobj!=null)
+    def methods(builder:java.util.function.Consumer[MethodsBuilder]):TBuilder = {
+      require(builder!=null)
+      val mths = new MethodsBuilder(tobj.methods)
+      builder.accept(mths)
+
+      tobj.methods.clear()
+      mths.build().funs.foreach( {case(name,funs)=>
+        funs.foreach( f => {
+          tobj.methods.append(name, f)
+        })
+      })
+
+      this
+    }
+  }
+
+  def build(tip:TObject):TBuilder = {
+    require(tip!=null)
+    new TBuilder(tip)
+  }
   //endregion
 }

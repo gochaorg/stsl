@@ -92,4 +92,14 @@ class MutableGenericParams( private var parameters: List[GenericParam]=List() ) 
     if( freezed )throw new IllegalStateException("freezed")
     retain( x => !fltr(x) )
   }
+
+  /**
+   * Удаление параметров
+   * @return SELF ссылка
+   */
+  def clear():MutableGenericParams = {
+    if( freezed )throw new IllegalStateException("freezed")
+    parameters = List()
+    this
+  }
 }

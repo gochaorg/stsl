@@ -7,6 +7,7 @@ object TypeDescriber {
       case pt:Type.Primitive => primitive(pt)
       case fn:Fun => fun(fn)
       case obj:Obj => descObj(obj)
+      case gi:GenericInstance[_] => gi.toString
     }
   }
 

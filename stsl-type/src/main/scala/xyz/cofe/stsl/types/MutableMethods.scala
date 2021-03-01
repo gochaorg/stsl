@@ -20,6 +20,11 @@ class MutableMethods( private var functions:Map[String,Funs]=Map() ) extends Met
 
   override def funs: Map[String, Funs] = functions
 
+  def clear():Unit = {
+    if( freezed )throw TypeError("freezed")
+    functions = Map()
+  }
+
   //region мутация списка методов
   /**
    * Добавление метода

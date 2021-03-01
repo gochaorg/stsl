@@ -386,4 +386,76 @@ object Fn {
   def apply(fgParams: GenericParams, fParams: Params, fReturn: Type): Fn = new Fn(fgParams, fParams, fReturn)
   def apply(fParams: Params, fReturn: Type): Fn = new Fn(GenericParams(), fParams, fReturn)
   def create(fParams: Params, fReturn: Type): Fn = new Fn(GenericParams(), fParams, fReturn)
+
+  class GenericsBuilder( genericParams:GenericParams ) {
+    private var gp:MutableGenericParams = new MutableGenericParams(genericParams.toList)
+    def build():GenericParams = gp
+    def any(name:String):GenericsBuilder = {
+      require(name!=null)
+      gp.append(AnyVariant(name))
+      this
+    }
+    def coVariant(name:String, tip:Type):GenericsBuilder = {
+      require(name!=null)
+      require(tip!=null)
+      gp.append(CoVariant(name,tip))
+      this
+    }
+    def contraVariant(name:String, tip:Type):GenericsBuilder = {
+      require(name!=null)
+      require(tip!=null)
+      gp.append(ContraVariant(name,tip))
+      this
+    }
+    def clear():GenericsBuilder = {
+      gp.clear()
+      this
+    }
+  }
+  class ParamsBuilder( var params: Params ) {
+    def build():Params = params
+    def clear():ParamsBuilder = {
+      params = new Params()
+      this
+    }
+    def add( name:String, paramType:Type ):ParamsBuilder = {
+      require(name!=null)
+      require(paramType!=null)
+      params = new Params( params.toList ++ List(new Param(name,paramType)) )
+      this
+    }
+  }
+
+  class Builder {
+    private var genericParams: GenericParams = GenericParams()
+    def generics(builder:java.util.function.Consumer[GenericsBuilder]):Builder = {
+      require(builder!=null)
+      val b = new GenericsBuilder(genericParams)
+      builder.accept(b)
+      genericParams = b.build()
+      this
+    }
+
+    private var returns:Type = Type.VOID
+    def returns(tip:Type):Builder = {
+      require(tip!=null)
+      returns = tip
+      this
+    }
+
+    private var params:Params = Params()
+    def params( builder:java.util.function.Consumer[ParamsBuilder] ):Builder = {
+      require(builder!=null)
+      val b = new ParamsBuilder(params)
+      builder.accept(b)
+      params = b.build()
+      this
+    }
+
+    def build():Fn = {
+      Fn(genericParams, params, returns)
+    }
+  }
+
+  def create():Builder = new Builder
 }

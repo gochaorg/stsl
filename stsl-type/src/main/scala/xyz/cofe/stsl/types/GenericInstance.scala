@@ -81,3 +81,27 @@ class GenericInstance[A <: Type with TypeVarReplace[A]](
     }.toList
   }
 }
+
+object GenericInstance {
+  class Builder( private var recipe:Map[String,Type]=Map() ){
+    def build[A <: Type with TypeVarReplace[A]]( source:A ):GenericInstance[A] = {
+      new GenericInstance[A](recipe,source)
+    }
+    def clear():Builder = {
+      recipe = Map()
+      this
+    }
+    def set(name:String,tip:Type):Builder = {
+      require(name!=null)
+      require(tip!=null)
+      recipe = recipe + (name -> tip)
+      this
+    }
+  }
+  def create():Builder = new Builder()
+  def set(name:String,tip:Type):Builder = {
+    require(name!=null)
+    require(tip!=null)
+    create().set(name,tip)
+  }
+}
