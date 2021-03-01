@@ -48,6 +48,8 @@
 Строки, строчные литералы
 ------------------------------------
 
+Все символы представлены в оперативной памяти 2мя байтами - UTF-16
+
 ### Формально
 
     string ::= string1 | string2
@@ -72,7 +74,116 @@
   - В одиночных кавычках - `'string'`
   - В двойных кавычках - `"string"`
 - Строка может содержать unicode символы `'\u0055\u004e\u0049\u0043\u004f\u0044\u0045'` соответствует `"UNICODE"`
+- Строка может содержать символы экранирования `"next\nline"`
+  - Символы `\n` - будет заменен на символ перевода строки `\u000D`
+  - Символы `\r` - будет заменен на символ возврата каретки `\u000A`
+  - Символы `\t` - будет заменен на символ табуляции `\u0009`
+  
+Числа
+------------------------------------
 
+Числа могут быть представлены в несколькими типами данных
+
+- 1 байт,  целое, диапазон значений `[ -128, +127 ]` 
+- 2 байта, целое, диапазон значений `[  -32768, +32767 ]`
+- 4 байта, целое, диапазон значений `[  -2^31, +2^31-1 ]`
+- 8 байта, целое, диапазон значений `[  -2^63, +2^63-1 ]`
+- 4 байта, дробное, плавающая запятая, стандарт 32-bit IEEE 754
+- 8 байт, дробное, плавающая запятая, стандарт 64-bit IEEE 754
+- целое, большой точности - соответствует [BigInteger Java](https://docs.oracle.com/javase/7/docs/api/java/math/BigInteger.html)
+- дробное, большой точности - соответствует [BigDecimal Java](https://docs.oracle.com/javase/7/docs/api/java/math/BigDecimal.html)
+
+### Формально
+
+    // Числа
+    number ::= decimal 
+             | double | float
+             | byteNumber | shortNumber | longNumber 
+             | bigIntNumber | intNumber
+
+    decimal ::= decimalNumber4
+              | decimalNumber5 
+              | decimalNumber6
+              | decimalNumber7
+
+    float ::= floatNumber4|floatNumber5|floatNumber6|floatNumber7
+    double ::= doubleNumber4|doubleNumber5|doubleNumber6|doubleNumber7|doubleNumber1|doubleNumber2|doubleNumber3
+    decimalNumber7 ::= digitPoint untypedNum decimalSuf
+    decimalNumber6 ::= untypedNum digitPoint decimalSuf
+    decimalNumber5 ::= untypedNum digitPoint untypedNum decimalSuf
+    decimalNumber4 ::= untypedNum decimalSuf
+    floatNumber4 ::= untypedNum floatSuf
+    floatNumber5 ::= untypedNum digitPoint untypedNum floatSuf
+    floatNumber6 ::= untypedNum digitPoint floatSuf
+    floatNumber7 ::= digitPoint untypedNum floatSuf
+
+    digitPoint ::= '.'
+    doubleSuf  ::= 'd' | 'D'
+    floatSuf   ::= 'f' | 'F'
+    decimalSuf ::= 'w' | 'W'
+    
+    doubleNumber1 ::= untypedNum digitPoint untypedNum
+    doubleNumber2 ::= untypedNum digitPoint
+    doubleNumber3 ::= digitPoint untypedNum
+    doubleNumber4 ::= untypedNum doubleSuf
+    doubleNumber5 ::= untypedNum digitPoint untypedNum doubleSuf
+    doubleNumber6 ::= untypedNum digitPoint doubleSuf
+    doubleNumber7 ::= digitPoint untypedNum doubleSuf
+
+    untypedNum   ::= hexNum | binNum | decNum 
+    longNumber   ::= untypedNum ( 'L' | 'l' )
+    bigIntNumber ::= untypedNum ( 'N' | 'n' )
+    shortNumber  ::= untypedNum ( 'S' | 's' )
+    byteNumber   ::= untypedNum ( 'B' | 'b' )
+    intNumber    ::= untypedNum
+    
+    hexNum ::= '0x' hexDigit { hexDigit }
+    binNum ::= '0b' binDigit { binDigit }
+    decNum ::= digit { digit }
+
+### Примеры
+
+- `123` - Обычное целое число, 4 байта
+- `0x0A` - Цело число, 4 байта, задано в 16ом формате
+- `0b00101` - Цело число, 4 байта, задано в 2ом формате 
+- `12.3` - Дробное, 8 байт
+- `.05` - Дробное, 8 байт
+- `.15w` - Дробное, BigDecimal
+- `23.` - Дробное, 8 байт
+- `14N` - Целое, BigInteger
+- `15n` - Целое, BigInteger
+- `23.45f` - Дробное, 4 байта
+
+Идентификатор
+----------------------
+
+### Формально
+
+    identifier ::= Character.isLetter { Character.isLetterOrDigit | '_' }
+
+### Примеры
+
+Оператор
+----------------------
+
+### Формально
+
+    operator ::= operatorChar { operatorChar }
+    operatorChar ::= !Character.isLetterOrDigit & !Character.isWhitespace & !'"' && !"'"
+
+### Примеры
+
+Комментарий
+----------------------
+
+### Формально
+
+    comment ::= singleLineComment | multilLineComment  
+    singleLineComment ::= '//' { любой_символ_кроме_пееревода_строк } [символ_пееревода_строк]
+    multilLineComment ::= '/*' { любой_символ } '*/'
+
+### Примеры
+  
 
 Формальные правила
 ------------------------------------
