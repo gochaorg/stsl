@@ -129,13 +129,13 @@ object Parser {
   /**
    * Скобочное выражение <code> ::= '(' expression ')' </code>
    */
-  val parenthes : AstGR = operator("(") + expression + operator(")") ==> ( (l,e,r) => new DelegateAST(l.begin(), r.end(), e) )
+  val parenthes : GR[PTR,DelegateAST] = operator("(") + expression + operator(")") ==> ( (l,e,r) => new DelegateAST(l.begin(), r.end(), e) )
 
   /**
    * Унарный оператор -, ! <br>
    *   <code> ::= ( '-' | '!' ) expression </code>
    */
-  val unary : AstGR = operator("-", "!") + expression ==> ( (op,e) => new UnaryAST(op.begin(), e.end(), op, e) )
+  val unary : GR[PTR,UnaryAST] = operator("-", "!") + expression ==> ( (op,e) => new UnaryAST(op.begin(), e.end(), op, e) )
 
   val typeName : GR[PTR, TypeNameAST] = identifier ==>
     ( id => new TypeNameAST(id.begin(), id.end(), id.asInstanceOf[IdentifierAST].tok.text) )
@@ -167,7 +167,7 @@ object Parser {
   private val lambdaEmptyParams2 : AstGR =
     operator("()") + operator("=>") ==> ( (a,b) => new AST(a.begin(),b.end()) {})
 
-  private val lambdaEmptyParams3 : AstGR =
+  private val lambdaEmptyParams3 : GR[PTR,OperatorAST] =
     operator("()=>") ==> ( t => t )
 
   private val lambdaEmptyParams4 : AstGR =
