@@ -264,6 +264,16 @@ object Parser {
 
   //endregion
 
+  val emptyObj1 : GR[PTR,PojoAST] = operator("{}") ==> (o => new PojoAST(o.begin(), o.end()))
+  val emptyObj2 : GR[PTR,PojoAST] = operator("{") + operator("}") ==> ( (b,e) => new PojoAST(b.begin(), e.end()))
+  val objKeyVal : GR[PTR,PojoItemAST] = identifier + operator(":") + expression ==> ( (k,_t,v) => new PojoItemAST(k.begin(), v.end(), k.asInstanceOf[IdentifierAST], v) )
+  val objNonEmpty : GR[PTR,PojoAST] =
+    operator("{") +
+      objKeyVal + (
+        operator(",") + objKeyVal ==> ((d,i)=>new PojoItemAST(d.begin(),i.end(),i.key,i.value))
+      )*0 + operator("}") ==> ((b,f,s,e) => new PojoAST(b.begin(), e.end(), List(f) ++ s))
+  val objDef : GR[PTR,PojoAST] = (emptyObj1 | emptyObj2 | objNonEmpty) ==> ( t => t )
+
   /**
    * Атомарное значение <br>
    * <code>
@@ -275,7 +285,15 @@ object Parser {
    * &nbsp;  | identifier <br>
    * </code>
    */
-  val atom : AstGR = ( lambdaWithoutParams.asInstanceOf[AstGR] | lambdaWithParams.asInstanceOf[AstGR] | parenthes | unary | literal | identifier ) ==> (t => t )
+  val atom : AstGR =
+    ( lambdaWithoutParams.asInstanceOf[AstGR]
+    | lambdaWithParams.asInstanceOf[AstGR]
+    | objDef
+    | parenthes
+    | unary
+    | literal
+    | identifier
+    ) ==> (t => t )
 
   private val fieldAccessOp: OpLiteral = operator(".")
   private val callStart: OpLiteral = operator("(")

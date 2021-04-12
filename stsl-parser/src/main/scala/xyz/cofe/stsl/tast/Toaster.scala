@@ -5,6 +5,9 @@ import xyz.cofe.stsl.tok._
 import JvmType._
 import xyz.cofe.stsl.types.{CallableFn, Fn, Fun, GenericInstance, Param, Params, TObject, Type, WriteableField}
 
+import java.util
+import scala.collection.mutable
+
 /**
  * "Тостер" - Компиляция AST выражений
  */
@@ -24,6 +27,7 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
       case a:PropertyAST => compile(a)
       case a:CallAST => compile(a)
       case a:LambdaAST => compile(a)
+      case a:PojoAST => compile(a)
       case _ => ???
     }
   }
@@ -31,7 +35,7 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
   /**
    * Компиляция литерального выражения
    * @param literalAST выражение
-   * @return типизрованный узел AST
+   * @return типизированный узел AST
    */
   def compile( literalAST: LiteralAST ):TAST = {
     require(literalAST!=null)
@@ -76,6 +80,13 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     cases.preferred.head
   }
 
+  /**
+   * Компиляция вызова функции из ряда возможных, с учетом типов аргументов
+   * @param functions возможно вызываемые функции
+   * @param args типы аргументов
+   * @param funName имя функции
+   * @return вариант вызова
+   */
   def call(functions:Seq[Fun], args:List[Type], funName:Option[String]=None):CallCase = {
     val cases = typeScope.callCases(functions,args);
 
@@ -100,7 +111,7 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
   /**
    * Компиляция бинарного выражения
    * @param binaryAST бинарное выражение
-   * @return типизрованный узел AST
+   * @return типизированный узел AST
    */
   def compile( binaryAST: BinaryAST ):TAST = {
     require(binaryAST!=null)
@@ -126,8 +137,18 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
       List(left,right))
   }
 
+  /**
+   * Компиляция (скобочного) выражения
+   * @param delegateAST (скобочное) выражение
+   * @return типизированный узел AST
+   */
   def compile( delegateAST: DelegateAST ):TAST = compile( delegateAST.target )
 
+  /**
+   * Компиляция тренарного выражения
+   * @param ternaryAST тренарное выражение
+   * @return типизированный узел AST
+   */
   def compile( ternaryAST: TernaryAST ):TAST = {
     require(ternaryAST!=null)
     val cond = compile(ternaryAST.first)
@@ -157,6 +178,11 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     }, List(cond,succ,fail))
   }
 
+  /**
+   * Компиляция чтения значения переменной
+   * @param identifierAST идентификатор переменной
+   * @return типизированный узел AST
+   */
   def compile( identifierAST: IdentifierAST ):TAST = {
     require(identifierAST!=null)
     //val variable = scope.vars.map.get(identifierAST.tok.name)
@@ -165,6 +191,11 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     TAST( identifierAST, variable.get.tip, ()=>variable.get.read() )
   }
 
+  /**
+   * Компиляция чтения значения свойства объекта
+   * @param propertyAST свойство объекта
+   * @return типизированный узел AST
+   */
   def compile( propertyAST: PropertyAST ):TAST = {
     require(propertyAST!=null)
 
@@ -191,6 +222,11 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     },List(obj))
   }
 
+  /**
+   * Компиляция чтения значения расположенного в стеке вызовов
+   * @param stackedArgumentAST стек переменная
+   * @return типизированный узел AST
+   */
   def compile( stackedArgumentAST: StackedArgumentAST ):TAST = {
     require(stackedArgumentAST!=null)
     TAST( stackedArgumentAST, stackedArgumentAST.argumentType, ()=>stackedArgumentAST.value )
@@ -436,5 +472,45 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     }
 
     TAST( lambdaAST, fn,()=>fn, List(bodyTast))
+  }
+
+  private var pojoIdSeq = 0;
+  def compile( pojoAST: PojoAST ):TAST = {
+    require(pojoAST!=null)
+    pojoIdSeq+=1;
+
+    //val mmap = new java.util.LinkedHashMap[String,Any]()
+    val typeObj = new TObject(s"Pojo${pojoIdSeq}")
+    val fields = pojoAST.items.map( itm => {
+      val fldValue = compile(itm.value)
+      val fld = new WriteableField(
+        itm.key.tok.name, fldValue.supplierType,
+        (obj) => {
+          val mmap = obj.asInstanceOf[java.util.Map[String,Any]]
+          val name = itm.key.tok.name
+          if( mmap.containsKey(name) ){
+            mmap.get(name)
+          } else {
+            val computed = fldValue.supplier.get()
+            mmap.put(name,computed)
+            computed
+          }
+        },
+        (obj,vl) => {
+          val mmap = obj.asInstanceOf[java.util.Map[String,Any]]
+          val name = itm.key.tok.name
+          mmap.put(name,vl)
+        }
+      )
+      (fld,fldValue,itm)
+    })
+
+    fields.foreach( fld => typeObj.fields.append(fld._1) )
+
+    TAST(pojoAST, typeObj, ()=>{
+      val mapObj = new util.LinkedHashMap[String,Any]()
+      fields.foreach( f => mapObj.put(f._1.name, f._1.reading(mapObj)) )
+      mapObj
+    }, fields.map(f =>f._2) )
   }
 }

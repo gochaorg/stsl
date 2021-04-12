@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import org.junit.jupiter.api.Test
 import xyz.cofe.stsl.ast.{ASTDump, Parser}
 import xyz.cofe.stsl.tast.JvmType._
-import xyz.cofe.stsl.types.{AnyVariant, CallableFn, Fn, Fun, GenericInstance, GenericParams, LocatorItem, LocatorItemFunParam, LocatorItemFunResult, LocatorItemGenericInstance, Params, TObject, Type, TypeVarLocator, TypeVariable}
+import xyz.cofe.stsl.types.{AnyVariant, CallableFn, Fn, Fun, GenericInstance, GenericParams, LocatorItem, LocatorItemFunParam, LocatorItemFunResult, LocatorItemGenericInstance, Params, TObject, Type, TypeDescriber, TypeVarLocator, TypeVariable}
 import xyz.cofe.stsl.types.Type._
 import xyz.cofe.stsl.types.TypeDescriber.describe
 
@@ -356,9 +356,48 @@ class TypeInferenceTest {
     println("\ncall")
     println(res)
 
-//    typeVarLocators.foreach( tvl => {
-//      println(s"locator ${tvl} t.var ${tvl.typeVar}")
-//      println(s"  resolve ${tvl.resolve(usrListMapFn)}")
-//    })
+    //    typeVarLocators.foreach( tvl => {
+    //      println(s"locator ${tvl} t.var ${tvl.typeVar}")
+    //      println(s"  resolve ${tvl.resolve(usrListMapFn)}")
+    //    })
+  }
+
+  @Test
+  def map02(): Unit = {
+    println("map02()")
+    println("="*40)
+
+    val typeScope = new TypeScope
+    typeScope.implicits = JvmType.implicitConversion
+    typeScope.imports(List(STRING,INT))
+    typeScope.imports(List(userType,listType))
+
+    val userListGenInstType = new GenericInstance( Map("A" -> userType), listType )
+    typeScope.imports(userListGenInstType)
+    println(s"generic instance: $userListGenInstType")
+    println(TypeDescriber.describe(userListGenInstType))
+
+    val userList1 = new AList[User](
+      List(
+        new User("Vova"),
+        new User("Yu"),
+        new User("Peter"),
+      )
+    )
+
+    val varScope = new VarScope
+    varScope.put("lst", userListGenInstType, userList1)
+
+    val src = s"lst.map( x : ${userType.name} => { nm: x.name, len: x.name.length } )"
+    val ast = Parser.parse(src)
+    println("\nast: "+"-"*20)
+    ast.foreach( ASTDump.dump )
+
+    val toaster = new Toaster(typeScope,varScope)
+    val tast = toaster.compile(ast.get)
+    println( describe(tast.supplierType) )
+
+    val computed = tast.supplier.get()
+    println(computed)
   }
 }

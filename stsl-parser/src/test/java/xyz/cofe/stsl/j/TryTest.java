@@ -177,6 +177,8 @@ public class TryTest {
         System.out.println("objectProperties");
         System.out.println("=================");
 
+        System.out.println(TypeDescriber.describe(personType));
+
         TypeScope ts = new TypeScope();
         ts.setImplicits(JvmType.implicitConversion());
 

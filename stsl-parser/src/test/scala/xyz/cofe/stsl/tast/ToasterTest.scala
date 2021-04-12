@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import org.junit.jupiter.api.Test
 import xyz.cofe.stsl.tast.JvmType._
 import xyz.cofe.stsl.ast.{ASTDump, AstTest, Parser}
-import xyz.cofe.stsl.types.{CallableFn, Fn, Params, TObject, Type}
+import xyz.cofe.stsl.types.{CallableFn, Fn, Params, TObject, Type, TypeDescriber}
 
 //noinspection UnitMethodIsParameterless
 class ToasterTest {
@@ -359,5 +359,30 @@ class ToasterTest {
     }
 
     assert(catched)
+  }
+
+  @Test
+  def objDef01(): Unit ={
+    println("objDef01")
+    println("="*30)
+
+    val ts = new TypeScope()
+    ts.implicits = JvmType.implicitConversion
+
+    val ast = Parser.parse("{ k1: 1, k2: \"abc\"}")
+    println("AST")
+    ast.foreach( ASTDump.dump )
+    assert( ast.isDefined )
+    test(ast, pojo, pojoItem, literal, pojoItem, literal)
+
+    val tst = new Toaster(ts)
+    val tast = tst.compile(ast.get)
+    assert(tast!=null)
+    println("TAST")
+    TASTDump.dump(tast)
+
+    //println("exec")
+    println("-"*30)
+    println(TypeDescriber.describe(tast.supplierType))
   }
 }

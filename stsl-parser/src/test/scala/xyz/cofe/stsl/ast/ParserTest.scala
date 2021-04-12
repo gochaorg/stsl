@@ -114,6 +114,27 @@ class ParserTest {
     )
   }
 
+  @Test
+  def objDef01():Unit = {
+    var ast = Parser.parse("{ k1: 1, k2: 2 }")
+    ast.foreach( ASTDump.dump )
+
+    ast = Parser.parse("{k1:\"abc\",k2:2}")
+    ast.foreach( ASTDump.dump )
+  }
+
+  @Test
+  def objDef02():Unit = {
+    var ast = Parser.parse("{ }")
+    ast.foreach( ASTDump.dump )
+  }
+
+  @Test
+  def objDef03():Unit = {
+    val ast = Parser.parse("{}")
+    ast.foreach( ASTDump.dump )
+  }
+
 //  @Test
 //  def lmbda02replace(): Unit ={
 //    println( "lmbda02replace()" )

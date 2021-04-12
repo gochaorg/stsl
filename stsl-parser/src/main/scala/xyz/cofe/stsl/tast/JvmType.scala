@@ -21,7 +21,21 @@ object JvmType {
     ),
     THIS
   ).invoke[Boolean,Boolean,Boolean]((self,value)=>self && value)
+  BOOLEAN.methods += "&" -> Fn(
+    Params(
+      "self" -> THIS,
+      "value" -> THIS
+    ),
+    THIS
+  ).invoke[Boolean,Boolean,Boolean]((self,value)=>self && value)
   BOOLEAN.methods += "||" -> Fn(
+    Params(
+      "self" -> Type.THIS,
+      "value" -> Type.THIS
+    ),
+    Type.THIS
+  ).invoke[Boolean,Boolean,Boolean]((self,value)=>self || value)
+  BOOLEAN.methods += "|" -> Fn(
     Params(
       "self" -> Type.THIS,
       "value" -> Type.THIS

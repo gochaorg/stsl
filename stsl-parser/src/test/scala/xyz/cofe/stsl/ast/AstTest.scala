@@ -33,6 +33,12 @@ object AstTest {
   //noinspection TypeAnnotation
   val typename = (ast:AST) => ast.isInstanceOf[TypeNameAST]
 
+  //noinspection TypeAnnotation
+  val pojo = (ast:AST) => ast.isInstanceOf[PojoAST]
+
+  //noinspection TypeAnnotation
+  val pojoItem = (ast:AST) => ast.isInstanceOf[PojoItemAST]
+
   def test(ast: AST, nodes:(AST=>Boolean)*):Unit = {
     require(ast!=null)
     require(nodes!=null)
