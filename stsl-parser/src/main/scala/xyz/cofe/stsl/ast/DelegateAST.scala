@@ -20,7 +20,7 @@ import Parser.PTR
  *
  * @param begin начало в тексте
  * @param end конец в тексте
- * @param target целевойк AST
+ * @param target целевой AST
  */
 class DelegateAST(begin:PTR, end:PTR, val target: AST) extends AST(begin,end,List(target)) {
   require(target!=null)

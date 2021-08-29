@@ -13,6 +13,11 @@ class Params( val params:List[Param]=List() ) extends Seq[Param] with TypeVarRep
 
   override def toString: String = if( params.isEmpty ) "()" else "("+params.map(_.toString).reduce((a,b)=>a+","+b)+")"
 
+  /**
+   * Проверка что типы параметров совпадают
+   * @param paramz параметры
+   * @return true - совпадают
+   */
   def sameTypes(paramz:Params):Boolean = {
     require(paramz!=null)
     if( paramz.params.length!=params.length ){
@@ -76,6 +81,14 @@ class Params( val params:List[Param]=List() ) extends Seq[Param] with TypeVarRep
 object Params {
   def apply(params: (String,Type)*): Params = new Params(params.map(p=>Param(p._1, p._2)).toList)
   def apply(params: List[Param]): Params = new Params(params)
+  def apply(params: java.util.List[Param]): Params = {
+    var p : List[Param] = List()
+    val it = params.iterator()
+    while( it.hasNext ){
+      p = it.next() :: p
+    }
+    new Params(p.reverse)
+  }
 
   def empty(): Params = new Params()
 

@@ -271,31 +271,40 @@ object TObject {
                       private var fields: Fields,
                       private val newFields:(Fields)=>Any,
                       private val fb: FieldsBuilder,
-                      val name:String, val tip:Type ){
-    //def build:Fields = fields
-    private var field = new Field(name,tip)
+                      //val name:String, val tip:Type
+                      var field : Field
+                    ){
+    require(field!=null)
     def add:FieldsBuilder = {
-      fields = new Fields((fields.filter( f => f.name != name ) ++ List(field)).toList)
+      fields = new Fields((fields.filter( f => f.name != field.name ) ++ List(field)).toList)
       newFields(fields)
       fb
     }
-    def writeable( read:java.util.function.Function[Any,Any], write:java.util.function.BiFunction[Any,Any,Any]
+    def writeablez( read:java.util.function.Function[Any,Any], write:java.util.function.BiFunction[Any,Any,Any]
                  ):FieldBuilder = {
       require(read!=null)
       require(write!=null)
       field = field.writeable( obj => read.apply(obj), (obj,fldVal)=>write.apply(obj,fldVal) )
       this
     }
+    def writeable( read:Any=>Any, write:(Any,Any)=>Any ):FieldBuilder = {
+      field = field.writeable(read,write)
+      this
+    }
     def build:Fields = this.fields
   }
   class FieldsBuilder( private var fields:Fields ) {
     def build:Fields = fields
-    def fileld(name:String, fieldType:Type):FieldBuilder = {
+    def field(name:String, fieldType:Type):FieldBuilder = {
       require(name!=null)
       require(fieldType!=null)
       new FieldBuilder(fields, flds => {
         fields = flds
-      }, this, name, fieldType)
+      }, this, new Field(name,fieldType)) // name, fieldType)
+    }
+    def field(fld : Field):FieldBuilder = {
+      require(fld!=null)
+      new FieldBuilder(fields, flds => {fields = flds}, this, fld )
     }
   }
 
@@ -392,9 +401,15 @@ object TObject {
       this
     }
 
+    var fnBuilder : (GenericParams,Params,Type) => Fn = null
+    def fnBuilder( builder: (GenericParams,Params,Type) => Fn ):MethodBuilder = {
+      fnBuilder = builder
+      this
+    }
+
     def add:MethodsBuilder = {
       if( name==null )throw TypeError("name not set")
-      var f = Fn(generics, params, result)
+      var f = if( fnBuilder!=null ) fnBuilder(generics,params,result) else Fn(generics, params, result)
       if( call.isDefined ){
         f = f.invoking(call.get)
       }
@@ -403,6 +418,7 @@ object TObject {
       result = Type.VOID
       params = Params()
       generics = GenericParams()
+      fnBuilder = null
       mb
     }
   }

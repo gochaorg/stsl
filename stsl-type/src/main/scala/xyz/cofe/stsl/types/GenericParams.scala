@@ -107,4 +107,13 @@ class GenericParams( private val parameters: List[GenericParam]=List() ) extends
 
 object GenericParams {
   def apply(params: GenericParam*): GenericParams = new GenericParams(params.toList)
+  def apply(params: java.util.List[GenericParam]): GenericParams = {
+    require(params!=null)
+    var p : List[GenericParam] = List()
+    val it = params.iterator()
+    while (it.hasNext){
+      p = it.next() :: p
+    }
+    new GenericParams(p.reverse)
+  }
 }

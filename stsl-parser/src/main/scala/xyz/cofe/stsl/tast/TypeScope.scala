@@ -332,6 +332,22 @@ class TypeScope {
   }
 
   /**
+   * Ищет варианты как можно вызвать метод указанного объекта с указанными типами аргументов
+   * @param thiz объект (класс)
+   * @param method метод
+   * @param args ожидаемые типы аргументов
+   * @return варианты вызовов
+   */
+  def callCases( thiz:TObject, method: String, args:java.lang.Iterable[Type] ):CallCases = {
+    require(args!=null)
+
+    var a_ls : List[Type] = List();
+    args.forEach { a => a_ls = a :: a_ls }
+
+    callCases( thiz, method, a_ls )
+  }
+
+  /**
    * Ищет варианты какую функцию можно вызвать с указанными типами аргументов
    * @param functions функции
    * @param args ожидаемые типы аргументов
@@ -341,5 +357,25 @@ class TypeScope {
     require(functions!=null)
     require(args!=null)
     new CallCases( callTypes(functions, args), this)
+  }
+
+  /**
+   * Ищет варианты какую функцию можно вызвать с указанными типами аргументов
+   * @param functions функции
+   * @param args ожидаемые типы аргументов
+   * @return варианты вызовов
+   */
+  def callCases( functions:java.lang.Iterable[Fun], args:java.lang.Iterable[Type] ):CallCases = {
+    require(functions!=null)
+    require(args!=null)
+
+    var funs : List[Fun] = List();
+    functions.forEach { f => funs = f :: funs }
+
+    var a_ls : List[Type] = List();
+    args.forEach { a => a_ls = a :: a_ls }
+    a_ls = a_ls.reverse
+
+    callCases( funs, a_ls )
   }
 }

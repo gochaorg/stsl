@@ -148,12 +148,12 @@ public class TryTest {
 
     public TObject personType = TObject.create("Person").fileds( fieldsBuilder -> {
         fieldsBuilder
-            .fileld("name", JvmType.STRING())
+            .field("name", JvmType.STRING())
             .writeable(
                 obj -> ((Person)obj).name,
                 (obj,value) -> ((Person)obj).name = (String)value )
             .add()
-            .fileld("age", JvmType.INT())
+            .field("age", JvmType.INT())
             .writeable(
                 obj -> ((Person)obj).age,
                 (obj,value) -> ((Person)obj).age = (int)value )
@@ -283,7 +283,7 @@ public class TryTest {
 
     public TObject listType = TObject.create("TList")
         .fileds( f -> {
-            f.fileld("size", JvmType.INT())
+            f.field("size", JvmType.INT())
                 .writeable( obj -> ((TList)obj).size(),
                     (obj,value) -> { return null; } ).add();
         })

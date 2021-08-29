@@ -37,16 +37,35 @@ class MutableGenericParams( private var parameters: List[GenericParam]=List() ) 
     parameters = gp :: parameters.filter(p => p.name!=gp.name)
   }
 
+  /**
+   * Добавление типа
+   */
   object append {
+    /**
+     * Добавление инварианта
+     * @param name имя
+     */
     def any(name:String):Unit = {
       require(name!=null)
       append(AnyVariant(name))
     }
+
+    /**
+     * Добавление коварианта
+     * @param name имя
+     * @param tip тип
+     */
     def covariant(name:String, tip:Type):Unit = {
       require(name!=null)
       require(tip!=null)
       append(CoVariant(name,tip))
     }
+
+    /**
+     * Добавление контрварианта
+     * @param name имя
+     * @param tip тип
+     */
     def contravariant(name:String, tip:Type):Unit = {
       require(name!=null)
       require(tip!=null)

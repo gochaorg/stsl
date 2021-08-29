@@ -20,6 +20,9 @@ class MutableMethods( private var functions:Map[String,Funs]=Map() ) extends Met
 
   override def funs: Map[String, Funs] = functions
 
+  /**
+   * Удаление ранее добавленных методов
+   */
   def clear():Unit = {
     if( freezed )throw TypeError("freezed")
     functions = Map()

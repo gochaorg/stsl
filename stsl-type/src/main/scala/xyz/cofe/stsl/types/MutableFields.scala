@@ -23,6 +23,10 @@ class MutableFields( private var fieldList:List[Field]=List() ) extends Fields(f
 
   override def fields: List[Field] = fieldList
 
+  /**
+   * Добавление поля в список
+   * @param field поле
+   */
   def append(field: Field):Unit = {
     require(field!=null)
     if( freezed )throw TypeError("freezed")
@@ -36,6 +40,11 @@ class MutableFields( private var fieldList:List[Field]=List() ) extends Fields(f
 //    this
 //  }
 
+  /**
+   * Удаление указанных полей
+   * @param filter поле
+   * @return SELF ссылка
+   */
   def remove( filter:Field=>Boolean ):MutableFields = {
     if( freezed )throw TypeError("freezed")
     require(filter!=null)
@@ -43,6 +52,11 @@ class MutableFields( private var fieldList:List[Field]=List() ) extends Fields(f
     this
   }
 
+  /**
+   * Удаляет все элементы кроме указанных
+   * @param filter какое поле оставить
+   * @return SELF ссылка
+   */
   def retain( filter:Field=>Boolean ):MutableFields = {
     if( freezed )throw TypeError("freezed")
     require(filter!=null)
@@ -50,9 +64,17 @@ class MutableFields( private var fieldList:List[Field]=List() ) extends Fields(f
     this
   }
 
+  /**
+   * Добавляет поле в список
+   * @param field поле
+   */
   //noinspection TypeAnnotation
   def +=(field: Field) = append(field)
 
+  /**
+   * Добавляет поле в список
+   * @param fields список полей
+   */
   def +=(fields:Seq[Field]):Unit = {
     if( freezed )throw TypeError("freezed")
     require(fields!=null)
@@ -63,6 +85,11 @@ class MutableFields( private var fieldList:List[Field]=List() ) extends Fields(f
     fields.foreach(append)
   }
 
+  /**
+   * Добавление поля
+   * @param name имя поля
+   * @param tip тип
+   */
   def += (name:String, tip:Type):Unit = {
     if( freezed )throw TypeError("freezed")
     require(name!=null)
@@ -70,6 +97,10 @@ class MutableFields( private var fieldList:List[Field]=List() ) extends Fields(f
     append(new Field(name,tip))
   }
 
+  /**
+   * Добавление поля
+   * @param field поле
+   */
   def += (field:(String,Type)):Unit = {
     if( freezed )throw TypeError("freezed")
     require(field!=null)
@@ -78,6 +109,10 @@ class MutableFields( private var fieldList:List[Field]=List() ) extends Fields(f
     append(new Field(field._1,field._2))
   }
 
+  /**
+   * Добавление writeable поля
+   * @param field поле
+   */
   def ++= (field: (((String,Type),Any=>Any),(Any,Any)=>Any)):Unit = {
     if( freezed )throw TypeError("freezed")
     require(field!=null)

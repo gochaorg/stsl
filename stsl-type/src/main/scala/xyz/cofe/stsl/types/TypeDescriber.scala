@@ -1,5 +1,8 @@
 package xyz.cofe.stsl.types
 
+/**
+ * Получить описание по типу
+ */
 object TypeDescriber {
   def describe(t:Type):String = {
     require(t!=null)
