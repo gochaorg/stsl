@@ -1,5 +1,15 @@
 package xyz.cofe.stsl.j;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import scala.Option;
+import xyz.cofe.stsl.ast.AST;
+import xyz.cofe.stsl.ast.ASTDump;
+import xyz.cofe.stsl.ast.Parser;
+import xyz.cofe.stsl.tast.JvmType;
+import xyz.cofe.stsl.tast.*;
+import xyz.cofe.stsl.types.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -7,32 +17,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import scala.Function1;
-import scala.Function2;
-import scala.Option;
-import scala.Tuple2;
-import scala.collection.immutable.List;
-import scala.collection.immutable.Seq;
-import xyz.cofe.stsl.ast.AST;
-import xyz.cofe.stsl.ast.ASTDump;
-import xyz.cofe.stsl.ast.Parser;
-import xyz.cofe.stsl.tast.*;
-import xyz.cofe.stsl.types.AnyVariant;
-import xyz.cofe.stsl.types.CallableFn;
-import xyz.cofe.stsl.types.Fn;
-import xyz.cofe.stsl.types.Fun;
-import xyz.cofe.stsl.types.GenericInstance;
-import xyz.cofe.stsl.types.GenericParams;
-import xyz.cofe.stsl.types.Param;
-import xyz.cofe.stsl.types.Params;
-import xyz.cofe.stsl.types.TObject;
-import xyz.cofe.stsl.types.Type;
-import xyz.cofe.stsl.types.TypeDescriber;
-import xyz.cofe.stsl.types.TypeVarReplace;
-import xyz.cofe.stsl.types.TypeVarReplacer;
-import xyz.cofe.stsl.types.TypeVariable;
 
 @SuppressWarnings("rawtypes")
 public class TryTest {
