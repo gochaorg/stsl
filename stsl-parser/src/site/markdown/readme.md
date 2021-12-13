@@ -169,3 +169,7 @@ public class SampleTest {
 ----------------------
 
 - [Лексер и лексический анализ](lexer.md)
+- [Парсер и синтаксис](parser.md)
+- ["Тостер" и типизированное дерево](toaster.md)
+- [Вывод типов](type-inference.md)
+- [Метаинформация и типы данных](https://github.com/gochaorg/stsl/blob/master/stsl-type/src/site/markdown/types.md)
