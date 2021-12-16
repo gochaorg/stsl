@@ -194,43 +194,62 @@ TAST дерево
 Свойства объекта
 -----------------------
 
+В следующем сценарии передается пара объектов в сценарий  
+
 Сценарий
 
     per1.age + per2.age
 
-Подготовка + парсинг + toaster
+Подготовка + парсинг + toaster. Пример на языке Scala.
 
+    // Определяем класс Персона
+    // с одним полем age : Int
     class Person( var age:Int = 10 ) {}
 
+    // Создаем описание класса
+    // Название класса
     val userType = new TObject("Person");
+
+    // Добавляем в класс поле age типа int
     userType.fields ++=
       "age" -> INT ->
+        // прописываем спосб чтения значения поля
         ((p:Any) => p.asInstanceOf[Person].age) ->
+        // прописываем способ записи значения поля
         ((thiz:Any, pvalue:Any) => pvalue)
 
+    // Создаем пару объектов
     val per1 = new Person(5)
     val per2 = new Person(7)
 
+    // регистрируем их как переменные
     val vs = new VarScope();
     vs.put("per1" -> userType -> per1 )
     vs.put("per2" -> userType -> per2 )
 
+    // создаем область типов 
     val ts = new TypeScope()
     ts.implicits = JvmType.implicitConversion
+
+    // импорт класса в область типов 
     ts.imports(userType)
 
+    // парсинг исходника
     val ast = Parser.parse("per1.age + per2.age")
 
     val tst = new Toaster(ts,vs)
+
+    // компиляция
     val tast = tst.compile(ast.get)
 
+    // интерпретация результата
     val computedValue =  tast.supplier.get()
 
     assert( tast.supplierType == INT )
     assert( computedValue!=null && computedValue.isInstanceOf[Int] )
     assert( (per1.age + per2.age) == computedValue )
 
-Результат
+AST дерево
 
     AST
     BinaryAST +
@@ -238,16 +257,29 @@ TAST дерево
     -|-| IdentifierAST IdentifierTok per1
     -| PropertyAST age
     -|-| IdentifierAST IdentifierTok per2
+
+TAST дерево
+
     TAST
     BinaryAST + :: int
     -| PropertyAST age :: int
     -|-| IdentifierAST IdentifierTok per1 :: Person
     -| PropertyAST age :: int
     -|-| IdentifierAST IdentifierTok per2 :: Person
+
+Результат вычисления
+
     exec
     ------------------------------
     int
     12
+
+- `exec` - это вывод из теста, а так же все что следует за ним.
+- `IdentifierAST` - ссылается на переменную (per1, per2)
+- `PropertyAST` - доступ к полю `age` класса `Person`
+  - Процесс чтения немного не логичен на взгляд, но по сути нормальный.
+    - С начала будет вычислена ссылка `IdentifierAST` на объект `per1`
+    - Затем будет вычислено его поле `PropertyAST` ( `age` )
 
 Вызов метода
 --------------------------------------
