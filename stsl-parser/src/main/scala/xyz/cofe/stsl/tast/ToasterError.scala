@@ -2,6 +2,12 @@ package xyz.cofe.stsl.tast
 
 import xyz.cofe.stsl.ast.AST
 
+/**
+ * Ошибка компиляции
+ * @param message сообщение
+ * @param cause причина
+ * @param locations расположение в коде
+ */
 class ToasterError( message:String, cause:Throwable, val locations:List[AST]=List() ) extends Error(message,cause) {
 
 }

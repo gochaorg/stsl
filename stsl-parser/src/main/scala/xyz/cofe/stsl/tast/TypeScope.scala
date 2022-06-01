@@ -139,8 +139,17 @@ class TypeScope {
     implicitsInst = value
     nextScn
   }
-
+  
+  /**
+   * Возвращает список функций для имплицитных преобразований
+   * @return список функций
+   */
   def getImplicits():List[Fun] = implicitsInst.toList
+  
+  /**
+   * Указывает список функций для имплицитных преобразований
+   * @param implicitsCalls список функций
+   */
   def setImplicits( implicitsCalls : List[CallableFn] ):Unit = {
     require(implicitsCalls!=null)
     implicitsInst = implicitsCalls
@@ -170,7 +179,12 @@ class TypeScope {
 
   scn.listen { graphInst = null }
   //endregion
-
+  
+  /**
+   * Возвращает тип по его имени
+   * @param name имя типа
+   * @return тип
+   */
   def apply(name:String): Type = {
     require(name!=null)
     types.filter( t => t match {
@@ -178,7 +192,12 @@ class TypeScope {
       case _=> false
     }).head
   }
-
+  
+  /**
+   * Возвращает тип по его имени
+   * @param name имя типа
+   * @return тип
+   */
   def get(name:String): Option[Type] = {
     require(name!=null)
     types.find {

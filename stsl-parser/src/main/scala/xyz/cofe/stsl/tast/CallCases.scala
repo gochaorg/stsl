@@ -7,7 +7,7 @@ import xyz.cofe.stsl.types.pset.PartialSet
 import scala.collection.immutable
 
 /**
- * Варианты вызова метода объекта для занных аргументов
+ * Варианты вызова метода объекта для заданных аргументов
  * @param ctypes Типы данных для возможных вариантов вызова
  * @param typeScope Область типов
  */

@@ -130,7 +130,7 @@ public class TryTest {
         }
     }
 
-    public TObject personType = TObject.create("Person").fileds( fieldsBuilder -> {
+    public static TObject personType = TObject.create("Person").fileds( fieldsBuilder -> {
         fieldsBuilder
             .field("name", JvmType.STRING())
             .writeable(
@@ -153,7 +153,7 @@ public class TryTest {
             ;
         });
     }).build();
-    { personType.freeze(); }
+    static { personType.freeze(); }
     //endregion
 
     @Test
@@ -265,7 +265,7 @@ public class TryTest {
         }
     }
 
-    public TObject listType = TObject.create("TList")
+    public static TObject listType = TObject.create("TList")
         .fileds( f -> {
             f.field("size", JvmType.INT())
                 .writeable( obj -> ((TList)obj).size(),
@@ -273,7 +273,7 @@ public class TryTest {
         })
         .build();
 
-    {
+    static {
         listType.generics().append( new AnyVariant("A") );
         TObject.build(listType).methods( mths -> {
             mths.method( mth -> {

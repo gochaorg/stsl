@@ -1,11 +1,17 @@
 package xyz.cofe.stsl.tast
 
 /**
- * Стек вызовов
+ * Стек вызовов лямбды
  */
 class CallStack {
   private var stackInst : List[Map[String,Any]] = List()
+  
+  /**
+   * Содержание стека
+   * @return Содержание стека
+   */
   def stack : List[Map[String,Any]] = stackInst
+  
   def push(values:Map[String,Any]):Unit = {
     require(values!=null)
     stackInst = values :: stackInst

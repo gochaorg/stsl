@@ -2,9 +2,26 @@ package xyz.cofe.stsl.tast
 
 import xyz.cofe.stsl.types.Type
 
+/**
+ * Переменная
+ */
 trait Variable {
+  /**
+   * Чтение значения переменной
+   * @return значение
+   */
   def read():Any
+  
+  /**
+   * Запись значения переменной
+   * @param value значение
+   */
   def write( value:Any )
+  
+  /**
+   * Возвращает тип переменной
+   * @return тип
+   */
   def tip:Type
 }
 

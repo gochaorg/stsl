@@ -9,7 +9,7 @@ import xyz.cofe.stsl.ast.AST
  * Типизированый узел дерева
  * @param ast исходный узел дерева
  * @param supplierType Тип значения
- * @param supplier "Поставщик" значения
+ * @param supplier "Поставщик" значения - вычисление значения
  * @param children Дочерние узлы
  */
 class TAST (

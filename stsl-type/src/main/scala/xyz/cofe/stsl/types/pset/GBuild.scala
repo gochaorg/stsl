@@ -1,5 +1,15 @@
 package xyz.cofe.stsl.types.pset
 
+/**
+ * Построение графа частично упорядоченного множества
+ * @param descendingChildren
+ * @param ascendingParents
+ * @param roots
+ * @param set
+ * @param eq
+ * @param relation
+ * @tparam A
+ */
 class GBuild[A]( val descendingChildren:Map[A,Set[A]]
                , val ascendingParents:Map[A,Set[A]]
                , val roots:Set[A]
@@ -15,7 +25,18 @@ class GBuild[A]( val descendingChildren:Map[A,Set[A]]
   }
 }
 
+/**
+ * Построение графа частично упорядоченного множества
+ */
 object GBuild {
+  /**
+   * Построение графа
+   * @param set множество вершин
+   * @param eq отношение равенства
+   * @param relation отношение порядка
+   * @tparam A тип вершины
+   * @return Граф
+   */
   def apply[A](set:Set[A], eq:(A,A)=>Boolean, relation:(A,A)=>Boolean): GBuild[A] = {
     require(set!=null)
     require(relation!=null)

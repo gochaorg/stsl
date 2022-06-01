@@ -1,5 +1,14 @@
 package xyz.cofe.stsl.types.pset
 
+/**
+ * Граф для частично упорядоченного множества
+ * @param set множество вершин
+ * @param eq отношение равенства
+ * @param relation  отношение порядка
+ * @param parentChildren отношение от родителя к потомку
+ * @param childParents отношение от потока к родителю
+ * @tparam A тип вершины
+ */
 class PartialSet[A](
                    val set:Set[A],
                    val eq:(A,A)=>Boolean,
@@ -12,10 +21,30 @@ class PartialSet[A](
   require(relation!=null)
   require(parentChildren!=null)
   require(childParents!=null)
-
+  
+  /**
+   * Возвращает нисходящий путь - от родителя к ребенку
+   * @param from родитель
+   * @param to ребенок
+   * @return пути, возможно 0, 1 или больше
+   */
   def descending(from:A, to:A):List[List[A]] = paths(from,to,parentChildren)
+  
+  /**
+   * Возвращает восходящий путь - от ребенка к родителю
+   * @param from ребенок
+   * @param to родитель
+   * @return пути, возможно 0, 1 или больше
+   */
   def ascending(from:A, to:A):List[List[A]] = paths(from,to,childParents)
-
+  
+  /**
+   * Поиск путей в графе
+   * @param from исходная вершина
+   * @param to целевая вершина
+   * @param direction направление
+   * @return возможные пути, возможно 0, 1 или больше
+   */
   def paths(from:A, to:A, direction:Map[A,Set[A]]):List[List[A]] = {
     require(from!=null)
     require(to!=null)
@@ -49,6 +78,14 @@ class PartialSet[A](
 }
 
 object PartialSet {
+  /**
+   * Построение графа частично упорядоченного множества
+   * @param set множество вершин
+   * @param eq отношение равенства
+   * @param relation отношение порядка
+   * @tparam A тип вершины
+   * @return Граф для частично упорядоченного множества
+   */
   def apply[A](set:Set[A], eq:(A,A)=>Boolean, relation:(A,A)=>Boolean): PartialSet[A] = {
     require(set!=null)
     require(relation!=null)

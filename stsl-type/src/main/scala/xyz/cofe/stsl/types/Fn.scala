@@ -75,7 +75,7 @@ class Fn( fgParams: GenericParams
     }
   }
 
-  // Переменные типа обявленные для owner = FN, должны указывать на  GenericParams
+  // Переменные типа объявленные для owner = FN, должны указывать на  GenericParams
   lazy val inputTypeVariables: Seq[TypeVariable] =
     fParams.params.map( p => p.tip match {
       case fn:Fn => fn.typeVariables

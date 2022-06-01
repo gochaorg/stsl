@@ -367,6 +367,12 @@ AST
     -|-| LiteralAST IntNumberTok 1
     -| PojoItemAST k2
     -|-| LiteralAST IntNumberTok 2
+
+
+Исходник
+
+    { k1: "abc", k2: 2 }
+
     PojoAST
     -| PojoItemAST k1
     -|-| LiteralAST StringTok abc

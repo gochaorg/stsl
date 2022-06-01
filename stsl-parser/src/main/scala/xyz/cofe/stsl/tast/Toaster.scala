@@ -231,7 +231,12 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     require(stackedArgumentAST!=null)
     TAST( stackedArgumentAST, stackedArgumentAST.argumentType, ()=>stackedArgumentAST.value )
   }
-
+  
+  /**
+   * Компиляция вызова функции или метода
+   * @param callAST вызов
+   * @return типизированный узел AST
+   */
   def compile( callAST: CallAST ):TAST = {
     require(callAST!=null)
     callAST.callable match {
@@ -309,7 +314,12 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
       argumentsTast
     )
   }
-
+  
+  /**
+   * Компиляция вызова лямбды
+   * @param lambdaAST лямбда
+   * @return типизированный узел AST
+   */
   def compile( lambdaAST: LambdaAST ):TAST = {
     require(lambdaAST!=null)
     val debug = false
