@@ -213,7 +213,7 @@ TAST дерево
     // Добавляем в класс поле age типа int
     userType.fields ++=
       "age" -> INT ->
-        // прописываем спосб чтения значения поля
+        // прописываем способ чтения значения поля
         ((p:Any) => p.asInstanceOf[Person].age) ->
         // прописываем способ записи значения поля
         ((thiz:Any, pvalue:Any) => pvalue)
@@ -284,23 +284,35 @@ TAST дерево
 Вызов метода
 --------------------------------------
 
+Сценарий
+
     str.substring( 0, 3 )
 
+Подготовка + парсинг + toaster. Пример на языке Scala.
+
+    // Определяем переменную str
+    // и регистрируем ее
     val vs = new VarScope();
     vs.put("str" -> STRING -> "string" )
 
     val ts = new TypeScope()
     ts.implicits = JvmType.implicitConversion
 
+    // парсинг исходника
     val ast = Parser.parse("str.substring( 0, 3 )")
     val tst = new Toaster(ts,vs)
+
+    // компиляция
     val tast = tst.compile(ast.get)
 
+    // интерпретация результата
     val computedValue =  tast.supplier.get()
 
     assert( tast.supplierType == STRING )
     assert( computedValue!=null && computedValue.isInstanceOf[String] )
     assert( "str" == computedValue )
+
+AST дерево
 
     AST
     CallAST
@@ -308,20 +320,42 @@ TAST дерево
     -|-| IdentifierAST IdentifierTok str
     -| LiteralAST IntNumberTok 0
     -| LiteralAST IntNumberTok 3
+
+TAST дерево
+
     TAST
     CallAST substring() :: string
     -| IdentifierAST IdentifierTok str :: string
     -| LiteralAST IntNumberTok 0 :: int
     -| LiteralAST IntNumberTok 3 :: int
+
+Результат вычисления
+
     exec
     ------------------------------
     string
     str
 
+- Для типа STRING (`xyz.cofe.stsl.tast.JvmType$.STRING`) уже предопределены следующие методы и поля
+  - `length:INT`
+  - `substring(beginIndex:INT):STRING`
+  - `substring(beginIndex:INT, endIndex:INT):STRING`
+  - `+(value:STRING)`
+  - `==(value:STRING)`
+  - `!=(value:STRING)`
+  - `<(value:STRING)`
+  - `>(value:STRING)`
+  - `<=(value:STRING)`
+  - `>=(value:STRING)`
+
 Вызов функции
 -------------------------------------
 
+Сценарий
+
     repeat( str, 2 )
+
+Подготовка + парсинг + toaster. Пример на языке Scala.
 
     val repeatFn = Fn(Params("str" -> STRING, "count" -> INT),STRING).invoke[String,Int,String]((str:String,cnt:Int)=>str*cnt)
 
@@ -356,15 +390,23 @@ TAST дерево
     assert( computedValue!=null && computedValue.isInstanceOf[String] )
     assert( "stringstring" == computedValue )
 
+AST дерево
+
     AST
     CallAST
     -| IdentifierAST IdentifierTok repeat
     -| IdentifierAST IdentifierTok str
     -| LiteralAST IntNumberTok 2
+
+TAST дерево
+
     TAST
     CallAST :: string
     -| IdentifierAST IdentifierTok str :: string
     -| LiteralAST IntNumberTok 2 :: int
+
+Результат вычисления
+
     exec
     ------------------------------
     string
@@ -372,6 +414,12 @@ TAST дерево
 
 Вызов лямбды
 ----------------------------------
+
+Сценарий
+
+    a:int , b:int => a+b
+
+Подготовка + парсинг + toaster. Пример на языке Scala.
 
     println("lambdaCall01")
     println("="*30)
@@ -412,6 +460,8 @@ TAST дерево
     assert(lambdaComputedValue.isInstanceOf[Int])
     assert(3 == lambdaComputedValue)
 
+AST дерево
+
     AST
     LambdaAST
     -| ParamAST IdentifierAST IdentifierTok a
@@ -423,11 +473,17 @@ TAST дерево
     -| BinaryAST +
     -|-| IdentifierAST IdentifierTok a
     -|-| IdentifierAST IdentifierTok b
+
+TAST дерево
+
     TAST
     LambdaAST :: (a:int,b:int):int
     -| BinaryAST + :: int
     -|-| StackedArgumentAST IdentifierTok a :: int
     -|-| StackedArgumentAST IdentifierTok b :: int
+
+Результат вычисления
+
     exec
     ------------------------------
     (a:int,b:int):int
@@ -437,6 +493,12 @@ TAST дерево
 
 Вызов рекурсивной лямбды
 ---------------------------------------
+
+Сценарий
+
+    a:int , r :: int => a < 0 ? 0 : r(a-1) + a
+
+Подготовка + парсинг + toaster. Пример на языке Scala.
 
     println("lambdaCall02")
     println("="*30)
@@ -483,6 +545,8 @@ TAST дерево
       assert(resultExpect == lambdaComputedValue)
     })
 
+AST дерево
+
     AST
     LambdaAST recursion: ParamAST IdentifierAST IdentifierTok r
     -| ParamAST IdentifierAST IdentifierTok a
@@ -503,6 +567,9 @@ TAST дерево
     -|-|-|-|-| IdentifierAST IdentifierTok a
     -|-|-|-|-| LiteralAST IntNumberTok 1
     -|-|-| IdentifierAST IdentifierTok a
+
+TAST дерево
+
     TAST
     LambdaAST recursion: ParamAST IdentifierAST IdentifierTok r :: (a:int):int
     -| TernaryAST ? : :: int
@@ -516,6 +583,9 @@ TAST дерево
     -|-|-|-|-| StackedArgumentAST IdentifierTok a :: int
     -|-|-|-|-| LiteralAST IntNumberTok 1 :: int
     -|-|-| StackedArgumentAST IdentifierTok a :: int
+
+Результат вычисления
+
     exec
     ------------------------------
     (a:int):int
@@ -526,9 +596,16 @@ TAST дерево
     call 4 result = 10
     call 5 result = 15
 
-
 Вызов замыкания
 ------------------------------
+
+Замыкания на данный момент не поддерживаются
+
+Сценарий
+
+    () => a+b
+
+Подготовка + парсинг + toaster. Пример на языке Scala.
 
     println("lambdaCall03")
     println("="*30)
@@ -558,15 +635,26 @@ TAST дерево
 
     assert(catched)
 
+AST дерево
+
     AST
     LambdaAST
     -| BinaryAST +
     -|-| IdentifierAST IdentifierTok a
     -|-| IdentifierAST IdentifierTok b
+
+TAST дерево
+
     xyz.cofe.stsl.tast.ToasterError: body contains external identifiers
 
 Создание объекта
 -----------------------------------------
+
+Сценарий
+
+    { k1: 1, k2: "abc" }
+
+Подготовка + парсинг + toaster. Пример на языке Scala.
 
     println("objDef01")
     println("="*30)
@@ -590,16 +678,24 @@ TAST дерево
     println("-"*30)
     println(TypeDescriber.describe(tast.supplierType))
 
+AST дерево
+
     AST
     PojoAST
     -| PojoItemAST k1
     -|-| LiteralAST IntNumberTok 1
     -| PojoItemAST k2
     -|-| LiteralAST StringTok abc
+
+TAST дерево
+
     TAST
     PojoAST :: Pojo1
     -| LiteralAST IntNumberTok 1 :: int
     -| LiteralAST StringTok abc :: string
+
+Результат вычисления
+
     ------------------------------
     Pojo1 extends any {
       k2 : string
