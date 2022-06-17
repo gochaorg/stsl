@@ -7,6 +7,9 @@
     <groupId>xyz.cofe</groupId>
     <artifactId>stsl</artifactId>
     <version>1.0</version>
+    <modules>
+        <module>stsl-all</module>
+    </modules>
     <packaging>pom</packaging>
 
 <!--    <modules>-->
