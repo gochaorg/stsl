@@ -385,4 +385,47 @@ class ToasterTest {
     println("-"*30)
     println(TypeDescriber.describe(tast.supplierType))
   }
+  
+  @Test
+  def objDef02():Unit = {
+    println("objDef02")
+    println("="*30)
+  
+    val ts = new TypeScope()
+    ts.implicits = JvmType.implicitConversion
+  
+    val ast = Parser.parse(
+      """
+        |{
+        | k1: 1,
+        | k2: a:int => a+a
+        |}
+        |""".stripMargin)
+    println("AST")
+    ast.foreach( ASTDump.dump )
+    assert( ast.isDefined )
+  
+    val tst = new Toaster(ts)
+    ts.implicits = JvmType.implicitConversion
+    ts.imports(JvmType.types)
+    
+    val tast = tst.compile(ast.get)
+    assert(tast!=null)
+    println("TAST")
+    TASTDump.dump(tast)
+  
+    println("-"*30)
+    println("supplierType:")
+    println(TypeDescriber.describe(tast.supplierType))
+    println("supplier.get():")
+    
+    val computedValue = tast.supplier.get()
+    println(computedValue)
+    println(computedValue.getClass)
+    val computedMap = computedValue.asInstanceOf[java.util.Map[_,_]]
+    computedMap.forEach( (k,v) => {
+      println(s"key ${k} : ${k.getClass}")
+      println(s"  value ${v} : ${v.getClass}")
+    })
+  }
 }
