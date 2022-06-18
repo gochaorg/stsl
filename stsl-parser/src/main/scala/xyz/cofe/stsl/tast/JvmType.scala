@@ -703,4 +703,8 @@ object JvmType {
     Fn( Params( "value" -> BIGINT ), DECIMAL ).invoke[BigInt,BigDecimal]( value => BigDecimal(value) ),
   )
   //endregion
+  
+  val types = List(
+    STRING, BOOLEAN, CHAR, NUMBER, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BIGINT, DECIMAL
+  )
 }
