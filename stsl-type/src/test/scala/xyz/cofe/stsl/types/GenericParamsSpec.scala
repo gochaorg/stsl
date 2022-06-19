@@ -1,10 +1,9 @@
 package xyz.cofe.stsl.types
 
-import org.junit.jupiter.api.Test
+import org.scalatest.flatspec.AnyFlatSpec
 
-class GenericParamsTest {
-  @Test
-  def duplicateName01():Unit = {
+class GenericParamsSpec extends AnyFlatSpec {
+  "Дубли в названии Generic параметров" should "TypeError" in {
     var catched = false
     try {
       GenericParams(

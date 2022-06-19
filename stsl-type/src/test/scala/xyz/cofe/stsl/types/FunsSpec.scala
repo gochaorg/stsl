@@ -1,14 +1,14 @@
 package xyz.cofe.stsl.types
 
 import org.junit.jupiter.api.Test
+import org.scalatest.flatspec.AnyFlatSpec
 
-class FunsTest {
-  @Test
-  def duplicateParamNames():Unit = {
+class FunsSpec extends AnyFlatSpec {
+  "Дублирующиеся сигнатуры в списке функций" should "должно TypeError" in {
     import Type._
     import JvmType._
     var catched = false
-
+  
     val f1=Fn(Params("a" -> INT),INT)
     val f2=Fn(Params("b" -> INT),INT)
     val f3=Fn(Params("c" -> VOID),INT)
