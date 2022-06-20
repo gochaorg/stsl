@@ -432,6 +432,5 @@ class TypeInferenceTest {
     println("="*40)
     
     val types = List( JvmType.STRING, JvmType.STRING )
-    
   }
 }

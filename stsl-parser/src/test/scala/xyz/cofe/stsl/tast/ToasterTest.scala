@@ -41,7 +41,7 @@ class ToasterTest {
     assert( computedValue!=null && computedValue.isInstanceOf[Int] )
     assert( 30 == computedValue )
   }
-
+  
   @Test
   def delegateAstTest:Unit = {
     println("delegateAstTest")
@@ -181,7 +181,7 @@ class ToasterTest {
     ast.foreach( ASTDump.dump )
     assert( ast.isDefined )
     test(ast, call, property, identifier, literal, literal)
-
+    
     val tst = new Toaster(ts,vs)
     val tast = tst.compile(ast.get)
     assert(tast!=null)
@@ -200,7 +200,7 @@ class ToasterTest {
     assert( computedValue!=null && computedValue.isInstanceOf[String] )
     assert( "str" == computedValue )
   }
-
+  
   @Test
   def funCallTest:Unit = {
     println("funCallTest")

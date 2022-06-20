@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import xyz.cofe.stsl.tast.JvmType.INT
 import xyz.cofe.stsl.types.Type.THIS
 import xyz.cofe.stsl.types.pset.PartialSet
-import xyz.cofe.stsl.types.{CallableFn, Fun, LocatorItem, LocatorItemFunParam, Named, Obj, TObject, Type}
+import xyz.cofe.stsl.types.{CallableFn, Extendable, Fun, LocatorItem, LocatorItemFunParam, MutableMethods, Named, Obj, TObject, Type}
 
 /**
  * Область "видимых" типов данных
@@ -284,8 +284,29 @@ class TypeScope {
     require(thiz!=null)
     require(method!=null)
     require(args!=null)
-
-    val ctypes : List[CallType] = thiz.methods.get(method).map(
+    
+    val thizWithParents = {
+      var from = thiz
+      var lst = List(from)
+      while( from.extend.isDefined && from.extend.get.isInstanceOf[TObject] ){
+        from = from.extend.get.asInstanceOf[TObject]
+        lst = from :: lst
+      }
+      lst
+    }
+    
+    val methods = thizWithParents.foldLeft( new MutableMethods() )(
+      (methods,tobj) => {
+        tobj.methods.funs.foreach { case (name, funs) => {
+          funs.foreach( fun => {
+            methods += name -> fun
+          })
+        }}
+        methods
+      }
+    )
+    
+    val ctypes : List[CallType] = methods.get(method).map(
       funs => funs.funs.map( fun => callType( fun, args, Some(thiz) )
       )
     ).getOrElse( List() )
