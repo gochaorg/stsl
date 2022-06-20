@@ -2,10 +2,8 @@ package xyz.cofe.stsl.tast
 
 import org.junit.jupiter.api.Test
 import xyz.cofe.stsl.ast.{ASTDump, Parser}
-import xyz.cofe.stsl.types.TObject
-import xyz.cofe.stsl.types.{Fn, Params, TObject, Type, TypeVariable}
-import xyz.cofe.stsl.types.Type.{ANY, THIS}
-import xyz.cofe.stsl.tast.JvmType
+import xyz.cofe.stsl.types.Type.THIS
+import xyz.cofe.stsl.types.{Fn, Params, TObject, Type}
 
 class InheritTest {
   class Base {
