@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import xyz.cofe.stsl.ast._
 import xyz.cofe.stsl.tok._
 import JvmType._
-import xyz.cofe.stsl.types.{CallableFn, Fn, Fun, GenericInstance, Param, Params, TObject, Type, WriteableField}
+import xyz.cofe.stsl.types.{CallableFn, Fn, Fun, GenericInstance, MutableFields, Param, Params, TObject, Type, WriteableField}
 
 import java.util
 import scala.collection.mutable
@@ -205,8 +205,25 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
       case t:TObject => t
       case _ => throw ToasterError("property owner not object", propertyAST.obj)
     }
+  
+    val thizWithParents = {
+      var from = objType
+      var lst = List(from)
+      while( from.extend.isDefined && from.extend.get.isInstanceOf[TObject] ){
+        from = from.extend.get.asInstanceOf[TObject]
+        lst = from :: lst
+      }
+      lst
+    }
+    
+    val fields = thizWithParents.foldLeft( new MutableFields() )( (flds,tobj) => {
+      tobj.fields.fields.foreach( fld => {
+        flds.append(fld)
+      })
+      flds
+    })
 
-    val propOpt = objType.fields.get(pname)
+    val propOpt = fields.get(pname)
     if( propOpt.isEmpty ){
       throw ToasterError(s"property ${pname} not found in ${objType}", propertyAST.name)
     }

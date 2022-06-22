@@ -11,6 +11,10 @@ class InheritTest {
       println(s"Base.base( a=$a )")
       a+a
     }
+    def field():Int = {
+      println("Base.field=1")
+      1
+    }
     def some(a:Int):Int = {
       println(s"Base.some( a=$a )")
       a+a
@@ -18,6 +22,7 @@ class InheritTest {
   }
   lazy val baseType = {
     val typeDef = new TObject("Base")
+    typeDef.fields ++= "field" -> JvmType.INT-> ((self:Any) => self.asInstanceOf[Base].field()) -> ((self:Any,value:Any)=>throw new RuntimeException("immutable"))
     typeDef.methods += "base" -> Fn(Params("this"->THIS, "a"->JvmType.INT),JvmType.INT).invoke[Base,Int,Int]( (self,a)=>self.base(a) )
     typeDef.methods += "some" -> Fn(Params("this"->THIS, "a"->JvmType.INT),JvmType.INT).invoke[Base,Int,Int]( (self,a)=>self.some(a) )
     typeDef
@@ -85,5 +90,12 @@ class InheritTest {
     println("callInhereted")
     println("="*30)
     runScript("obj.base( 10 )")
+  }
+
+  @Test
+  def fieldInhereted:Unit = {
+    println("callInhereted")
+    println("="*30)
+    runScript("obj.field")
   }
 }
