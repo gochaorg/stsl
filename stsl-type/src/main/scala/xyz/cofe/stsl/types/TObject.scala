@@ -8,24 +8,28 @@ import java.util
  * @param Name Имя класса
  * @param ogenerics Параметры типа
  * @param oextend Какой тип расширяет
- * @param ofields Атрибуты/поля класса
- * @param omethods Методы класса
+ * @param fields Атрибуты/поля класса
+ * @param methods Методы класса
  */
 class TObject( Name:String,
-               ogenerics:MutableGenericParams=new MutableGenericParams(),
+               val generics:MutableGenericParams=new MutableGenericParams(),
                oextend:Option[Type] = Some(Type.ANY),
-               ofields:MutableFields=new MutableFields(),
-               omethods:MutableMethods=new MutableMethods()
-             ) extends Obj with TypeVarReplace[TObject] with Freezing {
+               val fields:MutableFields=new MutableFields(),
+               val methods:MutableMethods=new MutableMethods()
+             ) extends Obj with Named with TypeVarReplace[TObject] with Freezing {
+  
+  override type FIELDS = MutableFields
+  override type METHODS = MutableMethods
+  override type GENERICS = MutableGenericParams
+  
   require(Name!=null)
-  require(ogenerics!=null)
-  require(ofields!=null)
-  require(omethods!=null)
+  require(generics!=null)
+  require(fields!=null)
+  require(methods!=null)
   require(oextend!=null)
 
   //region "Заморозка"
-  private val intName = Name
-
+  
   private var freezedValue : Boolean = false
 
   /**
@@ -45,6 +49,8 @@ class TObject( Name:String,
     generics.freeze
   }
   //endregion
+  
+  //region name:String
 
   private var nameValue : String = Name
 
@@ -61,7 +67,7 @@ class TObject( Name:String,
    */
   def name_=( value:String ):String = {
     require(value!=null)
-    require(value.trim.length>0)
+    require(value.trim.nonEmpty)
     if( freezed )throw TypeError("freezed")
     nameValue = value
     value
@@ -76,7 +82,20 @@ class TObject( Name:String,
     this.name = value
     this
   }
+  
+  /**
+   * Клонирует объект с новыым именем
+   * @param name новое имя
+   * @return клон
+   */
+  def withName(name:String):TObject = {
+    require(name!=null)
+    new TObject(name,generics,extend,fields,methods)
+  }
+  //endregion
 
+  //region extend
+  
   private var extendValue = oextend
 
   /**
@@ -106,10 +125,9 @@ class TObject( Name:String,
     this.extend = Some(parentType)
     this
   }
+  //endregion
 
-  override lazy val generics: MutableGenericParams = ogenerics
-  override lazy val fields: MutableFields = ofields
-  override lazy val methods: MutableMethods = omethods
+  //override lazy val generics: MutableGenericParams = ogenerics
 
   private def fieldsTypeVariablesMap = fields.filter(f => f.tip.isInstanceOf[TypeVariable]).map(f => f.name -> f.tip.asInstanceOf[TypeVariable]).toMap
   private def fieldsTypeVariables  = fieldsTypeVariablesMap.values
@@ -130,17 +148,7 @@ class TObject( Name:String,
   }
 
   validateTypeVariables()
-
-  /**
-   * Клонирует объект с новыым именем
-   * @param name новое имя
-   * @return клон
-   */
-  def withName(name:String):TObject = {
-    require(name!=null)
-    new TObject(name,generics,extend,fields,methods)
-  }
-
+  
   override def toString: String = {
     s"${name}${generics}"
   }

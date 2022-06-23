@@ -4,8 +4,10 @@ package xyz.cofe.stsl.types
  * Тип параметра - модели ковариантности
  */
 sealed trait GenericParam extends Type with Named {
+  override type GENERICS = GenericParams
+  val generics: GenericParams = GenericParams()
+
   override lazy val extend: Option[Type] = None
-  override lazy val generics: GenericParams = GenericParams()
   def sameType(t:GenericParam):Boolean
 }
 

@@ -4,10 +4,12 @@ package xyz.cofe.stsl.types
  * Патаметры типа
  */
 trait Genericable extends Assignable {
+  type GENERICS <: GenericParams
+  
   /**
    * Список параметров типа
    */
-  lazy val generics : GenericParams = GenericParams()
+  def generics : GENERICS // = GenericParams()
 
   /**
    * Проверка возможности присвоение с учетом параметров типа

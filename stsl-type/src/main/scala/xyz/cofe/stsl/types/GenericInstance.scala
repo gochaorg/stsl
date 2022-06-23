@@ -13,6 +13,9 @@ class GenericInstance[A <: Type with TypeVarReplace[A]](
                                                        )
   extends Type with TypeVarReplace[GenericInstance[A]] with TypeVarFetch
 {
+  override type GENERICS = GenericParams
+  val generics = GenericParams()
+  
   require(recipe!=null)
   require(source!=null)
   recipe.foreach({case(name,trgt)=>

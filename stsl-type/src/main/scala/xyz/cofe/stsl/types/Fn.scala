@@ -39,12 +39,14 @@ import java.util
  * @param fParams Параметры функции
  * @param fReturn Результат функции
  */
-class Fn( fgParams: GenericParams
+class Fn( val generics: GenericParams
              , fParams: Params
              , fReturn: Type
              ) extends Fun
 {
-  require(fgParams!=null)
+  override type GENERICS = GenericParams
+
+  require(generics!=null)
   require(fParams!=null)
   require(fReturn!=null)
 
@@ -119,7 +121,7 @@ class Fn( fgParams: GenericParams
     .filter( gv => gv.owner == Type.FN )
     .map( _.name )
     .foreach( vname =>
-      if( !fgParams.params.map(_.name).contains(vname) ){
+      if( !generics.params.map(_.name).contains(vname) ){
         throw TypeError(s"bind undeclared type variable $vname into Fn")
       }
     )
@@ -127,7 +129,7 @@ class Fn( fgParams: GenericParams
   /**
    * Список параметров типа
    */
-  override lazy val generics: GenericParams = fgParams
+  //override lazy val generics: GenericParams = fgParams
 
   /**
    * Параметры функции

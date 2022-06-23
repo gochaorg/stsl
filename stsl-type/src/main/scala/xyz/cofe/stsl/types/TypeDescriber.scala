@@ -24,7 +24,10 @@ object TypeDescriber {
 
   private def descObj(o:Obj):String = {
     val sb = new StringBuilder
-    sb.append(o.name)
+    o match {
+      case n:Named => sb.append(n.name)
+      case _ =>
+    }
     sb.append(o.generics)
     if( o.extend.isDefined ){
       sb.append(" extends ").append(o.extend.get match {
@@ -57,7 +60,12 @@ object TypeDescriber {
         ti match {
           case oi:Obj =>
             if( oi.methods.funs.nonEmpty || oi.fields.fields.nonEmpty ){
-              sb.append("  /* extends ").append(oi.name).append(oi.generics).append(" */").append("\n")
+              sb.append("  /* extends ").append(
+                oi match {
+                  case n:Named => n.name
+                  case _ => ""
+                }
+              ).append(oi.generics).append(" */").append("\n")
             }
           case n:Named =>
             sb.append("  /* extends ").append(n.name).append(n.generics).append(" */").append("\n")

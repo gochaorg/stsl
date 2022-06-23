@@ -8,6 +8,10 @@ package xyz.cofe.stsl.types
 class TypeVariable( val name:String, val owner: Type ) extends Type with Named {
   require(owner!=null,"owner not defined")
   require(name!=null, "name not defined")
+  
+  override type GENERICS = GenericParams
+  val generics = GenericParams()
+
   if( !(owner==Type.FN || owner==Type.THIS) ){
     throw TypeError("owner must be FN | THIS")
   }

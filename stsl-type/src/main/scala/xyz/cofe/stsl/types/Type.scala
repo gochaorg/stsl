@@ -15,6 +15,9 @@ object Type {
    * Системный, именнованый примитив
    */
   abstract class Primitive extends Type with Named {
+    override type GENERICS = GenericParams
+    val generics = GenericParams()
+    //override def generics: GenericParams =
     override def toString: String = name
   }
 
@@ -36,6 +39,9 @@ object Type {
    * Системный, функция
    */
   val FN:Type = new Type {
+    override type GENERICS = GenericParams
+    val generics = GenericParams()
+
     override lazy val extend: Option[Type] = Some(ANY)
     override def toString: String = "fn"
   }
@@ -44,6 +50,9 @@ object Type {
    * Системный, ссылка на собственный объект (this)
    */
   val THIS:Type = new Type with Named {
+    override type GENERICS = GenericParams
+    val generics = GenericParams()
+
     override val name: String = "THIS"
     override def toString: String = "THIS"
   }
