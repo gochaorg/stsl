@@ -127,8 +127,6 @@ class TObject( Name:String,
   }
   //endregion
 
-  //override lazy val generics: MutableGenericParams = ogenerics
-
   private def fieldsTypeVariablesMap = fields.filter(f => f.tip.isInstanceOf[TypeVariable]).map(f => f.name -> f.tip.asInstanceOf[TypeVariable]).toMap
   private def fieldsTypeVariables  = fieldsTypeVariablesMap.values
   private def methodsTypeVariables = methods.funs.values.flatMap(f => f.funs).flatMap(f => f.typeVariables)
@@ -275,6 +273,7 @@ object TObject {
   )
 
   //region Конструирование объекта
+  
   class FieldBuilder(
                       private var fields: Fields,
                       private val newFields:(Fields)=>Any,

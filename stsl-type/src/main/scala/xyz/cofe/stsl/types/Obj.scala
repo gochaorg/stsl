@@ -8,17 +8,5 @@ package xyz.cofe.stsl.types
  *   <li> Список методов
  * </ul>
  */
-trait Obj extends Type {
-  type FIELDS <: Fields
-  type METHODS <: Methods
-  
-  /**
-   * Список полей/атрибутов
-   */
-  val fields : FIELDS
-
-  /**
-   * Список методов полей/атрибутов
-   */
-  val methods : METHODS
+trait Obj extends Type with FieldsProperty with MethodsProperty {
 }
