@@ -25,17 +25,17 @@ object TypeDescriber {
   private def descObj(o:Obj):String = {
     val sb = new StringBuilder
     o match {
-      case n:Named => sb.append(n.name)
+      case n:Named => sb.append(n.name).append(" ")
       case _ =>
     }
     sb.append(o.generics)
     if( o.extend.isDefined ){
-      sb.append(" extends ").append(o.extend.get match {
+      sb.append("extends ").append(o.extend.get match {
         case n:Named => n.name
         case _ => "?"
-      })
+      }).append(" ")
     }
-    sb.append(" {\n")
+    sb.append("{\n")
 
     var ti:Type = o
     var stop = false
@@ -49,7 +49,7 @@ object TypeDescriber {
           oi.methods.funs.foreach({ case (name, funs) =>
             funs.funs.foreach(fn => {
               sb.append("  ");
-              sb.append(name).append(fn.toString).append("\n")
+              sb.append(name).append(" ").append(fn.toString).append("\n")
             })
           })
         case _ =>
