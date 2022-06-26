@@ -6,17 +6,23 @@ import java.util
  * Определение класса данных/объектов
  *
  * @param Name Имя класса
- * @param ogenerics Параметры типа
+ * @param generics Параметры типа
  * @param oextend Какой тип расширяет
  * @param fields Атрибуты/поля класса
  * @param methods Методы класса
  */
 class TObject( Name:String,
                val generics:MutableGenericParams=new MutableGenericParams(),
-               oextend:Option[Type] = Some(Type.ANY),
+               oextend:Option[Type] = Some(Type.ANY), // Todo Вот нужно проверять на наличие generic и наличие рецепта
                val fields:MutableFields=new MutableFields(),
                val methods:MutableMethods=new MutableMethods()
-             ) extends Obj with Named with TypeVarReplace[TObject] with Freezing {
+             )
+  extends Obj
+    with Named
+    with TypeVarReplace[TObject]
+    with Freezing
+    with ObjGenericValidation
+{
   
   override type FIELDS = MutableFields
   override type METHODS = MutableMethods
@@ -27,6 +33,8 @@ class TObject( Name:String,
   require(fields!=null)
   require(methods!=null)
   require(oextend!=null)
+    // Todo Вот нужно проверять на наличие generic и наличие рецепта
+    // todo при наличие generic, методы надо переименовать по типам параметра согласно рецепту
 
   //region "Заморозка"
   
@@ -126,24 +134,6 @@ class TObject( Name:String,
     this
   }
   //endregion
-
-  private def fieldsTypeVariablesMap = fields.filter(f => f.tip.isInstanceOf[TypeVariable]).map(f => f.name -> f.tip.asInstanceOf[TypeVariable]).toMap
-  private def fieldsTypeVariables  = fieldsTypeVariablesMap.values
-  private def methodsTypeVariables = methods.funs.values.flatMap(f => f.funs).flatMap(f => f.typeVariables)
-  private def typeVariables = fieldsTypeVariables ++ methodsTypeVariables
-
-  /**
-   * Проверка что указанные типы-переменных соответствуют объявленным
-   */
-  private def validateTypeVariables():Unit = {
-    typeVariables
-      .filter( tv => tv.owner==Type.THIS )
-      .foreach( vname =>
-        if( !generics.params.map(_.name).contains(vname.name) ){
-          throw TypeError(s"bind undeclared type variable $vname into Object")
-        }
-      )
-  }
 
   validateTypeVariables()
   

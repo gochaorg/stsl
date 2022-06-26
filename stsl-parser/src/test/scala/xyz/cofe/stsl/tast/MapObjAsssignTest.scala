@@ -52,6 +52,7 @@ class MapObjAsssignTest {
       }
     }
   }
+  
   def assignableByMethods( ta:TObject, tb:TObject ):Option[String] = {
     if( ta.methods.isEmpty ){
       None

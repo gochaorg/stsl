@@ -8,5 +8,11 @@ package xyz.cofe.stsl.types
  *   <li> Список методов
  * </ul>
  */
-trait Obj extends Type with FieldsProperty with MethodsProperty {
+trait Obj
+  extends Type
+    with FieldsProperty
+    with MethodsProperty
+    with InheritedFields
+    with InheritedMethods
+{
 }

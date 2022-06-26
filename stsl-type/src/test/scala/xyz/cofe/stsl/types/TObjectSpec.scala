@@ -1,12 +1,12 @@
 package xyz.cofe.stsl.types
 
 import org.junit.jupiter.api.Test
+import org.scalatest.flatspec.AnyFlatSpec
 
-class TObjectTest {
-  @Test
-  def unbindedTypeVariables01():Unit = {
+class TObjectSpec extends AnyFlatSpec{
+  "Несвязанные типы-переменные" should "TypeError" in {
     var catched = false
-
+  
     try {
       val obj = TObject("SomeObj")
         .generics(AnyVariant("A"))
@@ -19,7 +19,11 @@ class TObjectTest {
         println(err)
         catched = true
     }
-
+  
     assert(catched)
+  }
+  
+  "Наследование generic параметров" should "?" in {
+    //todo impl ?
   }
 }
