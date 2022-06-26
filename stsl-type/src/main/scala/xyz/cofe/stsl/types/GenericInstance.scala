@@ -2,6 +2,20 @@ package xyz.cofe.stsl.types
 
 /**
  * Тип данных - экземпляр переменной параметрезированного типа
+ *
+ * То есть есть например тип `Either[A,B]` которое определено переменной `t`
+ * как - то так:
+ *
+ * ```
+ * t = TObject( GenericParams( AnyVal("A"), AnyVal("B") ), .... )
+ * ```
+ *
+ * Мы хотим задать конкретные значения `A,B`, где `A=String, B=Int` тогда
+ *
+ * ```
+ * inst = GenericInstance( Map("A"->STRING, "B"->INT), t )
+ * ```
+ *
  * @param recipe правило параметризации
  * @param source исходный параметризированный тип
  * @tparam A Объект реализующий TypeVarReplace
