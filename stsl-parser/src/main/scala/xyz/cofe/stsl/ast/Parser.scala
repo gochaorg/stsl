@@ -3,21 +3,15 @@ package xyz.cofe.stsl.ast
 import xyz.cofe.sparse.{CToken, GR, LPointer}
 import xyz.cofe.stsl.tok._
 
-/**
- * Парсер
- */
-object Parser {
+case class Parser() {
   import xyz.cofe.sparse.GOPS._
-
-  type PTR = LPointer[CToken]
-  type AstGR = GR[PTR,AST]
-  type OpLiteral = GR[PTR,OperatorAST]
-
+  import Parser._
+  
   /**
    * "Начальное" правило
    */
   val expression : ProxyGR = new ProxyGR
-
+  
   /**
    * Правило распознования LiteralAST
    */
@@ -32,7 +26,7 @@ object Parser {
       }
     }
   }
-
+  
   /**
    * Правило распознования IdentifierAST
    */
@@ -47,7 +41,7 @@ object Parser {
       }
     }
   }
-
+  
   /**
    * Создание правила для OperatorAST
    * @param operators Список понимаемых операторов
@@ -67,7 +61,7 @@ object Parser {
       }
     }
   }
-
+  
   /**
    * Постраение правил бинарных операторов <br>
    *   <code> ::= init { operatorLit follow } </code>
@@ -82,7 +76,7 @@ object Parser {
     require(operatorLit!=null)
     require(follow!=null)
     require(join!=null)
-
+    
     new AstGR {
       override def apply(ptr: PTR): Option[AST] = {
         val start = init(ptr)
@@ -109,7 +103,7 @@ object Parser {
       }
     }
   }
-
+  
   /**
    * Постраение правил бинарных операторов <br>
    *   <code> ::= init { operatorLit follow } </code>
@@ -125,57 +119,57 @@ object Parser {
     binary(init, operatorLit, follow, (init,op,flw) =>
       new BinaryAST(init.begin(), flw.end(), op, init, flw) )
   }
-
+  
   /**
    * Скобочное выражение <code> ::= '(' expression ')' </code>
    */
   val parenthes : GR[PTR,DelegateAST] = operator("(") + expression + operator(")") ==> ( (l,e,r) => new DelegateAST(l.begin(), r.end(), e) )
-
+  
   /**
    * Унарный оператор -, ! <br>
    *   <code> ::= ( '-' | '!' ) expression </code>
    */
   val unary : GR[PTR,UnaryAST] = operator("-", "!") + expression ==> ( (op,e) => new UnaryAST(op.begin(), e.end(), op, e) )
-
+  
   val typeName : GR[PTR, TypeNameAST] = identifier ==>
     ( id => new TypeNameAST(id.begin(), id.end(), id.asInstanceOf[IdentifierAST].tok.text) )
-
+  
   //#region Лямбда
-
+  
   /**
    * Параметр лямды <code>::= identifier ':' typeName</code>
    */
   val lambdaParam : GR[PTR, ParamAST] = identifier + operator(":") + typeName ==>
     ( (paramName, op1, typeName) =>
       new ParamAST(paramName.begin(), typeName.end(), paramName.asInstanceOf[IdentifierAST], typeName)
-    )
-
+      )
+  
   /**
    * Параметр-рекурсия лямды <code>::= identifier '::' typeName</code>
    */
   val lambdaRecusionParam : GR[PTR, ParamAST] = identifier + operator("::") + typeName ==>
     ( (paramName, op1, typeName) =>
       new ParamAST(paramName.begin(), typeName.end(), paramName.asInstanceOf[IdentifierAST], typeName)
-    )
-
+      )
+  
   private val lambdaArrow = operator("=>")
   private val lambdaArgDelim = operator(",")
-
+  
   private val lambdaEmptyParams1 : AstGR =
     operator("(") + operator(")") + operator("=>") ==> ( (a,b,c) => new AST(a.begin(),c.end()) {})
-
+  
   private val lambdaEmptyParams2 : AstGR =
     operator("()") + operator("=>") ==> ( (a,b) => new AST(a.begin(),b.end()) {})
-
+  
   private val lambdaEmptyParams3 : GR[PTR,OperatorAST] =
     operator("()=>") ==> ( t => t )
-
+  
   private val lambdaEmptyParams4 : AstGR =
     operator("( ")+ operator(")=>") ==> ( (a,b) => new AST(a.begin(), b.end()) {} )
-
+  
   private val lambdaEmptyParamsN : AstGR =
     ( lambdaEmptyParams1 | lambdaEmptyParams2 | lambdaEmptyParams3 | lambdaEmptyParams4) ==> (t => t)
-
+  
   /**
    * Лямбда без параметров <br>
    * <code> ::= '(' ')' '=>' expression </code> <br>
@@ -184,7 +178,7 @@ object Parser {
    */
   val lambdaWithoutParams: GR[PTR, LambdaAST] = lambdaEmptyParamsN + expression ==>
     ( (empt,body) => new LambdaAST(empt.begin(), body.end(), List(), body) )
-
+  
   /**
    * Лямбда с параметрами <code> ::= lambdaParam {','  lambdaParam} [ ',' lambdaRecusionParam ] '=>' expression</code>
    * <br>
@@ -241,13 +235,13 @@ object Parser {
           }
         }
       }
-
+      
       if( !failMatch ) {
         val expr = expression(ptr)
         if (expr.isEmpty) {
           throw ParseError("expected expression", ptr)
         }
-
+        
         Some(new LambdaAST(
           beginPtr, expr.get.end(),
           params.reverse,
@@ -261,19 +255,19 @@ object Parser {
       None
     }
   }
-
+  
   //endregion
-
+  
   val emptyObj1 : GR[PTR,PojoAST] = operator("{}") ==> (o => new PojoAST(o.begin(), o.end()))
   val emptyObj2 : GR[PTR,PojoAST] = operator("{") + operator("}") ==> ( (b,e) => new PojoAST(b.begin(), e.end()))
   val objKeyVal : GR[PTR,PojoItemAST] = identifier + operator(":") + expression ==> ( (k,_t,v) => new PojoItemAST(k.begin(), v.end(), k.asInstanceOf[IdentifierAST], v) )
   val objNonEmpty : GR[PTR,PojoAST] =
     operator("{") +
       objKeyVal + (
-        operator(",") + objKeyVal ==> ((d,i)=>new PojoItemAST(d.begin(),i.end(),i.key,i.value))
+      operator(",") + objKeyVal ==> ((d,i)=>new PojoItemAST(d.begin(),i.end(),i.key,i.value))
       )*0 + operator("}") ==> ((b,f,s,e) => new PojoAST(b.begin(), e.end(), List(f) ++ s))
   val objDef : GR[PTR,PojoAST] = (emptyObj1 | emptyObj2 | objNonEmpty) ==> ( t => t )
-
+  
   /**
    * Атомарное значение <br>
    * <code>
@@ -287,20 +281,20 @@ object Parser {
    */
   val atom : AstGR =
     ( lambdaWithoutParams.asInstanceOf[AstGR]
-    | lambdaWithParams.asInstanceOf[AstGR]
-    | objDef
-    | parenthes
-    | unary
-    | literal
-    | identifier
-    ) ==> (t => t )
-
+      | lambdaWithParams.asInstanceOf[AstGR]
+      | objDef
+      | parenthes
+      | unary
+      | literal
+      | identifier
+      ) ==> (t => t )
+  
   private val fieldAccessOp: OpLiteral = operator(".")
   private val callStart: OpLiteral = operator("(")
   private val callEnd: OpLiteral = operator(")")
   private val callStartEnd: OpLiteral = operator("()")
   private val argDelim: OpLiteral = operator(",")
-
+  
   /**
    * Правило postFix: <br>
    * <code> ::= atom { </code> <br>
@@ -333,7 +327,7 @@ object Parser {
         } else null
       } else null
     }
-
+    
     val call : (AST,PTR)=>AST = (base:AST,ptr:PTR) => {
       val cStartEnd = callStartEnd(ptr)
       if( cStartEnd.isDefined ){
@@ -346,7 +340,7 @@ object Parser {
           var end: AST = null
           var expectArg = false
           var args: List[AST] = List()
-
+          
           while (!stop) {
             val cStop = if (expectArg) None else callEnd(prev.end())
             if (cStop.isDefined) {
@@ -381,14 +375,14 @@ object Parser {
               }
             }
           }
-
+          
           new CallAST(ptr, end.end(), base, args.reverse)
         } else null
       }
     }
-
+    
     val follows = List(propertyFollow, call)
-
+    
     //noinspection EmptyParenMethodAccessedAsParameterless
     override def apply(ptr: PTR): Option[AST] = {
       val base = atom(ptr)
@@ -413,28 +407,28 @@ object Parser {
       }
     }
   }
-
+  
   /**
    * Правило *, /, % <br>
    * <code> ::= binary( postFix,  operator("*","/","%"), postFix ) </code>
    */
   val mul: AstGR = binary(postFix, operator("*","/","%"), postFix)
-
+  
   /**
    * Правило +, -
    */
   val add: AstGR = binary(mul,operator("+","-"),mul)
-
+  
   /**
    * Правило ==, !=, <, >, <=, >=
    */
   val cmp: AstGR = binary(add,operator("==","!=","<",">","<=",">="),add)
-
+  
   /**
    * Правило &, |
    */
   val bool: AstGR = binary(cmp,operator("&","|"),cmp)
-
+  
   def ternary( condition:AstGR, question:OpLiteral, success:AstGR, elseOp:OpLiteral, failure:AstGR ): AstGR = new AstGR {
     require(condition!=null)
     require(success!=null)
@@ -466,12 +460,12 @@ object Parser {
       }else{ None }
     }
   }
-
+  
   /**
    * Условный оператор
    */
   val ifOp = ternary( bool, operator("?"), bool, operator(":"), bool )
-
+  
   /**
    * Парсинг исходного текста в AST
    * @param source исходный текст
@@ -494,6 +488,20 @@ object Parser {
     }
     res
   }
-
+  
   expression.target = ifOp
+}
+
+/**
+ * Парсер
+ */
+object Parser {
+  import xyz.cofe.sparse.GOPS._
+
+  type PTR = LPointer[CToken]
+  type AstGR = GR[PTR,AST]
+  type OpLiteral = GR[PTR,OperatorAST]
+  
+  val defaultParser = new Parser()
+  def parse(source:String): Option[AST] = defaultParser.parse(source)
 }
