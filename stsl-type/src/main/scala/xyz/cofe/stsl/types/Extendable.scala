@@ -4,11 +4,25 @@ package xyz.cofe.stsl.types
  * Производные типы данных - "наследование"
  */
 trait Extendable extends Assignable {
+  self =>
+  
   /**
    * Возвращает родительский тип данных
    * @return родительский тип
    */
   def extend : Option[Type] = None
+  
+  /**
+   * Путь от родительского типа до текущего
+   * @return путь
+   */
+  def extendPath: List[Type] = {
+    self match {
+      case t:Type =>
+        Iterator.iterate(t)(f=>f.extend.orNull).takeWhile(f=>f!=null).toList.reverse
+      case _ => List()
+    }
+  }
 
   /**
    * Проверяет что для текущего типа (this) возможна операция присвоения типа данных t с учетом наследования типов

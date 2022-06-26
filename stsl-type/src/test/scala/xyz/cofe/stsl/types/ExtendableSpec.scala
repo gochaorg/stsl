@@ -30,4 +30,6 @@ class ExtendableSpec extends AnyFlatSpec with Matchers {
   it should "NUMBER = DOUBLE" in assert(NUMBER.assignable(DOUBLE))
   it should "!DOUBLE = NUMBER" in assert(!DOUBLE.assignable(NUMBER))
   it should "!DOUBLE = ANY" in assert(!DOUBLE.assignable(ANY))
+  
+  it should "extendPath" in assert(DOUBLE.extendPath == List(ANY,NUMBER,DOUBLE))
 }
