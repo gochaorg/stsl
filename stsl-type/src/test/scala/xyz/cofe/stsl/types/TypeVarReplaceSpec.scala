@@ -4,21 +4,26 @@ import org.junit.jupiter.api.Test
 import xyz.cofe.stsl.types.TypeDescriber.describe
 import Type._
 import JvmType._
+import org.scalatest.flatspec.AnyFlatSpec
 
-class TypeVarReplaceTest {
-  @Test
-  def replaceInParam():Unit = {
+class TypeVarReplaceSpec extends AnyFlatSpec {
+  "Замена переменной тип A на B в параметре" should "a:A должно стать a:B" in {
     val param1 = Param("a",TypeVariable("A",FN))
     println( param1 )
+    assert( param1.tip.isInstanceOf[TypeVariable] )
+    assert( param1.tip.asInstanceOf[TypeVariable].name  == "A" )
+    assert( param1.tip.asInstanceOf[TypeVariable].owner == FN )
 
     val param2 = param1.typeVarReplace( p =>
       if( p.name == "A" ) Some(TypeVariable("B",FN)) else None
     )
     println( param2 )
+    assert( param2.tip.isInstanceOf[TypeVariable] )
+    assert( param2.tip.asInstanceOf[TypeVariable].name  == "B" )
+    assert( param2.tip.asInstanceOf[TypeVariable].owner == FN )
   }
 
-  @Test
-  def replaceInParams():Unit = {
+  "Замена типа переменной в параметрах" should "(a:A,b:A,c:B,d:C) замена на (a:E,b:E,c:F,d:C)" in {
     val params1 = Params(
       "a" -> TypeVariable("A",FN),
       "b" -> TypeVariable("A",FN),
@@ -38,10 +43,15 @@ class TypeVarReplaceTest {
     )
 
     println( params2 )
+    
+    assert( params2.length==params1.length )
+    assert( params2.head.tip.asInstanceOf[TypeVariable].name == "E" )
+    assert( params2(1).tip.asInstanceOf[TypeVariable].name == "E" )
+    assert( params2(2).tip.asInstanceOf[TypeVariable].name == "F" )
+    assert( params2(3).tip.asInstanceOf[TypeVariable].name == "C" )
   }
 
-  @Test
-  def replaceInFun():Unit = {
+  "Замена типа переменной в функции [A,B](a:A):B" should "[A,B](a:A):B замена на [X,Y](a:X):Y - typeVarReplace" in {
     val fmap = Fn(
       GenericParams(
         AnyVariant("A"),
@@ -60,22 +70,17 @@ class TypeVarReplaceTest {
       case _ => None
     })
     println( ffmap )
-
-    val ffmap2 = fmap.typeVarBake.fn(
-      "A" -> TypeVariable("W", FN),
-      "B" -> TypeVariable("Z", FN),
-    )
-    println( ffmap2 )
-
-    val ffmap3 = fmap.typeVarBake.fn(
-      "A" -> INT,
-      "B" -> DOUBLE,
-    )
-    println( ffmap3 )
+    
+    assert( ffmap.generics.size==2 )
+    assert( ffmap.generics.get("X").isDefined )
+    assert( ffmap.generics.get("Y").isDefined )
+    assert( ffmap.parameters.head.tip.asInstanceOf[TypeVariable].name=="X" )
+    assert( ffmap.parameters.head.tip.asInstanceOf[TypeVariable].owner==FN )
+    assert( ffmap.returns.asInstanceOf[TypeVariable].name=="Y" )
+    assert( ffmap.returns.asInstanceOf[TypeVariable].owner==FN )
   }
-
-  @Test
-  def replaceInFun02():Unit = {
+  
+  it should "[A,B](a:A):B замена на [W,Z](a:W):Z - typeVarBake" in {
     val fmap = Fn(
       GenericParams(
         AnyVariant("A"),
@@ -88,15 +93,46 @@ class TypeVarReplaceTest {
     )
     println(fmap)
 
-    val ffmap3 = fmap.typeVarBake.fn(
+    val ffmap = fmap.typeVarBake.fn(
+      "A" -> TypeVariable("W", FN),
+      "B" -> TypeVariable("Z", FN),
+    )
+    println( ffmap )
+  
+    assert( ffmap.generics.size==2 )
+    assert( ffmap.generics.get("W").isDefined )
+    assert( ffmap.generics.get("Z").isDefined )
+    assert( ffmap.parameters.head.tip.asInstanceOf[TypeVariable].name=="W" )
+    assert( ffmap.parameters.head.tip.asInstanceOf[TypeVariable].owner==FN )
+    assert( ffmap.returns.asInstanceOf[TypeVariable].name=="Z" )
+    assert( ffmap.returns.asInstanceOf[TypeVariable].owner==FN )
+  }
+  
+  it should "[A,B](a:A):B замена на (a:int):double - typeVarBake" in {
+    val fmap = Fn(
+      GenericParams(
+        AnyVariant("A"),
+        AnyVariant("B"),
+      ),
+      Params(
+        "a" -> TypeVariable("A", FN)
+      ),
+      TypeVariable("B", FN)
+    )
+    println(fmap)
+
+    val ffmap = fmap.typeVarBake.fn(
       "A" -> INT,
       "B" -> DOUBLE,
     )
-    println( ffmap3 )
+    println( ffmap )
+  
+    assert( ffmap.generics.isEmpty )
+    assert( ffmap.parameters.head.tip == INT )
+    assert( ffmap.returns == DOUBLE )
   }
 
-  @Test
-  def replaceInFun03():Unit = {
+  "Замена типа-переменной в функции [A:number-,B:number+](a:A):B с учетом совместимости типов" should "успешно (a:int):double" in {
     var f:Function1[Number,Number] = (a)=>a
     val a:Int = 10
     f(a)
@@ -126,6 +162,75 @@ class TypeVarReplaceTest {
       "B" -> typeRet,
     )
     println( ffmap )
+    assert( ffmap.generics.isEmpty )
+    assert( ffmap.parameters.length==1 )
+    assert( ffmap.parameters.head.tip==INT )
+    assert( ffmap.returns==DOUBLE )
+  }
+
+  it should "недопустима замена A на Any - TypeError" in {
+    var f:Function1[Number,Number] = (a)=>a
+    val a:Int = 10
+    f(a)
+
+    val contraVar = ContraVariant("A",NUMBER)
+    val typeArg = INT
+    assert(contraVar.assignable(typeArg))
+
+    val coVar = CoVariant("B",NUMBER)
+    val typeRet = DOUBLE
+    assert(coVar.assignable(typeRet))
+
+    val fmap = Fn(
+      GenericParams(
+        contraVar,
+        coVar,
+      ),
+      Params(
+        "a" -> TypeVariable("A", FN)
+      ),
+      TypeVariable("B", FN)
+    )
+    println(fmap)
+
+    var catch1 = false
+    try {
+      fmap.typeVarBake.fn(
+        "A" -> ANY,
+        "B" -> typeRet,
+      )
+    } catch {
+      case err:TypeError =>
+        catch1 = true
+        println(err)
+    }
+    assert(catch1)
+  }
+
+  it should "недопустима замена B на Any - TypeError" in {
+    var f:Function1[Number,Number] = (a)=>a
+    val a:Int = 10
+    f(a)
+
+    val contraVar = ContraVariant("A",NUMBER)
+    val typeArg = INT
+    assert(contraVar.assignable(typeArg))
+
+    val coVar = CoVariant("B",NUMBER)
+    val typeRet = DOUBLE
+    assert(coVar.assignable(typeRet))
+
+    val fmap = Fn(
+      GenericParams(
+        contraVar,
+        coVar,
+      ),
+      Params(
+        "a" -> TypeVariable("A", FN)
+      ),
+      TypeVariable("B", FN)
+    )
+    println(fmap)
 
     var catch1 = false
     try {
@@ -154,9 +259,8 @@ class TypeVarReplaceTest {
     assert(catch2)
   }
 
-  @Test
-  def replaceInObj01():Unit = {
-    import TypeVarReplaceTest._
+  "replaceInObj01" should "?" in {
+    import TypeVarReplaceSpec._
 
     println("replaceInObj01()")
     println("====================")
@@ -166,9 +270,8 @@ class TypeVarReplaceTest {
     println( describe(listType2) )
   }
 
-  @Test
-  def replaceInObj02():Unit = {
-    import TypeVarReplaceTest._
+  "replaceInObj02" should "?" in {
+    import TypeVarReplaceSpec._
 
     println("replaceInObj02()")
     println("====================")
@@ -195,9 +298,8 @@ class TypeVarReplaceTest {
     }
   }
 
-  @Test
-  def replaceInFun04_GI():Unit = {
-    import TypeVarReplaceTest._
+  "replaceInFun04_GI" should "?" in {
+    import TypeVarReplaceSpec._
 
     println("replaceInFun04_GI()")
     println("====================")
@@ -236,7 +338,7 @@ class TypeVarReplaceTest {
   }
 }
 
-object TypeVarReplaceTest {
+object TypeVarReplaceSpec {
   val listType = TObject("List")
     .generics(AnyVariant("A"))
     .fields("size" -> INT)
