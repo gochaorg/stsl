@@ -4,6 +4,12 @@ import xyz.cofe.stsl.ast.Parser.PTR
 
 /**
  * Массив
+ *
+ * Синтаксис
+ *
+ * {{{
+ * arrayDef ::= `[` item { `,` item } [`,`] `]`
+ * }}}
  * @param begin начало в тексте
  * @param end конец в тексте
  * @param items элементы массивы

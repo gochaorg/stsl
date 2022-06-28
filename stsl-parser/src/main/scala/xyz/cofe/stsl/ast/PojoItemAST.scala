@@ -2,6 +2,13 @@ package xyz.cofe.stsl.ast
 
 import xyz.cofe.stsl.ast.Parser.PTR
 
+/**
+ * Ключ-значение в [[PojoAST]]
+ * @param begin начало в тексте
+ * @param end конец в тексте
+ * @param key ключ
+ * @param value значение
+ */
 class PojoItemAST( begin:PTR, end:PTR, val key: IdentifierAST, val value: AST ) extends AST( begin, end, List(value) ) {
   require(key!=null)
   require(value!=null)

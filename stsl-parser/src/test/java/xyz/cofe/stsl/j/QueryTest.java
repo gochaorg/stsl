@@ -44,7 +44,7 @@ public class QueryTest {
         Assertions.assertTrue(ast.isDefined());
         ASTDump.dump(ast.get());
 
-        Toaster toaster = new Toaster(ts,varScope);
+        Toaster toaster = Toaster.defaultToaster(ts,varScope);
         TAST tast = toaster.compile(ast.get());
 
         System.out.println("result type:");
@@ -88,7 +88,7 @@ public class QueryTest {
         //System.out.println("\nast:");
         //Assertions.assertTrue(ast.isDefined());
 
-        Toaster toaster = new Toaster(ts,varScope);
+        Toaster toaster = Toaster.defaultToaster(ts,varScope);
         TAST tast = toaster.compile(ast.get());
         //System.out.println("\ntast:");
         //TASTDump.dump(tast);

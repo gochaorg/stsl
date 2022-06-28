@@ -10,10 +10,17 @@ import scala.collection.mutable
 
 /**
  * "Тостер" - Компиляция AST выражений
+ * @param typeScope область видимости типов
+ * @param varScope  область видимости переменных
  */
-class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() ) {
+case class Toaster(
+  typeScope: TypeScope,
+  varScope: VarScope=new VarScope(),
+  pojoCompiler: PojoCompiler=PojoCompiler.TObjectPojo()
+) {
   require(typeScope!=null)
   require(varScope!=null)
+  require(pojoCompiler!=null)
 
   def compile( ast:AST ):TAST = {
     require(ast!=null)
@@ -502,45 +509,19 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
 
     TAST( lambdaAST, fn,()=>fn, List(bodyTast))
   }
-
-  private var pojoIdSeq = 0
   
+  /**
+   * Компиляция AST Pojo
+   * @param pojoAST  AST Pojo
+   * @return AST Pojo
+   */
   def compile( pojoAST: PojoAST ):TAST = {
     require(pojoAST!=null)
-    pojoIdSeq+=1
-  
-    //val mmap = new java.util.LinkedHashMap[String,Any]()
-    val typeObj = new TObject(s"Pojo$pojoIdSeq")
-    val fields = pojoAST.items.map( itm => {
-      val fldValue = compile(itm.value)
-      val fld = new WriteableField(
-        itm.key.tok.name, fldValue.supplierType,
-        obj => {
-          val mmap = obj.asInstanceOf[java.util.Map[String,Any]]
-          val name = itm.key.tok.name
-          if( mmap.containsKey(name) ){
-            mmap.get(name)
-          } else {
-            val computed = fldValue.supplier.get()
-            mmap.put(name,computed)
-            computed
-          }
-        },
-        (obj,vl) => {
-          val mmap = obj.asInstanceOf[java.util.Map[String,Any]]
-          val name = itm.key.tok.name
-          mmap.put(name,vl)
-        }
-      )
-      (fld,fldValue,itm)
-    })
-
-    fields.foreach( fld => typeObj.fields.append(fld._1) )
-
-    TAST(pojoAST, typeObj, ()=>{
-      val mapObj = new util.LinkedHashMap[String,Any]()
-      fields.foreach( f => mapObj.put(f._1.name, f._1.reading(mapObj)) )
-      mapObj
-    }, fields.map(f =>f._2) )
+    pojoCompiler.compile(this, pojoAST)
   }
+}
+
+object Toaster {
+  def defaultToaster(typeScope: TypeScope):Toaster = Toaster(typeScope)
+  def defaultToaster(typeScope: TypeScope, varScope: VarScope):Toaster = Toaster(typeScope, varScope)
 }
