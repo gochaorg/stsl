@@ -28,7 +28,7 @@ public class TryTest {
         TypeScope ts = new TypeScope();
         ts.setImplicits(JvmType.implicitConversion());
 
-        Option<AST> ast = new Parser().parse("20 + 20 / 2");
+        Option<AST> ast = Parser.defaultParser().parse("20 + 20 / 2");
         ASTDump.dump(ast.get());
 
         VarScope varScope = new VarScope();
@@ -51,7 +51,7 @@ public class TryTest {
         TypeScope ts = new TypeScope();
         ts.setImplicits(JvmType.implicitConversion());
 
-        Option<AST> ast = new Parser().parse("a + b * c");
+        Option<AST> ast = Parser.defaultParser().parse("a + b * c");
         ASTDump.dump(ast.get());
 
         VarScope varScope = new VarScope();
@@ -88,7 +88,7 @@ public class TryTest {
         TypeScope ts = new TypeScope();
         ts.setImplicits(JvmType.implicitConversion());
 
-        Option<AST> ast = new Parser().parse("repeat( a, b )");
+        Option<AST> ast = Parser.defaultParser().parse("repeat( a, b )");
         ASTDump.dump(ast.get());
 
         //Param aParam = new Param("str", JvmType.STRING());
@@ -170,7 +170,7 @@ public class TryTest {
 
         ts.imports(personType);
 
-        Option<AST> ast = new Parser().parse("a.age + b * c");
+        Option<AST> ast = Parser.defaultParser().parse("a.age + b * c");
         ASTDump.dump(ast.get());
 
         VarScope varScope = new VarScope();
@@ -198,7 +198,7 @@ public class TryTest {
 
         ts.imports(personType);
 
-        Option<AST> ast = new Parser().parse("a.allow( \"abcd\" )");
+        Option<AST> ast = Parser.defaultParser().parse("a.allow( \"abcd\" )");
         ASTDump.dump(ast.get());
 
         VarScope varScope = new VarScope();
@@ -359,7 +359,7 @@ public class TryTest {
         String mapLambdaSrc = "lst.map( x : "+personType.name()+" => x.name )";
 
         System.out.println("parse: "+mapLambdaSrc);
-        Option<AST> ast = new Parser().parse(mapLambdaSrc);
+        Option<AST> ast = Parser.defaultParser().parse(mapLambdaSrc);
 
         System.out.println("ast:");
         ASTDump.dump(ast.get());

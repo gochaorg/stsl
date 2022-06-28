@@ -134,6 +134,24 @@ class ParserTest {
     val ast = Parser.parse("{}")
     ast.foreach( ASTDump.dump )
   }
+  
+  @Test
+  def arrayDef01():Unit = {
+    val parser = Parser.defaultParser.copy(
+      arraySupport = true
+    )
+    val ast = parser.parse("[ 1, 2, 3 ]" )
+    ast.foreach( ASTDump.dump )
+  }
+  
+  @Test
+  def arrayDef02():Unit = {
+    val parser = Parser.defaultParser.copy(
+      arraySupport = true
+    )
+    val ast = parser.parse("[ 1, 2, 3, ]" )
+    ast.foreach( ASTDump.dump )
+  }
 
 //  @Test
 //  def lmbda02replace(): Unit ={

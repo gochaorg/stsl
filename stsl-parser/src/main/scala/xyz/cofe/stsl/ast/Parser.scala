@@ -3,7 +3,10 @@ package xyz.cofe.stsl.ast
 import xyz.cofe.sparse.{CToken, GR, LPointer}
 import xyz.cofe.stsl.tok._
 
-case class Parser() {
+case class Parser
+(
+  arraySupport:Boolean = false
+) {
   import xyz.cofe.sparse.GOPS._
   import Parser._
   
@@ -268,6 +271,60 @@ case class Parser() {
       )*0 + operator("}") ==> ((b,f,s,e) => new PojoAST(b.begin(), e.end(), List(f) ++ s))
   val objDef : GR[PTR,PojoAST] = (emptyObj1 | emptyObj2 | objNonEmpty) ==> ( t => t )
   
+  val arrayDef : GR[PTR, ArrayAST] = fromPtr => {
+    val initialTok = fromPtr.lookup(0)
+    if( !initialTok.exists { ctok => ctok.text == "[" } ){
+      None
+    }else{
+      var endPtr = fromPtr
+      var ptr = fromPtr.move(1)
+      var stop = false
+      var fail = false
+      var items = List[AST]()
+      while( !stop ){
+        val tok = ptr.lookup(0)
+        if( tok.isEmpty ){
+          stop = true
+          fail = true
+        }else{
+          if( tok.exists( ctok => ctok.text == "]" ) ){
+            stop = true
+            endPtr = ptr.move(1)
+          }else{
+            expression.apply(ptr) match {
+              case Some( itemAst ) =>
+                items = itemAst :: items
+                itemAst.end().lookup(0) match {
+                  case Some(expectSepOrEnd) =>
+                    expectSepOrEnd.text match {
+                      case "," =>
+                        ptr = itemAst.end().move(1)
+                      case "]" =>
+                        stop = true
+                        endPtr = itemAst.end().move(1)
+                      case _ =>
+                        stop = true
+                        fail = true
+                    }
+                  case None =>
+                    stop = true
+                    fail = true
+                }
+              case None =>
+                stop = true
+                fail = true
+            }
+          }
+        }
+      }
+      if( fail ){
+        None
+      }else{
+        Some(new ArrayAST(fromPtr,endPtr,items.reverse))
+      }
+    }
+  }
+  
   /**
    * Атомарное значение <br>
    * <code>
@@ -279,16 +336,29 @@ case class Parser() {
    * &nbsp;  | identifier <br>
    * </code>
    */
-  val atom : AstGR =
-    ( lambdaWithoutParams.asInstanceOf[AstGR]
-      | lambdaWithParams.asInstanceOf[AstGR]
-      | objDef
-      | parenthes
-      | unary
-      | literal
-      | identifier
-      ) ==> (t => t )
-  
+  lazy val atom : AstGR = {
+    if( arraySupport ){
+      (lambdaWithoutParams.asInstanceOf[AstGR]
+        | lambdaWithParams.asInstanceOf[AstGR]
+        | objDef
+        | arrayDef
+        | parenthes
+        | unary
+        | literal
+        | identifier
+        ) ==> (t => t)
+    }else {
+      (lambdaWithoutParams.asInstanceOf[AstGR]
+        | lambdaWithParams.asInstanceOf[AstGR]
+        | objDef
+        | parenthes
+        | unary
+        | literal
+        | identifier
+        ) ==> (t => t)
+    }
+  }
+      
   private val fieldAccessOp: OpLiteral = operator(".")
   private val callStart: OpLiteral = operator("(")
   private val callEnd: OpLiteral = operator(")")
