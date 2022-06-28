@@ -33,7 +33,7 @@ public class TryTest {
 
         VarScope varScope = new VarScope();
 
-        Toaster toaster = new Toaster(ts,varScope);
+        Toaster toaster = Toaster.defaultToaster(ts,varScope);
         TAST tast = toaster.compile(ast.get());
         TASTDump.dump(tast);
 
@@ -59,7 +59,7 @@ public class TryTest {
         varScope.define("b", JvmType.INT(), 2);
         varScope.define("c", JvmType.INT(), 3);
 
-        Toaster toaster = new Toaster(ts,varScope);
+        Toaster toaster = Toaster.defaultToaster(ts,varScope);
         TAST tast = toaster.compile(ast.get());
         TASTDump.dump(tast);
 
@@ -105,7 +105,7 @@ public class TryTest {
         varScope.define("a", JvmType.STRING(), "abc");
         varScope.define("b", JvmType.INT(), 3);
 
-        Toaster toaster = new Toaster(ts,varScope);
+        Toaster toaster = Toaster.defaultToaster(ts,varScope);
         TAST tast = toaster.compile(ast.get());
         TASTDump.dump(tast);
 
@@ -178,7 +178,7 @@ public class TryTest {
         varScope.define("b", JvmType.INT(), 2);
         varScope.define("c", JvmType.INT(), 3);
 
-        Toaster toaster = new Toaster(ts,varScope);
+        Toaster toaster = Toaster.defaultToaster(ts,varScope);
         TAST tast = toaster.compile(ast.get());
         TASTDump.dump(tast);
 
@@ -206,7 +206,7 @@ public class TryTest {
         varScope.define("b", JvmType.INT(), 2);
         varScope.define("c", JvmType.INT(), 3);
 
-        Toaster toaster = new Toaster(ts,varScope);
+        Toaster toaster = Toaster.defaultToaster(ts,varScope);
         TAST tast = toaster.compile(ast.get());
         TASTDump.dump(tast);
 
@@ -377,7 +377,7 @@ public class TryTest {
 
         varScope.define("lst", personListType, personTList1);
 
-        Toaster toaster = new Toaster(ts,varScope);
+        Toaster toaster = Toaster.defaultToaster(ts,varScope);
         TAST mapTast = toaster.compile(ast.get());
 
         System.out.println("tast:");
