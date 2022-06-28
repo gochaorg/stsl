@@ -28,7 +28,8 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
       case a:CallAST => compile(a)
       case a:LambdaAST => compile(a)
       case a:PojoAST => compile(a)
-      case _ => ???
+      case _ => //noinspection NotImplementedCode
+        ???
     }
   }
 
@@ -67,9 +68,9 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     } else if( args.size==1 ){
       s"${args.head}"
     } else {
-      s"${args.map(a=>a.toString).reduce((a,b)=>a+","+"b")}"
+      s"${args.map(a=>a.toString).reduce((a,b)=>a+","+b)}"
     }
-    val implName = s"${thiz} ${method}(${implArgNames})"
+    val implName = s"$thiz $method($implArgNames)"
 
     if( cases.preferred.isEmpty ){
       throw ToasterError(s"implementation of $implName not found")
@@ -88,16 +89,16 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
    * @return вариант вызова
    */
   def call(functions:Seq[Fun], args:List[Type], funName:Option[String]=None):CallCase = {
-    val cases = typeScope.callCases(functions,args);
-
+    val cases = typeScope.callCases(functions,args)
+  
     val implArgNames = if( args.isEmpty ){
       ""
     } else if( args.size==1 ){
       s"${args.head}"
     } else {
-      s"${args.map(a=>a.toString).reduce((a,b)=>a+","+"b")}"
+      s"${args.map(a=>a.toString).reduce((a,b)=>a+","+b)}"
     }
-    val implName = s"${funName.getOrElse("")}(${implArgNames})"
+    val implName = s"${funName.getOrElse("")}($implArgNames)"
 
     if( cases.preferred.isEmpty ){
       throw ToasterError(s"implementation of $implName not found")
@@ -152,8 +153,8 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
   def compile( ternaryAST: TernaryAST ):TAST = {
     require(ternaryAST!=null)
     val cond = compile(ternaryAST.first)
-    if( !BOOLEAN.assignable(cond.supplierType) )throw ToasterError("condition not "+BOOLEAN.name, ternaryAST.first);
-
+    if( !BOOLEAN.assignable(cond.supplierType) )throw ToasterError("condition not "+BOOLEAN.name, ternaryAST.first)
+  
     val succ = compile(ternaryAST.second)
     val fail = compile(ternaryAST.third)
     if( !succ.supplierType.assignable(fail.supplierType) )throw ToasterError(
@@ -225,12 +226,12 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
 
     val propOpt = fields.get(pname)
     if( propOpt.isEmpty ){
-      throw ToasterError(s"property ${pname} not found in ${objType}", propertyAST.name)
+      throw ToasterError(s"property $pname not found in $objType", propertyAST.name)
     }
 
     val prop = propOpt.get match {
       case w: WriteableField => w
-      case _ => throw ToasterError(s"property ${pname} of ${objType} not readable", propertyAST.name)
+      case _ => throw ToasterError(s"property $pname of $objType not readable", propertyAST.name)
     }
 
     TAST(propertyAST, propOpt.get.tip, ()=>{
@@ -284,25 +285,25 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
       }, argumentsTast
     )
   }
-  private def compileFunCall( callAST: CallAST, funtionName:String ):TAST = {
-    val fnVar = varScope.get(funtionName)
-    if( fnVar.isEmpty ) throw ToasterError(s"function ${funtionName} not defined", callAST)
+  private def compileFunCall(callAST: CallAST, functionName:String ):TAST = {
+    val fnVar = varScope.get(functionName)
+    if( fnVar.isEmpty ) throw ToasterError(s"function $functionName not defined", callAST)
 
     val targetFn = fnVar.get.tip match {
       case f:CallableFn => f
-      case _=> throw ToasterError(s"function ${funtionName} is not CallableFn", callAST)
+      case _=> throw ToasterError(s"function $functionName is not CallableFn", callAST)
     }
 
     val argumentsTast = callAST.arguments.map( a => compile(a) )
 
     // checking types
-    val calling = this.call(List(targetFn), argumentsTast.map(_.supplierType), Some(funtionName)).invoking()
+    val calling = this.call(List(targetFn), argumentsTast.map(_.supplierType), Some(functionName)).invoking()
 
     TAST( callAST, calling._2,
       () => {
         val callFn = fnVar.get.read() match {
           case f:CallableFn => f
-          case _=> throw new ClassCastException(s"can't cast variable ${funtionName} to CallableFn")
+          case _=> throw new ClassCastException(s"can't cast variable $functionName to CallableFn")
         }
         callFn.invoke(argumentsTast.map(a => a.supplier.get()))
       }, argumentsTast
@@ -314,7 +315,7 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
       case o:TObject => o
       case gi:GenericInstance[_] =>
         gi.source match {
-          case so:TObject => gi.source.typeVarBake.thiz(gi.recipe).asInstanceOf[TObject].withName(gi.toString+"$")
+          case _:TObject => gi.source.typeVarBake.thiz(gi.recipe).asInstanceOf[TObject].withName(gi.toString+"$")
           case _=> throw ToasterError("GenericInstance.source is not TObject", objAst)
         }
       case _=> throw ToasterError("callable obj is not TObject", objAst)
@@ -354,13 +355,13 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     if( hasDuplicateArgNames ) throw ToasterError("has duplicate arg names", null, lambdaAST.params)
 
     // типы переменных должны присуствовать в области видимости
-    val xxx1 = (lambdaAST.params.map( p => (p.typeName, typeScope.get(p.typeName.name)) ) ++ (
+    val xxx1 = lambdaAST.params.map( p => (p.typeName, typeScope.get(p.typeName.name)) ) ++ (
       if( lambdaAST.recursion.isEmpty ) {
         List()
       } else {
         List((lambdaAST.recursion.get.typeName, typeScope.get(lambdaAST.recursion.get.typeName.name)))
       }
-      ))
+      )
     val undefinedTypes = xxx1.filter( p => p._2.isEmpty )
 
     if( undefinedTypes.nonEmpty ){
@@ -401,6 +402,7 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     var selfFn : Fun = null
 
     if( lambdaAST.recursion.isDefined ){
+      //noinspection NotImplementedCode
       val fn = Fn(
         new Params(
           lambdaAST.params.map( p => {
@@ -451,7 +453,7 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     // тело
     val bodyTast = compile(bodyAst)
 
-    val fnImpl:(Seq[Any])=>Any = (args) => {
+    val fnImpl: Seq[Any] =>Any = args => {
       require(args!=null)
 
       require(
@@ -501,18 +503,19 @@ class Toaster( val typeScope: TypeScope, val varScope: VarScope=new VarScope() )
     TAST( lambdaAST, fn,()=>fn, List(bodyTast))
   }
 
-  private var pojoIdSeq = 0;
+  private var pojoIdSeq = 0
+  
   def compile( pojoAST: PojoAST ):TAST = {
     require(pojoAST!=null)
-    pojoIdSeq+=1;
-
+    pojoIdSeq+=1
+  
     //val mmap = new java.util.LinkedHashMap[String,Any]()
-    val typeObj = new TObject(s"Pojo${pojoIdSeq}")
+    val typeObj = new TObject(s"Pojo$pojoIdSeq")
     val fields = pojoAST.items.map( itm => {
       val fldValue = compile(itm.value)
       val fld = new WriteableField(
         itm.key.tok.name, fldValue.supplierType,
-        (obj) => {
+        obj => {
           val mmap = obj.asInstanceOf[java.util.Map[String,Any]]
           val name = itm.key.tok.name
           if( mmap.containsKey(name) ){
