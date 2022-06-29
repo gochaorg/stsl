@@ -422,10 +422,11 @@ class ToasterTest {
     val computedValue = tast.supplier.get()
     println(computedValue)
     println(computedValue.getClass)
+    
     val computedMap = computedValue.asInstanceOf[java.util.Map[_,_]]
     computedMap.forEach( (k,v) => {
-      println(s"key ${k} : ${k.getClass}")
-      println(s"  value ${v} : ${v.getClass}")
+      print(s"  key(${k} : ${k.getClass})")
+      println(s" = value(${v} : ${v.getClass})")
     })
   }
 }
