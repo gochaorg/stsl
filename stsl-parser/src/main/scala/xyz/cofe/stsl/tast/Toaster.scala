@@ -16,7 +16,8 @@ import scala.collection.mutable
 case class Toaster(
   typeScope: TypeScope,
   varScope: VarScope=new VarScope(),
-  pojoCompiler: PojoCompiler=PojoCompiler.TObjectPojo()
+  pojoCompiler: PojoCompiler=PojoCompiler.TObjectPojo(),
+  arrayCompiler: ArrayCompiler=ArrayCompiler.NoImpl()
 ) {
   require(typeScope!=null)
   require(varScope!=null)
@@ -35,6 +36,7 @@ case class Toaster(
       case a:CallAST => compile(a)
       case a:LambdaAST => compile(a)
       case a:PojoAST => compile(a)
+      case a:ArrayAST => compile(a)
       case _ => //noinspection NotImplementedCode
         ???
     }
@@ -518,6 +520,16 @@ case class Toaster(
   def compile( pojoAST: PojoAST ):TAST = {
     require(pojoAST!=null)
     pojoCompiler.compile(this, pojoAST)
+  }
+  
+  /**
+   * Компиляция [[ArrayAST]]
+   * @param arrayAST дерево ast [[ArrayAST]]
+   * @return дерево
+   */
+  def compile( arrayAST: ArrayAST ):TAST = {
+    require(arrayAST!=null)
+    arrayCompiler.compile(this,arrayAST)
   }
 }
 
