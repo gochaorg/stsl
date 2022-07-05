@@ -3,7 +3,7 @@ package xyz.cofe.stsl.tast
 import org.junit.jupiter.api.Test
 import xyz.cofe.stsl.tast.JvmType._
 import xyz.cofe.stsl.ast.{ASTDump, AstTest, Parser}
-import xyz.cofe.stsl.types.{CallableFn, Fn, Params, TObject, Type, TypeDescriber}
+import xyz.cofe.stsl.types.{CallableFn, Fn, Params, TAnon, TObject, Type, TypeDescriber}
 
 //noinspection UnitMethodIsParameterless
 class ToasterTest {
@@ -417,6 +417,51 @@ class ToasterTest {
     println("-"*30)
     println("supplierType:")
     println(TypeDescriber.describe(tast.supplierType))
+    println("supplier.get():")
+    
+    val computedValue = tast.supplier.get()
+    println(computedValue)
+    println(computedValue.getClass)
+    
+    val computedMap = computedValue.asInstanceOf[java.util.Map[_,_]]
+    computedMap.forEach( (k,v) => {
+      print(s"  key(${k} : ${k.getClass})")
+      println(s" = value(${v} : ${v.getClass})")
+    })
+  }
+  
+  @Test
+  def objDef03_anon():Unit = {
+    println("objDef03_anon")
+    println("="*30)
+  
+    val ts = new TypeScope()
+    ts.implicits = JvmType.implicitConversion
+  
+    val ast = Parser.parse(
+      """
+        |{
+        | k1: 1,
+        | k2: a:int => a+a
+        |}
+        |""".stripMargin)
+    println("AST")
+    ast.foreach( ASTDump.dump )
+    assert( ast.isDefined )
+  
+    val tst = new Toaster(ts, pojoCompiler = PojoCompiler.TAnonPojo())
+    ts.implicits = JvmType.implicitConversion
+    ts.imports(JvmType.types)
+    
+    val tast = tst.compile(ast.get)
+    assert(tast!=null)
+    println("TAST")
+    TASTDump.dump(tast)
+  
+    println("-"*30)
+    println("supplierType:")
+    println(TypeDescriber.describe(tast.supplierType))
+    assert(tast.supplierType.isInstanceOf[TAnon])
     println("supplier.get():")
     
     val computedValue = tast.supplier.get()

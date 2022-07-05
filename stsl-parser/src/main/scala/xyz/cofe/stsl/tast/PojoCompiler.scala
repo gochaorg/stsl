@@ -1,7 +1,7 @@
 package xyz.cofe.stsl.tast
 
 import xyz.cofe.stsl.ast.PojoAST
-import xyz.cofe.stsl.types.{Field, Fn, Fun, TObject, Type, WriteableField}
+import xyz.cofe.stsl.types.{Field, Fn, Fun, TAnon, TObject, Type, WriteableField}
 
 import java.util
 import java.util.concurrent.atomic.AtomicLong
@@ -32,6 +32,58 @@ object PojoCompiler {
     def declareMethod(buildObj:B, name:String, fun:Fun):B
   }
   
+  private def compilePojo[B,I,T<:Type]
+  (
+    toaster: Toaster,
+    pojoAST: PojoAST
+  )(implicit
+    definer:ObjectDefiner[B,I,T],
+    builder:ObjectBuilder[B,I,T]
+  ):TAST = {
+    var objConstruct = definer.define()
+    
+    //noinspection TypeAnnotation
+    val pojoItems = pojoAST.items.map(it => new {
+      val keyAst = it.key
+      val valueTast = toaster.compile(it.value)
+    })
+    
+    val fieldsRaw = pojoItems.filterNot { it => it.valueTast.supplierType.isInstanceOf[Fun] }
+    //noinspection TypeAnnotation
+    val fields = fieldsRaw.map { it =>
+      new {
+        val fieldTast = it.valueTast
+        val fieldName = it.keyAst.tok.name
+      }
+    }
+    fields.foreach( it => {
+      objConstruct = builder.declareField(objConstruct, it.fieldName, it.fieldTast)
+    })
+    
+    val funsRaw = pojoItems.filter { it => it.valueTast.supplierType.isInstanceOf[Fun] }
+    //noinspection TypeAnnotation
+    val methods = funsRaw.map { it =>
+      new {
+        val name = it.keyAst.tok.name
+        val fun = it.valueTast.supplierType.asInstanceOf[Fun]
+      }
+    }
+    methods.foreach { it =>
+      objConstruct = builder.declareMethod(objConstruct, it.name, it.fun)
+    }
+    
+    val objUnit = definer.build(objConstruct)
+    
+    TAST(
+      ast = pojoAST,
+      supplierType = objUnit.tip,
+      supplier = ()=>objUnit.instance,
+      children = fields.map { it => it.fieldTast }
+    )
+  }
+  
+  //region TObjectPojo
+  
   case class TObjectDefiner(typeName:String) extends ObjectDefiner[
     ObjInst[java.util.LinkedHashMap[Any,Any], TObject],
     java.util.LinkedHashMap[Any,Any],
@@ -44,7 +96,7 @@ object PojoCompiler {
     override def build(b: ObjInst[util.LinkedHashMap[Any, Any], TObject]): ObjInst[util.LinkedHashMap[Any, Any], TObject] = b
   }
   
-  implicit object TObjectBuilder extends ObjectBuilder[
+  object TObjectBuilder extends ObjectBuilder[
     ObjInst[java.util.LinkedHashMap[Any,Any], TObject],
     java.util.LinkedHashMap[Any,Any],
     TObject
@@ -79,58 +131,6 @@ object PojoCompiler {
     }
   }
   
-  private def compilePojo[B,I,T<:Type]
-  (
-    toaster: Toaster,
-    pojoAST: PojoAST
-  )(implicit
-    definer:ObjectDefiner[B,I,T],
-    builder:ObjectBuilder[B,I,T]
-  ):TAST = {
-    var objConstruct = definer.define()
-  
-    //noinspection TypeAnnotation
-    val pojoItems = pojoAST.items.map(it => new {
-      val keyAst = it.key
-      val valueTast = toaster.compile(it.value)
-    })
-  
-    val fieldsRaw = pojoItems.filterNot { it => it.valueTast.supplierType.isInstanceOf[Fun] }
-    //noinspection TypeAnnotation
-    val fields = fieldsRaw.map { it =>
-      new {
-        val fieldTast = it.valueTast
-        val fieldName = it.keyAst.tok.name
-      }
-    }
-    fields.foreach( it => {
-      objConstruct = builder.declareField(objConstruct, it.fieldName, it.fieldTast)
-    })
-  
-    val funsRaw = pojoItems.filter { it => it.valueTast.supplierType.isInstanceOf[Fun] }
-    //noinspection TypeAnnotation
-    val methods = funsRaw.map { it =>
-      new {
-        val name = it.keyAst.tok.name
-        val fun = it.valueTast.supplierType.asInstanceOf[Fun]
-      }
-    }
-    methods.foreach { it =>
-      objConstruct = builder.declareMethod(objConstruct, it.name, it.fun)
-    }
-  
-    val objUnit = definer.build(objConstruct)
-  
-    TAST(
-      ast = pojoAST,
-      supplierType = objUnit.tip,
-      supplier = ()=>objUnit.instance,
-      children = fields.map { it => it.fieldTast }
-    )
-  }
-  
-  //region TObjectPojo
-
   /**
    * Создает [[java.util.LinkedHashMap]] для Pojo, тип от TObject
    * @param typeNameBuilder создание имени, fn( unique ): name
@@ -155,10 +155,75 @@ object PojoCompiler {
       
       val id = idSeq.incrementAndGet()
       implicit val objDef: TObjectDefiner = TObjectDefiner(typeNameBuilder(id))
+      implicit val objBld = TObjectBuilder
       compilePojo(toaster, pojoAST)
     }
   }
   //endregion
   
+  object TAnonDefiner extends ObjectDefiner[
+    ObjInst[java.util.LinkedHashMap[Any,Any], TAnon],
+    java.util.LinkedHashMap[Any,Any],
+    TAnon
+  ] {
+    override def define(): ObjInst[util.LinkedHashMap[Any, Any], TAnon] = {
+      val m = new util.LinkedHashMap[Any,Any]()
+      val t = new TAnon()
+      m.put(AnonymousObject.TypeDefinition, t)
+      ObjInst(m,t)
+    }
+    override def build(b: ObjInst[util.LinkedHashMap[Any, Any], TAnon]): ObjInst[util.LinkedHashMap[Any, Any], TAnon] = b
+  }
   
+  object TAnonBuilder extends ObjectBuilder[
+    ObjInst[java.util.LinkedHashMap[Any,Any], TAnon],
+    java.util.LinkedHashMap[Any,Any],
+    TAnon
+  ] {
+    override def declareField(
+                               buildObj: ObjInst[util.LinkedHashMap[Any, Any], TAnon],
+                               fieldName: String,
+                               valueTast: TAST
+                             ): ObjInst[util.LinkedHashMap[Any, Any], TAnon] = {
+      val fieldDef = new WriteableField(
+        name = fieldName,
+        tip = valueTast.supplierType,
+        reading = obj => {
+          val mmap = obj.asInstanceOf[java.util.Map[String,Any]]
+          mmap.get(fieldName)
+        },
+        writing = (obj,vl) => {
+          val mmap = obj.asInstanceOf[java.util.Map[String,Any]]
+          val name = fieldName
+          mmap.put(name,vl)
+        }
+      )
+      buildObj.tip.fields.append(fieldDef)
+      buildObj.instance.put(fieldName, valueTast.supplier.get())
+      buildObj
+    }
+    override def declareMethod(
+                                buildObj: ObjInst[util.LinkedHashMap[Any, Any], TAnon],
+                                name: String,
+                                fun: Fun
+                              ): ObjInst[util.LinkedHashMap[Any, Any], TAnon] = {
+      buildObj.tip.methods.append(name,fun)
+      buildObj
+    }
+  }
+  
+  case class TAnonPojo() extends PojoCompiler {
+    /**
+     * Компиляция
+     *
+     * @param toaster тостер
+     * @param pojoAST AST дерево
+     * @return скомпилированное дерево
+     */
+    override def compile(toaster: Toaster, pojoAST: PojoAST): TAST = {
+      implicit val objDef = TAnonDefiner
+      implicit val objBld = TAnonBuilder
+      compilePojo(toaster, pojoAST)
+    }
+  }
 }
