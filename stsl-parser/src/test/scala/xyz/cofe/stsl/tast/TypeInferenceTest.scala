@@ -400,37 +400,4 @@ class TypeInferenceTest {
     val computed = tast.supplier.get()
     println(computed)
   }
-  
-  def findGeneral( types:Seq[Type] ):Either[String,Type]= {
-    def general_ab( a:Type, b:Type ):Either[String,Type] = {
-      if( a==b ){
-        Right(a)
-      }else if( a.assignable(b) && b.assignable(a) ){
-        Right(a)
-      }else{
-        ???
-      }
-    }
-    
-    def general( types:Seq[Type] ):Either[String,Type] = {
-      ???
-    }
-
-    if( types.isEmpty ){
-      Left("empty list")
-    } else if( types.size==1 ){
-      Right(types.head)
-    } else {
-      general(types)
-    }
-    
-  }
-  
-  @Test
-  def commonType_str_str():Unit = {
-    println("commonType() - вывод общего типа для нескольких")
-    println("="*40)
-    
-    val types = List( JvmType.STRING, JvmType.STRING )
-  }
 }

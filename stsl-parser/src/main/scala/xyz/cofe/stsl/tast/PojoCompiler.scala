@@ -20,16 +20,20 @@ sealed trait PojoCompiler {
 }
 
 object PojoCompiler {
-  case class ObjInst[I,T <: Type](instance:I, tip:T)
+  case class ObjPrepared[I,T <: Type](instance:I, tip:T)
   
   trait ObjectDefiner[B,I,T<:Type] {
     def define():B
-    def build(b:B):ObjInst[I,T]
+    def build(b:B):ObjPrepared[I,T]
   }
   
   trait ObjectBuilder[B,I,T<:Type] {
     def declareField(buildObj:B, name:String, valueTast:TAST):B
     def declareMethod(buildObj:B, name:String, fun:Fun):B
+  }
+  
+  trait Initialize[I,T<:Type] {
+    def initialize(inst:ObjPrepared[I,T]):Any
   }
   
   private def compilePojo[B,I,T<:Type]
@@ -38,7 +42,8 @@ object PojoCompiler {
     pojoAST: PojoAST
   )(implicit
     definer:ObjectDefiner[B,I,T],
-    builder:ObjectBuilder[B,I,T]
+    builder:ObjectBuilder[B,I,T],
+    init:Initialize[I,T]
   ):TAST = {
     var objConstruct = definer.define()
     
@@ -77,34 +82,42 @@ object PojoCompiler {
     TAST(
       ast = pojoAST,
       supplierType = objUnit.tip,
-      supplier = ()=>objUnit.instance,
+      supplier = ()=>{
+        //objUnit.instance
+        init.initialize(objUnit)
+      },
       children = fields.map { it => it.fieldTast }
     )
   }
   
+  case class ObjConstructor[T <: Type]
+  (
+    tip: T,
+    fieldsInitializer: List[(String,TAST)] = List()
+  )
+  
   //region TObjectPojo
   
   case class TObjectDefiner(typeName:String) extends ObjectDefiner[
-    ObjInst[java.util.LinkedHashMap[Any,Any], TObject],
-    java.util.LinkedHashMap[Any,Any],
+    ObjConstructor[TObject],
+    ObjConstructor[TObject],
     TObject
   ] {
-    override def define(): ObjInst[util.LinkedHashMap[Any, Any], TObject] = ObjInst(
-      new util.LinkedHashMap[Any,Any](),
+    override def define() = ObjConstructor(
       new TObject(typeName)
     )
-    override def build(b: ObjInst[util.LinkedHashMap[Any, Any], TObject]): ObjInst[util.LinkedHashMap[Any, Any], TObject] = b
+    override def build(b: ObjConstructor[TObject]) = ObjPrepared(b,b.tip)
   }
   
   object TObjectBuilder extends ObjectBuilder[
-    ObjInst[java.util.LinkedHashMap[Any,Any], TObject],
-    java.util.LinkedHashMap[Any,Any],
+    ObjConstructor[TObject],
+    ObjConstructor[TObject],
     TObject
   ] {
     override def declareField(
-                               buildObj: ObjInst[util.LinkedHashMap[Any, Any], TObject],
+                               buildObj: ObjConstructor[TObject],
                                fieldName: String,
-                               valueTast: TAST):ObjInst[util.LinkedHashMap[Any, Any], TObject] = {
+                               valueTast: TAST):ObjConstructor[TObject] = {
       val fieldDef = new WriteableField(
         name = fieldName,
         tip = valueTast.supplierType,
@@ -119,13 +132,14 @@ object PojoCompiler {
         }
       )
       buildObj.tip.fields.append(fieldDef)
-      buildObj.instance.put(fieldName, valueTast.supplier.get())
-      buildObj
+      buildObj.copy(
+        fieldsInitializer = (fieldName, valueTast) :: buildObj.fieldsInitializer
+      )
     }
     override def declareMethod(
-                                buildObj: ObjInst[util.LinkedHashMap[Any, Any], TObject],
+                                buildObj: ObjConstructor[TObject],
                                 name: String,
-                                fun: Fun): ObjInst[util.LinkedHashMap[Any, Any], TObject] = {
+                                fun: Fun): ObjConstructor[TObject] = {
       buildObj.tip.methods.append(name,fun)
       buildObj
     }
@@ -156,35 +170,40 @@ object PojoCompiler {
       val id = idSeq.incrementAndGet()
       implicit val objDef: TObjectDefiner = TObjectDefiner(typeNameBuilder(id))
       implicit val objBld = TObjectBuilder
+      implicit val initializeObject:Initialize[ObjConstructor[TObject],TObject] = init => {
+        val inst = new java.util.LinkedHashMap[Any,Any]()
+        init.instance.fieldsInitializer.reverse.foreach { case (fname,tast) =>
+          inst.put(fname, tast.supplier.get())
+        }
+        inst
+      }
       compilePojo(toaster, pojoAST)
     }
   }
   //endregion
   
   object TAnonDefiner extends ObjectDefiner[
-    ObjInst[java.util.LinkedHashMap[Any,Any], TAnon],
-    java.util.LinkedHashMap[Any,Any],
+    ObjConstructor[TAnon],
+    ObjConstructor[TAnon],
     TAnon
   ] {
-    override def define(): ObjInst[util.LinkedHashMap[Any, Any], TAnon] = {
-      val m = new util.LinkedHashMap[Any,Any]()
+    override def define() = {
       val t = new TAnon()
-      m.put(AnonymousObject.TypeDefinition, t)
-      ObjInst(m,t)
+      ObjConstructor(t)
     }
-    override def build(b: ObjInst[util.LinkedHashMap[Any, Any], TAnon]): ObjInst[util.LinkedHashMap[Any, Any], TAnon] = b
+    override def build(b: ObjConstructor[TAnon]): ObjPrepared[ObjConstructor[TAnon], TAnon] = ObjPrepared(b,b.tip)
   }
   
   object TAnonBuilder extends ObjectBuilder[
-    ObjInst[java.util.LinkedHashMap[Any,Any], TAnon],
-    java.util.LinkedHashMap[Any,Any],
+    ObjConstructor[TAnon],
+    ObjConstructor[TAnon],
     TAnon
   ] {
     override def declareField(
-                               buildObj: ObjInst[util.LinkedHashMap[Any, Any], TAnon],
+                               buildObj: ObjConstructor[TAnon],
                                fieldName: String,
                                valueTast: TAST
-                             ): ObjInst[util.LinkedHashMap[Any, Any], TAnon] = {
+                             ) = {
       val fieldDef = new WriteableField(
         name = fieldName,
         tip = valueTast.supplierType,
@@ -199,14 +218,15 @@ object PojoCompiler {
         }
       )
       buildObj.tip.fields.append(fieldDef)
-      buildObj.instance.put(fieldName, valueTast.supplier.get())
-      buildObj
+      buildObj.copy(
+        fieldsInitializer = (fieldName, valueTast) :: buildObj.fieldsInitializer
+      )
     }
     override def declareMethod(
-                                buildObj: ObjInst[util.LinkedHashMap[Any, Any], TAnon],
+                                buildObj: ObjConstructor[TAnon],
                                 name: String,
                                 fun: Fun
-                              ): ObjInst[util.LinkedHashMap[Any, Any], TAnon] = {
+                              ) = {
       buildObj.tip.methods.append(name,fun)
       buildObj
     }
@@ -223,6 +243,14 @@ object PojoCompiler {
     override def compile(toaster: Toaster, pojoAST: PojoAST): TAST = {
       implicit val objDef = TAnonDefiner
       implicit val objBld = TAnonBuilder
+      implicit val initialize: Initialize[ObjConstructor[TAnon],TAnon] = init => {
+        val inst = new util.LinkedHashMap[Any,Any]()
+        inst.put(AnonymousObject.TypeDefinition, init.tip)
+        init.instance.fieldsInitializer.reverse.foreach { case (fname,tast) =>
+          inst.put(fname, tast.supplier.get())
+        }
+        inst
+      }
       compilePojo(toaster, pojoAST)
     }
   }
