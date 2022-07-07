@@ -141,6 +141,4 @@ class IntersectionSpec extends AnyFlatSpec {
       }
     )
   }
-  
-  
 }

@@ -473,5 +473,7 @@ class ToasterTest {
       print(s"  key(${k} : ${k.getClass})")
       println(s" = value(${v} : ${v.getClass})")
     })
+    assert(computedMap.containsKey("k1"))
+    assert(computedMap.containsKey(AnonymousObject.TypeDefinition))
   }
 }
