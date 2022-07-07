@@ -10,7 +10,7 @@ trait Type extends Assignable with Extendable with Genericable {
  * Предопределенные типы
  */
 object Type {
-  //TODO убрать отсюда
+  //TODO убрать отсюда в сторону где примитивные типы
   /**
    * Системный, именнованый примитив
    */
