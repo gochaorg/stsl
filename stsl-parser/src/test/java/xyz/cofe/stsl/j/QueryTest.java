@@ -39,7 +39,7 @@ public class QueryTest {
         TObject listPersonType = listType.typeVarReplacer( (TypeVarReplacer a) -> a.set("A",personType) );
         varScope.define("lst", listPersonType, personTList1);
 
-        Option<AST> ast = new Parser(false).parse("lst.size");
+        Option<AST> ast = Parser.defaultParser().parse("lst.size");
         System.out.println("ast:");
         Assertions.assertTrue(ast.isDefined());
         ASTDump.dump(ast.get());
@@ -78,7 +78,7 @@ public class QueryTest {
         TObject listPersonType = listType.typeVarReplacer( (TypeVarReplacer a) -> a.set("A",personType) );
         varScope.define("lst", listPersonType, personTList1);
 
-        Option<AST> ast = new Parser(false).parse(
+        Option<AST> ast = Parser.defaultParser().parse(
             "{ " +
                 "a: lst.size, " +
                 "b: lst.size + lst.size, " +

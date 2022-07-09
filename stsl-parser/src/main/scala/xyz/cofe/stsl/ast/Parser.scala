@@ -1,11 +1,14 @@
 package xyz.cofe.stsl.ast
 
-import xyz.cofe.sparse.{CToken, GR, LPointer}
+import xyz.cofe.sparse.{CToken, GR, LPointer, Pointer, Tok}
+import xyz.cofe.stsl.ast.Parser.PTR
 import xyz.cofe.stsl.tok._
 
 case class Parser
 (
-  arraySupport:Boolean = false
+  arraySupport:Boolean = false,
+  lexerDump: LexerDump = LexerDump.dummy,
+  tracer: ParserTracer[PTR] = ParserTracer.dummy
 ) {
   import xyz.cofe.sparse.GOPS._
   import Parser._
@@ -263,13 +266,17 @@ case class Parser
   
   val emptyObj1 : GR[PTR,PojoAST] = operator("{}") ==> (o => new PojoAST(o.begin(), o.end()))
   val emptyObj2 : GR[PTR,PojoAST] = operator("{") + operator("}") ==> ( (b,e) => new PojoAST(b.begin(), e.end()))
-  val objKeyVal : GR[PTR,PojoItemAST] = identifier + operator(":") + expression ==> ( (k,_t,v) => new PojoItemAST(k.begin(), v.end(), k.asInstanceOf[IdentifierAST], v) )
+  val objKeyVal : GR[PTR,PojoItemAST] =
+    ( identifier + operator(":") + expression ==>
+      ( (k,_t,v) => new PojoItemAST(k.begin(), v.end(), k.asInstanceOf[IdentifierAST], v) )
+    ).trace("objKeyVal")
+    
   val objNonEmpty : GR[PTR,PojoAST] =
     operator("{") +
       objKeyVal + (
       operator(",") + objKeyVal ==> ((d,i)=>new PojoItemAST(d.begin(),i.end(),i.key,i.value))
       )*0 + operator("}") ==> ((b,f,s,e) => new PojoAST(b.begin(), e.end(), List(f) ++ s))
-  val objDef : GR[PTR,PojoAST] = (emptyObj1 | emptyObj2 | objNonEmpty) ==> ( t => t )
+  val objDef : GR[PTR,PojoAST] = ((emptyObj1 | emptyObj2 | objNonEmpty) ==> ( t => t )).trace("objDef")
   
   val arrayDef : GR[PTR, ArrayAST] = fromPtr => {
     val initialTok = fromPtr.lookup(0)
@@ -336,7 +343,7 @@ case class Parser
    * &nbsp;  | identifier <br>
    * </code>
    */
-  lazy val atom : AstGR = {
+  lazy val atom : AstGR = ({
     if( arraySupport ){
       (lambdaWithoutParams.asInstanceOf[AstGR]
         | lambdaWithParams.asInstanceOf[AstGR]
@@ -357,7 +364,7 @@ case class Parser
         | identifier
         ) ==> (t => t)
     }
-  }
+  }).trace("atom")
       
   private val fieldAccessOp: OpLiteral = operator(".")
   private val callStart: OpLiteral = operator("(")
@@ -376,7 +383,7 @@ case class Parser
    * <code> | '(' [ expression { ',' expression } ] ')' </code> <br>
    * <code> } </code>
    */
-  val postFix: AstGR = new AstGR {
+  val postFix: AstGR = (new AstGR {
     //noinspection EmptyParenMethodAccessedAsParameterless
     val propertyFollow : (AST,PTR)=>AST = (base:AST, ptr:PTR) => {
       val dotFld = fieldAccessOp(ptr)
@@ -476,28 +483,28 @@ case class Parser
         Some(result)
       }
     }
-  }
+  }).trace("postFix")
   
   /**
    * Правило *, /, % <br>
    * <code> ::= binary( postFix,  operator("*","/","%"), postFix ) </code>
    */
-  val mul: AstGR = binary(postFix, operator("*","/","%"), postFix)
+  val mul: AstGR = binary(postFix, operator("*","/","%"), postFix).trace("mul")
   
   /**
    * Правило +, -
    */
-  val add: AstGR = binary(mul,operator("+","-"),mul)
+  val add: AstGR = binary(mul,operator("+","-"),mul).trace("add")
   
   /**
    * Правило ==, !=, <, >, <=, >=
    */
-  val cmp: AstGR = binary(add,operator("==","!=","<",">","<=",">="),add)
+  val cmp: AstGR = binary(add,operator("==","!=","<",">","<=",">="),add).trace("cmp")
   
   /**
    * Правило &, |
    */
-  val bool: AstGR = binary(cmp,operator("&","|"),cmp)
+  val bool: AstGR = binary(cmp,operator("&","|"),cmp).trace("bool")
   
   def ternary( condition:AstGR, question:OpLiteral, success:AstGR, elseOp:OpLiteral, failure:AstGR ): AstGR = new AstGR {
     require(condition!=null)
@@ -534,7 +541,7 @@ case class Parser
   /**
    * Условный оператор
    */
-  val ifOp = ternary( bool, operator("?"), bool, operator(":"), bool )
+  val ifOp: AstGR = ternary( bool, operator("?"), bool, operator(":"), bool ).trace("ifOp")
   
   /**
    * Парсинг исходного текста в AST
@@ -544,6 +551,7 @@ case class Parser
   def parse( source:String ): Option[AST] ={
     require(source!=null)
     val toks = Lexer.tokenizer(source).filter( t => !t.isInstanceOf[WS] && !t.isInstanceOf[CommentTok] ).toList
+    lexerDump.tokens(toks)
     val ptr = new PTR(0,toks)
     val res = expression(ptr)
     if( res.isDefined ){
@@ -559,7 +567,16 @@ case class Parser
     res
   }
   
-  expression.target = ifOp
+  expression.target = ifOp.trace("expression")
+  
+  implicit class GROps[P <: LPointer[CToken], A <: Tok[P]]( gr:GR[P,A] ) {
+    def trace(name:String):GR[P,A] = ptr => {
+      tracer.begin(name,ptr)
+      val result = gr(ptr)
+      tracer.end(name,result)
+      result
+    }
+  }
 }
 
 /**

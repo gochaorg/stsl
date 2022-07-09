@@ -193,6 +193,9 @@ object Lexer {
     !Character.isLetterOrDigit(c) && !Character.isWhitespace(c) &&
     c!='\'' && c!='"'
   )
+  
+  val predefOperator: GR[CharPointer, OperatorTok] =
+    charTok(c => "{},".indexOf(c)>=0 ) ==> { case(start) => new OperatorTok(start.begin, start.end, start.text) }
 
   val operator: GR[CharPointer, OperatorTok] = operatorChar + ( operatorChar * 0 ) ==> {
     case( start,follow ) => new OperatorTok(start.begin, if(follow.isEmpty) start.end else follow.last.end, {
@@ -293,5 +296,5 @@ object Lexer {
   //#endregion
 
   def tokenizer(source:String): Tokenizer[CharPointer, CToken] =
-    Tokenizer.tokens(source,List(ws,string,number,comment,identifier,operator),null)
+    Tokenizer.tokens(source,List(ws,string,number,comment,identifier,predefOperator,operator),null)
 }

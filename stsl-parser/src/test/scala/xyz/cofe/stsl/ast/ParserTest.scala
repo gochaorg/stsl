@@ -1,6 +1,8 @@
 package xyz.cofe.stsl.ast
 
 import org.junit.jupiter.api.Test
+import xyz.cofe.sparse.Tok
+import xyz.cofe.stsl.ast.Parser.PTR
 import xyz.cofe.stsl.tast.{CallStack, StackedArgumentAST}
 
 class ParserTest {
@@ -136,6 +138,42 @@ class ParserTest {
   }
   
   @Test
+  def objDef04():Unit = {
+    val source =
+      """
+        |{
+        | first : {
+        |  name: "hello", value: 1
+        | },
+        | second : {
+        |  name: "world", value: 2
+        | }
+        |}
+        |""".stripMargin
+  
+    var indent = 0
+    val tracer = new ParserTracer[Parser.PTR] {
+      override def begin(name: String, ptr: PTR): Unit = {
+        println(" "*indent+name+"{"+" ptr="+ptr.pointer()+" "+ptr.lookup(0))
+        indent+=1
+      }
+      override def end(name: String, result: Option[Any]): Unit = {
+        indent-=1
+        println(" "*indent+"}"+name+result.map(r=>" succ="+r.toString).getOrElse(" fail") )
+      }
+    }
+    val parser = Parser.defaultParser.copy(
+      lexerDump = tokens => {
+        println("tokens:")
+        tokens.foreach( t => println("  "+t))
+      },
+      tracer = tracer
+    )
+    val ast = parser.parse(source)
+    ast.foreach( ASTDump.dump )
+  }
+  
+  @Test
   def arrayDef01():Unit = {
     val parser = Parser.defaultParser.copy(
       arraySupport = true
@@ -152,32 +190,4 @@ class ParserTest {
     val ast = parser.parse("[ 1, 2, 3, ]" )
     ast.foreach( ASTDump.dump )
   }
-
-//  @Test
-//  def lmbda02replace(): Unit ={
-//    println( "lmbda02replace()" )
-//    val astOpt = Parser.parse("() => a+b")
-//
-//    println("before")
-//    astOpt.foreach( ASTDump.dump )
-//
-//    test(astOpt,
-//      lamda,
-//      binary, identifier, identifier
-//    )
-//
-//    var ast : AST = astOpt.get
-//    val ids = astOpt.get.tree.map(_.last).filter(_.isInstanceOf[IdentifierAST]).map(_.asInstanceOf[IdentifierAST]).toList
-//    if( ids.nonEmpty ){
-//      val from = ids.head
-//      val call = new CallStack
-//      val to = StackedArgumentAST(call,from, xyz.cofe.sel.types.Type.OBJECT)
-//      println(s"replacing from $from to $to")
-//
-//      var rast = ast.replace(from,to)
-//      println("after replace")
-//
-//      ASTDump.dump(rast)
-//    }
-//  }
 }
