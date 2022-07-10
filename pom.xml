@@ -8,14 +8,10 @@
     <artifactId>stsl</artifactId>
     <version>1.0</version>
     <modules>
-        <module>stsl-all</module>
+<!--        <module>stsl-all</module>-->
+<!--        <module>stconf</module>-->
     </modules>
     <packaging>pom</packaging>
-
-<!--    <modules>-->
-<!--        <module>stsl-type</module>-->
-<!--        <module>sparse</module>-->
-<!--    </modules>-->
 
     <properties>
         <java.version>1.8</java.version>
