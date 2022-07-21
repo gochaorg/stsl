@@ -1,7 +1,8 @@
 package xyz.cofe.stsl.tast
 
-import xyz.cofe.stsl.ast.ArrayAST
-import xyz.cofe.stsl.types.Type
+import xyz.cofe.stsl.ast.{AST, ArrayAST}
+import xyz.cofe.stsl.tast.isect.{AnonCollector, AnonReductor}
+import xyz.cofe.stsl.types.{Obj, Type}
 
 /**
  * Компиляция массивов [[ArrayAST]]
@@ -114,6 +115,84 @@ object ArrayCompiler {
               buildArray match {
                 case Some(bld) => bld(inst)
                 case None => inst
+              }
+            },
+            arrayTAST.map(_.tast)
+          )
+        }
+      }
+    }
+  }
+  
+  case class MergeAnon[Acum,ArrInst,ArrType<:Type]
+  (
+    collector:AnonCollector[Acum],
+    reducer:AnonReductor[Acum],
+    arrayTypeConstruct:Type=>ArrType,
+    emptyArray:()=>ArrInst,
+    appendItem:(ArrInst,Any,Type)=>ArrInst,
+    buildArray:Option[ArrInst=>ArrInst]=None,
+    emptryArrayItemType:Type=Type.ANY
+  ) extends ArrayCompiler {
+    /**
+     * Компиляция
+     * @param toaster  тостер
+     * @param arrayAST AST дерево
+     * @return скомпилированное дерево
+     */
+    override def compile(toaster: Toaster, arrayAST: ArrayAST): TAST = {
+      require(toaster!=null)
+      require(arrayAST!=null)
+      if( arrayAST.items.isEmpty ){
+        // Пустой массив
+        val arrayType = arrayTypeConstruct(emptryArrayItemType)
+        TAST(
+          ast = arrayAST,
+          supplierType = arrayType,
+          supplier = ()=>{
+            val inst = emptyArray()
+            buildArray match {
+              case Some(bld) => bld(inst)
+              case None => inst
+            }
+          }
+        )
+      }else {
+        val arrayTAST = arrayAST.items.map( itemAST=> new {
+          val ast: AST = itemAST
+          val tast: TAST = toaster.compile(itemAST)
+        })
+        if( arrayTAST.length==1 ){
+          // массив из одного элемента
+          val first = arrayTAST.head
+          val arrayType = arrayTypeConstruct(first.tast.supplierType)
+          TAST(
+            ast = arrayAST,
+            supplierType = arrayType,
+            supplier = ()=>{
+              val inst = appendItem(emptyArray(), first.tast.supplier.get(), first.tast.supplierType)
+              buildArray match {
+                case Some(bld) => bld(inst)
+                case None => inst
+              }
+            },
+            arrayTAST.map(_.tast)
+          )
+        }else{
+          val targetItemType = reducer.reduce(
+            arrayTAST.foldLeft(collector.initial)( (accum,itemTAST) => {
+              collector.collect(accum, itemTAST.tast.supplierType)
+            })
+          )
+          val arrayType = arrayTypeConstruct(targetItemType)
+          TAST(
+            ast = arrayAST,
+            supplierType = arrayType,
+            supplier = ()=>{
+              val arrayInst = arrayTAST.foldLeft(emptyArray())( (inst, itm) => appendItem(inst,itm.tast.supplier.get(),itm.tast.supplierType) )
+              buildArray match {
+                case Some(builder) => builder(arrayInst)
+                case None => arrayInst
               }
             },
             arrayTAST.map(_.tast)

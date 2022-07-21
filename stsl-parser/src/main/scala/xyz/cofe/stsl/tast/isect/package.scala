@@ -1,7 +1,10 @@
 package xyz.cofe.stsl.tast
 
-import xyz.cofe.stsl.types.{Field, GenericInstance, InheritedFields, Named, TObject, Type, WriteableField}
+import xyz.cofe.stsl.types.{Field, Fields, GenericInstance, InheritedFields, Named, Obj, TAnon, TObject, Type, WriteableField}
 
+/**
+ * Вся эта штука применима к TAnon
+ */
 package object isect {
   /**
    * Поиск общего типа среди заданных
@@ -127,6 +130,79 @@ package object isect {
           newValue
         }
       )}.toList
+    }
+  }
+  
+  /**
+   * Коллектор анонимных типов
+   * @tparam A аккумулятор разных типов
+   */
+  trait AnonCollector[A] {
+    /** Начальное значением аккумулятора */
+    def initial:A
+  
+    /**
+     * аккумуляция
+     * @param acum аккумулятор
+     * @param obj анонимный тип
+     * @return аккумулятор
+     */
+    def collect(acum:A,obj:Type):A
+  }
+  
+  /**
+   * Редукция аккумулятора к анонимному типу
+   * @tparam A аккумулятор разных типов
+   */
+  trait AnonReductor[A] {
+    /**
+     * Редукция аккумулятора к анонимному типу
+     * @param acum аккумулятор разных типов
+     * @return анонимный тип
+     */
+    def reduce(acum:A):TAnon
+  }
+  
+  /**
+   * Работает с элементами TAnon, иначе генерирует ошибку
+   * @param optionalField
+   * @param optBuilder
+   */
+  case class AnonFieldsReductor(
+                        optionalField: OptionalField,
+                        optBuilder:OptionalBuilder = OptBaker()
+                      ) {
+    case class FieldAcum( anons:List[TAnon]=List[TAnon]() )
+    object AnonCollector extends AnonCollector[FieldAcum] {
+      /** Начальное значением аккумулятора */
+      override def initial: FieldAcum = FieldAcum()
+  
+      /**
+       * аккумуляция
+       *
+       * @param acum аккумулятор
+       * @param obj  анонимный тип
+       * @return аккумулятор
+       */
+      override def collect(acum: FieldAcum, obj: Type): FieldAcum = {
+        obj match {
+          case t:TAnon =>
+            acum.copy( t :: acum.anons )
+          case _ => throw ToasterError(s"${obj} not instance of TAnon")
+        }
+      }
+    }
+    
+    object AnonReductor extends AnonReductor[FieldAcum] {
+      /**
+       * Редукция аккумулятора к анонимному типу
+       *
+       * @param acum аккумулятор разных типов
+       * @return анонимный тип
+       */
+      override def reduce(acum: FieldAcum): TAnon = {
+        TAnon(Fields(FieldsReductor(optionalField,optBuilder).reduce(FieldsCollector(acum.anons))))
+      }
     }
   }
 }

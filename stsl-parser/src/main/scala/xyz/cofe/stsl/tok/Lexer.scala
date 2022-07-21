@@ -194,8 +194,32 @@ object Lexer {
     c!='\'' && c!='"'
   )
   
+  val predefinedOperators: Seq[String] = List(
+    "{","}","(",")","[","]","<",">",
+    ",",".",
+    ">=","<=","=>","=<","->","<-",
+    "*","**","+","-","/","%",
+    "==","!=",
+    "?",
+    ";",":","::",":::",
+    "!").sortBy(_.length).reverse
+  
   val predefOperator: GR[CharPointer, OperatorTok] =
-    charTok(c => "{},".indexOf(c)>=0 ) ==> { case(start) => new OperatorTok(start.begin, start.end, start.text) }
+    ptr => {
+      predefinedOperators.foldLeft( None:Option[OperatorTok] )((res, str) => {
+        res match {
+          case Some(x) => res
+          case None =>
+            val cap = ptr.text(str.length)
+            if( cap==str ){
+              Some(new OperatorTok(ptr, ptr.move(str.length),cap))
+            }else{
+              None
+            }
+        }
+      })
+    }
+    //charTok(c => "{},".indexOf(c)>=0 ) ==> { case(start) => new OperatorTok(start.begin, start.end, start.text) }
 
   val operator: GR[CharPointer, OperatorTok] = operatorChar + ( operatorChar * 0 ) ==> {
     case( start,follow ) => new OperatorTok(start.begin, if(follow.isEmpty) start.end else follow.last.end, {
