@@ -16,7 +16,7 @@ import scala.collection.mutable
 case class Toaster(
   typeScope: TypeScope,
   varScope: VarScope=new VarScope(),
-  pojoCompiler: PojoCompiler=PojoCompiler.TObjectPojo(),
+  pojoCompiler: PojoCompiler=PojoCompiler.TAnonPojo(),
   arrayCompiler: ArrayCompiler=ArrayCompiler.NoImpl()
 ) {
   require(typeScope!=null)
