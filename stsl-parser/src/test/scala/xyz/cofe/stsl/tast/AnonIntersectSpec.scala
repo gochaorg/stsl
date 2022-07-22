@@ -1,9 +1,11 @@
 package xyz.cofe.stsl.tast
 
 import org.scalatest.flatspec.AnyFlatSpec
-import xyz.cofe.stsl.types.{Fields, Fn, Fun, Funs, GenericInstance, Methods, MutableFuns, Params, TAnon, TObject, Type, TypeDescriber}
+import xyz.cofe.stsl.ast.Parser
+import xyz.cofe.stsl.types.{CallableFn, Fields, Fn, Fun, Funs, GenericInstance, Methods, MutableFuns, Param, Params, TAnon, TObject, Type, TypeDescriber}
 import xyz.cofe.stsl.tast.JvmType.{INT, NUMBER, STRING}
 import xyz.cofe.stsl.tast.isect._
+import xyz.cofe.stsl.types.Type.THIS
 
 /**
  * пересечение несколько TAnon типов
@@ -264,5 +266,65 @@ class AnonIntersectSpec extends AnyFlatSpec {
     val mcoll = MethodCollector().join(a0.methods).join(a1.methods)
     assert(mcoll.joinCount==2)
     assert(mcoll.common.isEmpty)
+  }
+  
+  "merge and call {a (x:int):int=x+1} and {a (x:int):int=x+2}" should "{ a (x:int):int }" in {
+    val ts = new TypeScope()
+    ts.implicits = JvmType.implicitConversion
+    ts.imports(JvmType.types)
+    
+    val ast1 = Parser.parse(
+      """
+        |{
+        |  a: x:int => x+1
+        |}
+        |""".stripMargin
+    )
+    assert(ast1.isDefined)
+    
+    val ast2 = Parser.parse(
+      """
+        |{
+        |  a: x:int => x+2
+        |}
+        |""".stripMargin
+    )
+    assert(ast2.isDefined)
+  
+    val vs = new VarScope()
+  
+    val toaster = new Toaster(ts,vs,pojoCompiler = PojoCompiler.TAnonPojo())
+    val tast1 = toaster.compile(ast1.get)
+    val tast2 = toaster.compile(ast2.get)
+    
+    val inst1 = tast1.supplier.get()
+    val inst2 = tast2.supplier.get()
+    
+    assert( AnonymousObject.definitionOf(inst1).isDefined )
+    assert( AnonymousObject.definitionOf(inst2).isDefined )
+    
+    val tInst1 = AnonymousObject.definitionOf(inst1).get
+    val tInst2 = AnonymousObject.definitionOf(inst2).get
+    
+    val mcoll = MethodCollector().join(tInst1.methods).join(tInst2.methods)
+    assert(mcoll.common.nonEmpty)
+    assert(mcoll.common.contains("a"))
+    assert(mcoll.common("a").funs.size==1)
+    println("common lambda: "+mcoll.common("a").head)
+    assert(mcoll.common("a").head.toString=="(x:int):int")
+    
+    val anonCall = anonCallable("a", mcoll.common("a").head)
+    println("anon callable: "+anonCall)
+    
+    val a_call1res = anonCall.invoke(List(inst1,1))
+    val a_call2res = anonCall.invoke(List(inst2,1))
+  
+    val call1res = tInst1.methods("a").head.asInstanceOf[CallableFn].invoke(List(1))
+    val call2res = tInst2.methods("a").head.asInstanceOf[CallableFn].invoke(List(1))
+    println(s"  call1res=$call1res   call2res=$call2res")
+    println(s"a_call1res=$a_call1res a_call2res=$a_call2res")
+    
+    assert(call1res==a_call1res)
+    assert(call2res==a_call2res)
   }
 }

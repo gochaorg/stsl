@@ -1,6 +1,7 @@
 package xyz.cofe.stsl.tast
 
-import xyz.cofe.stsl.types.{Field, Fields, Fn, Fun, Funs, GenericInstance, InheritedFields, Methods, MutableFuns, Named, Obj, TAnon, TObject, Type, WriteableField}
+import xyz.cofe.stsl.types.Type.THIS
+import xyz.cofe.stsl.types.{CallableFn, Field, Fields, Fn, Fun, Funs, GenericInstance, InheritedFields, Methods, MutableFuns, Named, Obj, Param, Params, TAnon, TObject, Type, WriteableField}
 
 /**
  * Вся эта штука применима к TAnon
@@ -198,6 +199,45 @@ package object isect {
         common = z
       )
     }
+  }
+  
+  /**
+   * Генерирует вызываемый метод (функцию) на основании существующей функции для вызова методов анонимного объекта (TAnon)
+   * @param methName имя вызываемого метода
+   * @param fun функция (сигнатура)
+   * @param insertThisArg добавить this параметр в генерируемый метод
+   * @param sendThisArg передавать this параметр в целевой метод
+   * @return новый метод
+   */
+  def anonCallable( methName:String, fun:Fun, insertThisArg:Boolean=true, sendThisArg:Boolean=false ):CallableFn = {
+    new CallableFn(
+      fun.generics,
+      if( insertThisArg ){
+        Params((Param("this",THIS)) :: fun.parameters.toList)
+      }else{
+        fun.parameters
+      },
+      fun.returns,
+      call = args => {
+        if( args.isEmpty )throw new RuntimeException(s"can't call $fun")
+        val self = args.head
+        AnonymousObject.definitionOf(self) match {
+          case Some(anonType) => anonType.methods.get(methName) match {
+            case Some(funs) =>
+              funs.find( f => f.sameTypes(fun) ) match {
+                case Some(targetFun) => targetFun match {
+                  case callFn: CallableFn =>
+                    callFn.invoke(if(sendThisArg) args else args.tail)
+                  case _ => throw new RuntimeException(s"method $methName($fun) not callable")
+                }
+                case None => throw new RuntimeException(s"method $methName($fun) not found in $anonType")
+              }
+            case None => throw new RuntimeException(s"method $methName not found in $anonType")
+          }
+          case None => throw new RuntimeException(s"undefined type of this arg ($self)")
+        }
+      }
+    )
   }
   
   /**

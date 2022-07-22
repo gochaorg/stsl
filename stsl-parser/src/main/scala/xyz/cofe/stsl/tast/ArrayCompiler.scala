@@ -21,10 +21,12 @@ object ArrayCompiler {
   case class NoImpl() extends ArrayCompiler {
     /**
      * Компиляция
+ *
      * @param toaster  тостер
      * @param arrayAST AST дерево
      * @return скомпилированное дерево
      */
+    //noinspection NotImplementedCode
     override def compile(toaster: Toaster, arrayAST: ArrayAST): TAST = ???
   }
   
@@ -53,10 +55,12 @@ object ArrayCompiler {
     require(emptyArrayItemType!=null)
     /**
      * Компиляция
+     *
      * @param toaster  тостер
      * @param arrayAST AST дерево
      * @return скомпилированное дерево
      */
+    //noinspection ScalaUnusedSymbol,TypeAnnotation
     override def compile(toaster: Toaster, arrayAST: ArrayAST): TAST = {
       require(toaster!=null)
       require(arrayAST!=null)

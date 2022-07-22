@@ -18,10 +18,14 @@ object AnonymousObject {
    * @param anonObj экземпляр Map
    * @return тип
    */
-  def definitionOf( anonObj:java.util.Map[Any,Any] ):Option[TAnon] = {
+  def definitionOf( anonObj:Any ):Option[TAnon] = {
     require(anonObj!=null)
-    anonObj.get(TypeDefinition) match {
-      case d: TAnon => Some(d)
+    anonObj match {
+      case m:java.util.Map[Any,Any] =>
+        m.get(TypeDefinition) match {
+          case d: TAnon => Some(d)
+          case _ => None
+        }
       case _ => None
     }
   }
