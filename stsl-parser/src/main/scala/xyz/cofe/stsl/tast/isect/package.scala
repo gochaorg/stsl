@@ -1,7 +1,12 @@
 package xyz.cofe.stsl.tast
 
-import xyz.cofe.stsl.types.Type.THIS
-import xyz.cofe.stsl.types.{CallableFn, Field, Fields, Fn, Fun, Funs, GenericInstance, InheritedFields, Methods, MutableFuns, Named, Obj, Param, Params, TAnon, TObject, Type, WriteableField}
+import xyz.cofe.stsl.types.{
+  Field, Fields, WriteableField, InheritedFields,
+  Fn, Fun, Funs, Methods, MutableFuns,
+  GenericInstance,
+  Named, TAnon, TObject, Type
+}
+import xyz.cofe.stsl.tast.AnonymousObject._
 
 /**
  * Вся эта штука применима к TAnon
@@ -202,45 +207,6 @@ package object isect {
   }
   
   /**
-   * Генерирует вызываемый метод (функцию) на основании существующей функции для вызова методов анонимного объекта (TAnon)
-   * @param methName имя вызываемого метода
-   * @param fun функция (сигнатура)
-   * @param insertThisArg добавить this параметр в генерируемый метод
-   * @param sendThisArg передавать this параметр в целевой метод
-   * @return новый метод
-   */
-  def anonCallable( methName:String, fun:Fun, insertThisArg:Boolean=true, sendThisArg:Boolean=false ):CallableFn = {
-    new CallableFn(
-      fun.generics,
-      if( insertThisArg ){
-        Params((Param("this",THIS)) :: fun.parameters.toList)
-      }else{
-        fun.parameters
-      },
-      fun.returns,
-      call = args => {
-        if( args.isEmpty )throw new RuntimeException(s"can't call $fun")
-        val self = args.head
-        AnonymousObject.definitionOf(self) match {
-          case Some(anonType) => anonType.methods.get(methName) match {
-            case Some(funs) =>
-              funs.find( f => f.sameTypes(fun) ) match {
-                case Some(targetFun) => targetFun match {
-                  case callFn: CallableFn =>
-                    callFn.invoke(if(sendThisArg) args else args.tail)
-                  case _ => throw new RuntimeException(s"method $methName($fun) not callable")
-                }
-                case None => throw new RuntimeException(s"method $methName($fun) not found in $anonType")
-              }
-            case None => throw new RuntimeException(s"method $methName not found in $anonType")
-          }
-          case None => throw new RuntimeException(s"undefined type of this arg ($self)")
-        }
-      }
-    )
-  }
-  
-  /**
    * Коллектор анонимных типов
    * @tparam A аккумулятор разных типов
    */
@@ -309,6 +275,51 @@ package object isect {
        */
       override def reduce(acum: FieldAcum): TAnon = {
         TAnon(Fields(FieldsReductor(optionalField,optBuilder).reduce(FieldsCollector(acum.anons))))
+      }
+    }
+  }
+  
+  case class TAnonReductor(
+    optionalField: OptionalField,
+    optBuilder:OptionalBuilder = OptBaker(),
+    methodBuilder: MethodBuilder = MethodBuilder.ThisCallable
+  ) {
+    case class Acum( anons:List[TAnon]=List[TAnon]() )
+    object AnonCollector extends AnonCollector[Acum] {
+      /** Начальное значением аккумулятора */
+      override def initial: Acum = Acum()
+  
+      /**
+       * аккумуляция
+       *
+       * @param acum аккумулятор
+       * @param obj  анонимный тип
+       * @return аккумулятор
+       */
+      override def collect(acum: Acum, obj: Type): Acum = obj match {
+        case t:TAnon =>
+          acum.copy( t :: acum.anons )
+        case _ => throw ToasterError(s"${obj} not instance of TAnon")
+      }
+    }
+  
+    object AnonReductor extends AnonReductor[Acum] {
+      /**
+       * Редукция аккумулятора к анонимному типу
+       *
+       * @param acum аккумулятор разных типов
+       * @return анонимный тип
+       */
+      override def reduce(acum: Acum): TAnon = {
+        val fields = Fields(FieldsReductor(optionalField,optBuilder).reduce(FieldsCollector(acum.anons)))
+        val methods = acum.anons
+          .map(_.methods)
+          .foldLeft(MethodCollector())( (mcoll,meths) => mcoll.join(meths) )
+          .common
+          .map { case(name, funs) => name ->
+            new Funs(funs.map( impl => methodBuilder.build(name,impl)).toList )
+          }
+        TAnon(fields,new Methods(methods))
       }
     }
   }

@@ -6,6 +6,7 @@ import xyz.cofe.stsl.types.{CallableFn, Fields, Fn, Fun, Funs, GenericInstance, 
 import xyz.cofe.stsl.tast.JvmType.{INT, NUMBER, STRING}
 import xyz.cofe.stsl.tast.isect._
 import xyz.cofe.stsl.types.Type.THIS
+import xyz.cofe.stsl.tast.AnonymousObject.anonCallable
 
 /**
  * пересечение несколько TAnon типов
