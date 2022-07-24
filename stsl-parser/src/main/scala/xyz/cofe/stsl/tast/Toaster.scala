@@ -19,6 +19,11 @@ case class Toaster(
   pojoCompiler: PojoCompiler=PojoCompiler.TAnonPojo(),
   arrayCompiler: ArrayCompiler=ArrayCompiler.NoImpl()
 ) {
+  def withTypeScope(ts:TypeScope):Toaster = copy(typeScope=ts)
+  def withVarScope(vs:VarScope):Toaster = copy(varScope=vs)
+  def withPojoCompile(pc:PojoCompiler):Toaster = copy(pojoCompiler=pc)
+  def withArrayCompile(ac:ArrayCompiler):Toaster = copy(arrayCompiler=ac)
+  
   require(typeScope!=null)
   require(varScope!=null)
   require(pojoCompiler!=null)

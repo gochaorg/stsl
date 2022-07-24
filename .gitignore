@@ -5,4 +5,5 @@ target
 .idea
 */.idea
 stsl-type3
-try-stsl/*
+try-stsl/*vs-code
+vs-code/node_modules/

@@ -13,6 +13,10 @@ case class Parser
   import xyz.cofe.sparse.GOPS._
   import Parser._
   
+  def withArraySupport(support:Boolean): Parser = copy(arraySupport=support)
+  def withLexerDump(dump:LexerDump):Parser = copy(lexerDump=dump)
+  def withParserTracer(tracer:ParserTracer[PTR]):Parser = copy(tracer=tracer)
+  
   /**
    * "Начальное" правило
    */

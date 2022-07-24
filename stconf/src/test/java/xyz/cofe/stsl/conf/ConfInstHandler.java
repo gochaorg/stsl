@@ -20,7 +20,6 @@ class ConfInstHandler implements InvocationHandler {
         this.confClass = conf;
     }
 
-    //private TAST tast;
     private Type tastType;
     private Object computed;
 

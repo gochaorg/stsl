@@ -10,6 +10,9 @@ import xyz.cofe.stsl.tast.TASTDump;
 import xyz.cofe.stsl.tast.Toaster;
 import xyz.cofe.stsl.tast.TypeScope;
 import xyz.cofe.stsl.tast.VarScope;
+import xyz.cofe.stsl.types.AnyVariant;
+import xyz.cofe.stsl.types.TObject;
+import xyz.cofe.stsl.types.Type;
 
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
@@ -47,7 +50,32 @@ public class ConfigInstance<T> {
         return proxy;
     }
 
-    //region typeScope
+    private volatile Type anyType;
+    public Type anyType(){
+        if( anyType!=null )return anyType;
+        synchronized( this ){
+            if( anyType!=null )return anyType;
+            anyType = Type.ANY();
+            return anyType;
+        }
+    }
+
+    private volatile TObject optType;
+    public TObject optType(){
+        if( optType!=null )return optType;
+        synchronized( this ){
+            if( optType!=null )return optType;
+            var t = TObject.create("Opt").extend(anyType()).build();
+            t.generics().append(new AnyVariant("A"));
+            optType = t;
+            return optType;
+        }
+    }
+
+//    private volatile xyz.cofe.stsl.tast.isect.package. optionalField;
+//    public OptionalField
+
+    //region typeScope() : TypeScope
     private volatile TypeScope _ts;
     public TypeScope typeScope(){
         if( _ts!=null )return _ts;
@@ -56,12 +84,13 @@ public class ConfigInstance<T> {
             TypeScope ts = new TypeScope();
             ts.setImplicits(JvmType.implicitConversion());
             ts.imports(JvmType.types());
+            ts.imports(optType());
             _ts = ts;
             return _ts;
         }
     }
     //endregion
-    //region varScope
+    //region varScope() : VarScope
     private volatile VarScope _vs;
     public VarScope varScope(){
         if( _vs!=null )return _vs;
@@ -72,7 +101,7 @@ public class ConfigInstance<T> {
         }
     }
     //endregion
-    //region toaster
+    //region toaster() : Toaster
     private volatile Toaster _toaster;
     public Toaster toaster(){
         if( _toaster!=null )return _toaster;
@@ -83,13 +112,13 @@ public class ConfigInstance<T> {
         }
     }
     //endregion
-    //region parser
+    //region parser() : Parser
     private volatile Parser _parser;
     public Parser parser(){
         if( _parser!=null )return _parser;
         synchronized( this ){
             if( _parser!=null )return _parser;
-            _parser = Parser.defaultParser();
+            _parser = Parser.defaultParser().withArraySupport(true);
             return _parser;
         }
     }

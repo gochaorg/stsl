@@ -7,6 +7,7 @@ import xyz.cofe.stsl.tast.JvmType.{INT, NUMBER, STRING}
 import xyz.cofe.stsl.tast.isect._
 import xyz.cofe.stsl.types.Type.THIS
 import xyz.cofe.stsl.tast.AnonymousObject.anonCallable
+import xyz.cofe.stsl.tast.isect.CommonType.commonType
 
 /**
  * пересечение несколько TAnon типов
