@@ -83,13 +83,6 @@ object ArrayCompiler {
         })
         
         // массив из множества элементов
-        val first = arrayTAST.head
-        val tail = arrayTAST.tail
-        val allAssignableFromFirst = tail
-          .map { otherTAST => first.tast.supplierType.assignable(otherTAST.tast.supplierType) }.forall(b => b)
-        if( !allAssignableFromFirst ){
-          throw ToasterError("in array different item types", arrayAST)
-        }
         val arrayType = typeConstruct(emptyArrayItemType)
         TAST(
           ast = arrayAST,
