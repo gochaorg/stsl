@@ -48,7 +48,7 @@ object JvmType {
     ),
     Type.THIS
   ).invoke[Boolean,Boolean](self => !self)
-  BOOLEAN.freeze
+  //BOOLEAN.freeze
 
   //endregion
   //region CHAR
@@ -240,7 +240,7 @@ object JvmType {
   BYTE.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BOOLEAN).invoke[Byte,BigInt,Boolean]((self,value) => self.toInt>=value)
   BYTE.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),BOOLEAN).invoke[Byte,BigDecimal,Boolean]((self,value) => self.toInt>=value)
 
-  BYTE.freeze
+  //BYTE.freeze
   //endregion
   //region SHORT implementation
   SHORT.methods += "+" -> Fn(Params("self" -> THIS, "value" -> BYTE),INT).invoke[Short,Byte,Int]((self,value)=>self + value)
@@ -342,7 +342,7 @@ object JvmType {
   SHORT.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BOOLEAN).invoke[Short,BigInt,Boolean]((self,value) => self.toInt>=value)
   SHORT.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),BOOLEAN).invoke[Short,BigDecimal,Boolean]((self,value) => self.toInt>=value)
 
-  SHORT.freeze
+  //SHORT.freeze
   //endregion
   //region INT implementation
   INT.methods += "+" -> Fn(Params("self" -> THIS, "value" -> BYTE),THIS).invoke[Int,Byte,Int]((self,value)=>self + value)
@@ -444,7 +444,7 @@ object JvmType {
   INT.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BOOLEAN).invoke[Int,BigInt,Boolean]((self,value) => self>=value)
   INT.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),BOOLEAN).invoke[Int,BigDecimal,Boolean]((self,value) => self>=value)
 
-  INT.freeze
+  //INT.freeze
   //endregion
   //region LONG implementation
   LONG.methods += "+" -> Fn(Params("self" -> THIS, "value" -> BYTE),THIS).invoke[Long,Byte,Long]((self,value)=>self + value)
@@ -546,7 +546,7 @@ object JvmType {
   LONG.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BOOLEAN).invoke[Long,BigInt,Boolean]((self,value) => self>=value)
   LONG.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),BOOLEAN).invoke[Long,BigDecimal,Boolean]((self,value) => self>=value)
 
-  LONG.freeze
+  //LONG.freeze
   //endregion
   //region DOUBLE implementation
   DOUBLE.methods += "+" -> Fn(Params("self" -> THIS, "value" -> BYTE),THIS).invoke[Double,Byte,Double]((self,value)=>self + value)
@@ -648,7 +648,7 @@ object JvmType {
   DOUBLE.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> BIGINT),BOOLEAN).invoke[Double,BigInt,Boolean]((self,value) => BigDecimal(self)>=BigDecimal(value))
   DOUBLE.methods += ">=" -> Fn(Params("self" -> THIS, "value" -> DECIMAL),BOOLEAN).invoke[Double,BigDecimal,Boolean]((self,value) => self>=value)
 
-  DOUBLE.freeze
+  //DOUBLE.freeze
   //endregion
   //region STRING implementation
   STRING.fields ++= "length"-> INT -> ((str:Any)=>str.asInstanceOf[String].length) -> ((str:Any, l:Any)=>throw new RuntimeException("immutable"))
@@ -661,7 +661,7 @@ object JvmType {
   STRING.methods += ">" -> Fn(Params("self"->THIS, "value"->THIS),THIS).invoke[String,String,Boolean]((self,value)=>self > value)
   STRING.methods += "<=" -> Fn(Params("self"->THIS, "value"->THIS),THIS).invoke[String,String,Boolean]((self,value)=>self <= value)
   STRING.methods += ">=" -> Fn(Params("self"->THIS, "value"->THIS),THIS).invoke[String,String,Boolean]((self,value)=>self >= value)
-  STRING.freeze
+  //STRING.freeze
   //endregion
 
   //region implicitConversion
