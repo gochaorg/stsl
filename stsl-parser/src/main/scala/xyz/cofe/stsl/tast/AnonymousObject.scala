@@ -104,4 +104,8 @@ object AnonymousObject {
       }
     }
   }
+  
+  def asIsMethodBuilder():MethodBuilder = MethodBuilder.AsIs
+  def anonCallableMethodBuilder():MethodBuilder = MethodBuilder.AnonCallable
+  def thisCallableMethodBuilder():MethodBuilder = MethodBuilder.ThisCallable
 }

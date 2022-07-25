@@ -10,6 +10,8 @@ case class TAnonReductor(
                           methodBuilder: MethodBuilder = MethodBuilder.ThisCallable
                         ) {
   case class Acum( anons:List[TAnon]=List[TAnon]() )
+  
+  def anonCollector():AnonCollector[Acum] = AnonCollector
   object AnonCollector extends AnonCollector[Acum] {
     /** Начальное значением аккумулятора */
     override def initial: Acum = Acum()
@@ -28,6 +30,7 @@ case class TAnonReductor(
     }
   }
   
+  def anonReductor():AnonReductor[Acum] = AnonReductor
   object AnonReductor extends AnonReductor[Acum] {
     /**
      * Редукция аккумулятора к анонимному типу

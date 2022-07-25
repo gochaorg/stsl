@@ -1,5 +1,7 @@
 package xyz.cofe.stsl.types
 
+import scala.collection.JavaConverters._
+
 /**
  * Замена переменной Типа.
  *
@@ -138,5 +140,77 @@ trait TypeVarReplace[A] {
         }
       })
     }
+  }
+  
+  def typeVarBaker():TypeVarBaker[A] = new TypeVarBaker(this)
+}
+
+class TypeVarBaker[A]( self: TypeVarReplace[A] ) {
+  /**
+   * Замена переменых чей владелец (owner) FN
+   * @param recipe правило замены
+   * @return новый тип
+   */
+  def fn(recipe:(String,Type)*):A = {
+    require(recipe!=null)
+    val rmap:Map[String,Type] = recipe.toMap
+    self.typeVarReplace((tv:TypeVariable)=>{
+      if( tv.owner==Type.FN ) {
+        rmap.get(tv.name)
+      }else{
+        None
+      }
+    })
+  }
+  
+  def fn(recipe:Map[String,Type]):A = {
+    require(recipe!=null)
+    self.typeVarReplace((tv:TypeVariable)=>{
+      if( tv.owner==Type.FN ) {
+        recipe.get(tv.name)
+      }else{
+        None
+      }
+    })
+  }
+  
+  def fn(recipe:java.util.Map[String,Type]):A = this.fn(recipe.asScala.toMap)
+  
+  /**
+   * Замена переменых чей владелец (owner) THIS
+   * @param recipe правило замены
+   * @return новый тип
+   */
+  def thiz(recipe:Map[String,Type]):A = {
+    require(recipe!=null)
+    val rmap:Map[String,Type] = recipe
+    self.typeVarReplace((tv:TypeVariable)=>{
+      if( tv.owner==Type.THIS ) {
+        rmap.get(tv.name)
+      }else{
+        None
+      }
+    })
+  }
+  
+  /**
+   * Замена переменых чей владелец (owner) THIS
+   * @param recipe правило замены
+   * @return новый тип
+   */
+  def thiz(recipe:(String,Type)*):A = {
+    require(recipe!=null)
+    val rmap:Map[String,Type] = recipe.toMap
+    self.typeVarReplace((tv:TypeVariable)=>{
+      if( tv.owner==Type.THIS ) {
+        rmap.get(tv.name)
+      }else{
+        None
+      }
+    })
+  }
+  
+  def thiz(recipe:java.util.Map[String,Type]):A = {
+    this.thiz(recipe.asScala.toMap)
   }
 }
