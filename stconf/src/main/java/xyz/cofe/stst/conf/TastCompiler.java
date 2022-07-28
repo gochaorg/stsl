@@ -1,4 +1,4 @@
-package xyz.cofe.stsl.conf;
+package xyz.cofe.stst.conf;
 
 import xyz.cofe.stsl.ast.AST;
 import xyz.cofe.stsl.ast.Parser;
@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Compile {
+public class TastCompiler {
     private final Type anyType = Type.ANY();
 
     private final TObject optType;

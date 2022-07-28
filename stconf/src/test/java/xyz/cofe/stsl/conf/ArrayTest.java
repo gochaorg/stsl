@@ -1,14 +1,16 @@
 package xyz.cofe.stsl.conf;
 
 import org.junit.jupiter.api.Test;
+import xyz.cofe.stst.conf.TastCompiler;
 
 import java.util.List;
 import java.util.Map;
 
 public class ArrayTest {
+    @SuppressWarnings("unchecked")
     @Test
     public void simpleAnon(){
-        var compile = new Compile();
+        var compile = new TastCompiler();
         var tast = compile.compile("{ a: 1, b: \"abc\", c: true }");
         var value = tast.supplier().get();
         System.out.println(value);
@@ -31,7 +33,7 @@ public class ArrayTest {
 
     @Test
     public void numberArray(){
-        var compile = new Compile();
+        var compile = new TastCompiler();
         var tast = compile.compile("[ 1, 2, 3 ]");
         var value = tast.supplier().get();
         System.out.println(value);
@@ -49,7 +51,7 @@ public class ArrayTest {
     @SuppressWarnings("unchecked")
     @Test
     public void anonArray(){
-        var compile = new Compile();
+        var compile = new TastCompiler();
         var tast = compile.compile("[ {a:1}, {a:2}, {a:3} ]");
         var value = tast.supplier().get();
         System.out.println(value);
@@ -75,7 +77,7 @@ public class ArrayTest {
     @SuppressWarnings("unchecked")
     @Test
     public void anonAndNumArray(){
-        var compile = new Compile();
+        var compile = new TastCompiler();
         var tast = compile.compile("[ {a:1}, {a:2}, 1 ]");
         var value = tast.supplier().get();
         System.out.println(value);
