@@ -1,4 +1,4 @@
-package xyz.cofe.stst.conf;
+package xyz.cofe.stst.eval;
 
 import xyz.cofe.stsl.ast.AST;
 import xyz.cofe.stsl.ast.Parser;
