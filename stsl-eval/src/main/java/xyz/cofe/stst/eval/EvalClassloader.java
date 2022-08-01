@@ -28,6 +28,22 @@ public class EvalClassloader extends ClassLoader {
 
     private final Map<String,Class<?>> definedClasses = new ConcurrentHashMap<>();
 
+//    @Override
+//    public Class<?> loadClass( String className ) throws ClassNotFoundException{
+//        var defCls = definedClasses.get(className);
+//        if( defCls!=null )return defCls;
+//
+//        var bc = classes.get(className);
+//        if( bc!=null ){
+//            System.out.println("!!! defineClass "+className);
+//            var cls = defineClass(className, bc, 0, bc.length);
+//            definedClasses.put(className,cls);
+//            return cls;
+//        }
+//
+//        return super.loadClass(className);
+//    }
+
     @Override
     protected Class<?> findClass( String className ) throws ClassNotFoundException {
         var defCls = definedClasses.get(className);
