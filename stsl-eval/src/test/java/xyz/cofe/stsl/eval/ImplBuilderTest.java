@@ -14,6 +14,7 @@ import xyz.cofe.stst.eval.TastCompiler;
 import xyz.cofe.stst.eval.TastInterop;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
 
 public class ImplBuilderTest extends CommonForTest {
     @Test
@@ -141,12 +142,20 @@ public class ImplBuilderTest extends CommonForTest {
                     //////////////
                     return 135;
                 }
+
+                @Override
+                public void setVariable( String name, Object value, Type valueJvmType ){
+                    System.out.println("setVariable "+name+" = "+value+" : "+valueJvmType);
+                }
             };
-            var inst = cls.getConstructor(TastInterop.class).newInstance(interop);
+            var inst = (ScriptCompute1)cls.getConstructor(TastInterop.class).newInstance(interop);
 
             out.println("====================");
-            var sumMeth = cls.getMethod("sum");
-            var res = sumMeth.invoke(inst);
+            //var sumMeth = cls.getMethod("sum");
+            //var res = sumMeth.invoke(inst);
+            inst.a = 123;
+            inst.b = 234;
+            var res = inst.sum();
 
             out.println("sum() "+res);
             out.flush();

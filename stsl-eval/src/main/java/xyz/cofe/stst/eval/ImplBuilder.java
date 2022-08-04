@@ -21,8 +21,10 @@ import xyz.cofe.jvmbc.mth.MVar;
 import xyz.cofe.jvmbc.mth.MethodByteCode;
 import xyz.cofe.jvmbc.mth.OpCode;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +49,13 @@ public class ImplBuilder {
         return build( new BClass(clazz, new JavaClassName(className.replace('.','/'))) );
     }
 
+    private class BExportField {
+        public final Field field;
+        public BExportField( Field field ){
+            this.field = field;
+        }
+    }
+
     private class BClass {
         public final Class<?> source;
         public final JavaClassName targetName;
@@ -55,10 +64,14 @@ public class ImplBuilder {
         public final String interopFieldName;
         public final TDesc interopFieldType;
         public final JavaClassName interopFieldJavaTypeName;
+        public final List<BExportField> exportFields;
+
         public BClass( Class<?> source, JavaClassName targetName ){
             this.source = source;
             this.targetName = targetName;
             this.sourceName = new JavaClassName(source.getName().replace('.','/'));
+
+            this.exportFields = new ArrayList<>();
 
             targetTDesc = new TDesc("L"+targetName.rawName()+";");
             interopFieldName = "interop";
@@ -84,6 +97,14 @@ public class ImplBuilder {
         // add constructor
         ctor_default(cb, clz);
         ctor_interop(cb, clz);
+
+        var fields = Arrays.asList(clz.source.getFields());
+        for( var field : fields ){
+            var exp = field.getAnnotation(export.class);
+            if( exp!=null ){
+                exportField(clz, field);
+            }
+        }
 
         // add methods
         var methods = Arrays.asList(clz.source.getMethods());
@@ -184,32 +205,53 @@ public class ImplBuilder {
         cb.getMethods().add(cm);
     }
 
+    private void exportField( BClass clz, Field field ){
+        clz.exportFields.add(new BExportField(field));
+    }
+
     private static class Return {
         public final List<MethodByteCode> pushDefault;
         public final List<MethodByteCode> retyrn;
         public final List<MethodByteCode> castFromObject;
+        public final List<MethodByteCode> castToObject;
+        public final List<MethodByteCode> getClazz;
         public final TDesc typeDesc;
         public Return( TDesc typeDesc,
                        List<MethodByteCode> pushDefault,
                        List<MethodByteCode> retyrn,
-                       List<MethodByteCode> castFromObject
+                       List<MethodByteCode> castFromObject,
+                       List<MethodByteCode> castToObject,
+                       List<MethodByteCode> getClazz
         ){
             this.typeDesc = typeDesc;
             this.pushDefault = pushDefault;
             this.retyrn = retyrn;
             this.castFromObject = castFromObject;
+            this.castToObject = castToObject;
+            this.getClazz = getClazz;
         }
     }
     private static final Map<Type, Return> primitives =
         Map.of(
             int.class,
             new Return(
-                new TDesc("I"),
-                List.of(new MInsn(OpCode.ICONST_0.code)),
-                List.of(new MInsn(OpCode.IRETURN.code)),
-                List.of(
+                new TDesc("I"), // typeDesc
+                List.of(new MInsn(OpCode.ICONST_0.code)), // pushDefault
+                List.of(new MInsn(OpCode.IRETURN.code)), // retyrn
+                List.of( // castFromObject
                     new MType(OpCode.CHECKCAST.code, "java/lang/Integer"),
                     new MMethod(OpCode.INVOKEVIRTUAL.code, "java/lang/Integer", "intValue", "()I", false)
+                ),
+                List.of( // castToObject
+                    new MMethod(OpCode.INVOKESTATIC.code, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false)
+                ),
+                List.of( // getClazz
+                    new MFieldInsn(
+                        OpCode.GETSTATIC.code,
+                        "java/lang/Integer",
+                        "TYPE",
+                        "Ljava/lang/Class;"
+                    )
                 )
             )
         );
@@ -264,10 +306,56 @@ public class ImplBuilder {
         );
     }
 
+    private List<MethodByteCode> exportFields( BClass clz ){
+        var lst = new ArrayList<MethodByteCode>();
+        for( var fld: clz.exportFields ){
+            lst.addAll( exportField(clz,fld) );
+        }
+        return lst;
+    }
+
+    private List<MethodByteCode> exportField( BClass clz, BExportField field ){
+        var lst = new ArrayList<MethodByteCode>();
+        var srcCls = field.field.getDeclaringClass();
+        var fieldType = field.field.getGenericType();
+        var fieldBCOpt = defaultReturn(fieldType);
+        if( fieldBCOpt.isEmpty() )throw new UnsupportedOperationException("not implement for "+fieldType);
+
+        // this
+        lst.add(new MVar(OpCode.ALOAD.code, 0));
+        lst.add(new MFieldInsn(OpCode.GETFIELD.code, clz.targetName.rawName(), clz.interopFieldName, clz.interopFieldType.getRaw() ));
+
+        // 1 arg - name
+        lst.add(new MLdc(field.field.getName()));
+
+        // 2 arg - value
+        var fldBc = fieldBCOpt.get();
+        lst.add(new MVar(OpCode.ALOAD.code, 0));
+        lst.add(new MFieldInsn(OpCode.GETFIELD.code,
+            "some/myClass",// srcCls.getName().replace(".","/"),
+            field.field.getName(),
+            fldBc.typeDesc.getRaw()));
+        lst.addAll(fldBc.castToObject);
+
+        // 3 arg - class
+        lst.addAll(fldBc.getClazz);
+
+        // call this.setVariable( arg1, arg2, arg3 )
+        lst.add(
+            new MMethod(
+                OpCode.INVOKEINTERFACE.code,
+                clz.interopFieldJavaTypeName.rawName(),
+                "setVariable",
+                "(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/reflect/Type;)V",
+                true));
+
+        return lst;
+    }
+
     private void implField_interop( CBegin<?,? super CMethod<List<MethodByteCode>>,?> cb, Method method, eval ev, BClass clz ){
         var retTypeJVM = method.getGenericReturnType();
         var defaultOpt = defaultReturn(retTypeJVM);
-        if( defaultOpt.isEmpty() )throw new RuntimeException("not implement for "+retTypeJVM);
+        if( defaultOpt.isEmpty() )throw new UnsupportedOperationException("not implement for "+retTypeJVM);
 
         var defs = defaultOpt.get();
         var mdesc = new MDesc("()"+defs.typeDesc.getRaw() );
@@ -282,10 +370,11 @@ public class ImplBuilder {
         cm.getMethodByteCodes().add(new MCode());
         cm.getMethodByteCodes().add(new MLabel(BEGIN_LABEL));
 
+        cm.getMethodByteCodes().addAll(exportFields(clz));
+
         cm.getMethodByteCodes().addAll(callInterop_computeField(method.getName(), clz));
         cm.getMethodByteCodes().addAll(defs.castFromObject);
 
-        //cm.getMethodByteCodes().addAll(defs.pushDefault);
         cm.getMethodByteCodes().addAll(defs.retyrn);
 
         cm.getMethodByteCodes().add(new MLabel(END_LABEL));
