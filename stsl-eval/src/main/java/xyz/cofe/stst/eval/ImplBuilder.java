@@ -162,7 +162,6 @@ public class ImplBuilder {
 
         cb.getMethods().add(cm);
     }
-
     private void ctor_interop( CBegin<?,? super CMethod<List<MethodByteCode>>,?> cb, BClass clz ) {
         var cm = cf.cmethod();
         cm.setName(CTOR_METHOD_NAME);
@@ -270,51 +269,6 @@ public class ImplBuilder {
         return r!=null ? Optional.of(r) : Optional.empty();
     }
 
-    private void implField_def( CBegin<?,? super CMethod<List<MethodByteCode>>,?> cb, Method method, eval ev, BClass clz ){
-        var retTypeJVM = method.getGenericReturnType();
-        var defaultOpt = defaultReturn(retTypeJVM);
-        if( defaultOpt.isEmpty() )throw new RuntimeException("not implement for "+retTypeJVM);
-
-        var defs = defaultOpt.get();
-        var mdesc = new MDesc("()"+defs.typeDesc.getRaw() );
-
-        var cm = cf.cmethod();
-        cm.setName(method.getName());
-        cm.setAccess(1);
-        cm.desc().setRaw(mdesc.getRaw());
-        cm.setSignature(Optional.empty());
-        cm.setExceptions(null);
-
-        cm.getMethodByteCodes().add(new MCode());
-        cm.getMethodByteCodes().add(new MLabel(BEGIN_LABEL));
-
-        cm.getMethodByteCodes().addAll(defs.pushDefault);
-        cm.getMethodByteCodes().addAll(defs.retyrn);
-
-        cm.getMethodByteCodes().add(new MLabel(END_LABEL));
-        cm.getMethodByteCodes().add(new MLocalVariable(
-            "this", //name
-            clz.targetTDesc.getRaw(), //desc
-            null,  //signature
-            BEGIN_LABEL,
-            END_LABEL,
-            0
-        ));
-        cm.getMethodByteCodes().add(new MMaxs());
-        cm.getMethodByteCodes().add(new MEnd());
-
-        cb.getMethods().add(cm);
-    }
-
-    private List<MethodByteCode> callInterop_computeField( String nameArg, BClass clz ){
-        return List.of(
-            new MVar(OpCode.ALOAD.code, 0),
-            new MFieldInsn(OpCode.GETFIELD.code, clz.targetName.rawName(), clz.interopFieldName, clz.interopFieldType.getRaw() ),
-            new MLdc( nameArg ),
-            new MMethod(OpCode.INVOKEINTERFACE.code, clz.interopFieldJavaTypeName.rawName(), "computeField", "(Ljava/lang/String;)Ljava/lang/Object;", true)
-        );
-    }
-
     private List<MethodByteCode> exportFields( BClass clz ){
         var lst = new ArrayList<MethodByteCode>();
         for( var fld: clz.exportFields ){
@@ -322,7 +276,6 @@ public class ImplBuilder {
         }
         return lst;
     }
-
     private List<MethodByteCode> exportField( BClass clz, BExportField field ){
         var lst = new ArrayList<MethodByteCode>();
         var srcCls = field.field.getDeclaringClass();
@@ -361,6 +314,14 @@ public class ImplBuilder {
         return lst;
     }
 
+    private List<MethodByteCode> callInterop_computeField( String nameArg, BClass clz ){
+        return List.of(
+            new MVar(OpCode.ALOAD.code, 0),
+            new MFieldInsn(OpCode.GETFIELD.code, clz.targetName.rawName(), clz.interopFieldName, clz.interopFieldType.getRaw() ),
+            new MLdc( nameArg ),
+            new MMethod(OpCode.INVOKEINTERFACE.code, clz.interopFieldJavaTypeName.rawName(), "computeField", "(Ljava/lang/String;)Ljava/lang/Object;", true)
+        );
+    }
     private void implField_interop( CBegin<?,? super CMethod<List<MethodByteCode>>,?> cb, Method method, eval ev, BClass clz ){
         var retTypeJVM = method.getGenericReturnType();
         var defaultOpt = defaultReturn(retTypeJVM);

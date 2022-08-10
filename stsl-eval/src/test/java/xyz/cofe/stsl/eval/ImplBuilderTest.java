@@ -128,14 +128,14 @@ public class ImplBuilderTest extends CommonForTest {
 
         @Override
         public void endSucc( AST ast, TAST result ){
+            out.println( "tast< ast="+ast+" result.type="+result.supplierType()+" result.type.class="+result.supplierType().getClass() );
             restoreLevel();
-            out.println( "tast< ast="+ast+" result="+result );
         }
 
         @Override
         public void endFail( AST ast, ToasterError err ){
-            restoreLevel();
             out.println( "tast< ast="+ast+" error="+err );
+            restoreLevel();
         }
 
         private void restoreLevel(){
@@ -148,9 +148,11 @@ public class ImplBuilderTest extends CommonForTest {
 
     @Test
     public void interop_eval(){
+        var intStslType = xyz.cofe.stsl.tast.JvmType.INT();
+
         var predefVal = Map.of(
             int.class,
-            xyz.cofe.stsl.types.JvmType.INT()
+            intStslType
         );
 
         var scriptClass = ScriptCompute1.class;
@@ -233,13 +235,17 @@ public class ImplBuilderTest extends CommonForTest {
             var inst = (ScriptCompute1)cls.getConstructor(TastInterop.class).newInstance(interop);
 
             out.println("====================");
-            //var sumMeth = cls.getMethod("sum");
-            //var res = sumMeth.invoke(inst);
+
             inst.a = 123;
             inst.b = 234;
             var res = inst.sum();
 
-            out.println("sum() "+res);
+            out.println("sum() for a=123 b=234 is "+res);
+
+            inst.a = 12;
+            inst.b = 23;
+            out.println("sum() for a=12 b=23 is "+inst.sum());
+
             out.flush();
         } catch( ClassNotFoundException | IllegalAccessException | NoSuchMethodException | InstantiationException | InvocationTargetException e ){
             e.printStackTrace();
