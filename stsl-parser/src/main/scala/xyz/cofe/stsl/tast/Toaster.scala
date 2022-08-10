@@ -17,12 +17,14 @@ case class Toaster(
   typeScope: TypeScope,
   varScope: VarScope=new VarScope(),
   pojoCompiler: PojoCompiler=PojoCompiler.TAnonPojo(),
-  arrayCompiler: ArrayCompiler=ArrayCompiler.NoImpl()
+  arrayCompiler: ArrayCompiler=ArrayCompiler.NoImpl(),
+  tracer: ToasterTracer=ToasterTracer.dummy
 ) {
   def withTypeScope(ts:TypeScope):Toaster = copy(typeScope=ts)
   def withVarScope(vs:VarScope):Toaster = copy(varScope=vs)
   def withPojoCompile(pc:PojoCompiler):Toaster = copy(pojoCompiler=pc)
   def withArrayCompile(ac:ArrayCompiler):Toaster = copy(arrayCompiler=ac)
+  def withTracer(tr:ToasterTracer):Toaster = copy(tracer = tr)
   
   require(typeScope!=null)
   require(varScope!=null)
@@ -30,20 +32,29 @@ case class Toaster(
 
   def compile( ast:AST ):TAST = {
     require(ast!=null)
-    ast match {
-      case a:StackedArgumentAST => compile(a)
-      case a:LiteralAST => compile(a)
-      case a:IdentifierAST => compile(a)
-      case a:BinaryAST => compile(a)
-      case a:DelegateAST => compile(a)
-      case a:TernaryAST => compile(a)
-      case a:PropertyAST => compile(a)
-      case a:CallAST => compile(a)
-      case a:LambdaAST => compile(a)
-      case a:PojoAST => compile(a)
-      case a:ArrayAST => compile(a)
-      case _ => //noinspection NotImplementedCode
-        ???
+    try {
+      tracer.begin(ast)
+      val result = ast match {
+        case a: StackedArgumentAST => compile(a)
+        case a: LiteralAST => compile(a)
+        case a: IdentifierAST => compile(a)
+        case a: BinaryAST => compile(a)
+        case a: DelegateAST => compile(a)
+        case a: TernaryAST => compile(a)
+        case a: PropertyAST => compile(a)
+        case a: CallAST => compile(a)
+        case a: LambdaAST => compile(a)
+        case a: PojoAST => compile(a)
+        case a: ArrayAST => compile(a)
+        case _ => //noinspection NotImplementedCode
+          ???
+      }
+      tracer.endSucc(ast, result)
+      result
+    } catch {
+      case toasterErr: ToasterError =>
+        tracer.endFail(ast, toasterErr)
+        throw toasterErr
     }
   }
 

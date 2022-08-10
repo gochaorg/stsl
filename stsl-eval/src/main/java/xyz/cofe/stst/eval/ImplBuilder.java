@@ -20,6 +20,7 @@ import xyz.cofe.jvmbc.mth.MType;
 import xyz.cofe.jvmbc.mth.MVar;
 import xyz.cofe.jvmbc.mth.MethodByteCode;
 import xyz.cofe.jvmbc.mth.OpCode;
+import xyz.cofe.stsl.tast.JvmType$;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -209,20 +210,27 @@ public class ImplBuilder {
         clz.exportFields.add(new BExportField(field));
     }
 
+    protected Optional<xyz.cofe.stsl.types.Type> stslTypeOf( Type type ){
+        return defaultReturn(type).map( ret -> ret.stslType );
+    }
+
     private static class Return {
+        public final xyz.cofe.stsl.types.Type stslType;
         public final List<MethodByteCode> pushDefault;
         public final List<MethodByteCode> retyrn;
         public final List<MethodByteCode> castFromObject;
         public final List<MethodByteCode> castToObject;
         public final List<MethodByteCode> getClazz;
         public final TDesc typeDesc;
-        public Return( TDesc typeDesc,
+        public Return( xyz.cofe.stsl.types.Type stslType,
+                       TDesc typeDesc,
                        List<MethodByteCode> pushDefault,
                        List<MethodByteCode> retyrn,
                        List<MethodByteCode> castFromObject,
                        List<MethodByteCode> castToObject,
                        List<MethodByteCode> getClazz
         ){
+            this.stslType = stslType;
             this.typeDesc = typeDesc;
             this.pushDefault = pushDefault;
             this.retyrn = retyrn;
@@ -235,6 +243,7 @@ public class ImplBuilder {
         Map.of(
             int.class,
             new Return(
+                JvmType$.MODULE$.INT(),
                 new TDesc("I"), // typeDesc
                 List.of(new MInsn(OpCode.ICONST_0.code)), // pushDefault
                 List.of(new MInsn(OpCode.IRETURN.code)), // retyrn

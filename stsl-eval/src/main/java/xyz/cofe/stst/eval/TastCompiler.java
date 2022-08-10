@@ -15,6 +15,7 @@ import xyz.cofe.stsl.tast.JvmType;
 import xyz.cofe.stsl.tast.PojoCompiler;
 import xyz.cofe.stsl.tast.TAST;
 import xyz.cofe.stsl.tast.Toaster;
+import xyz.cofe.stsl.tast.ToasterTracer;
 import xyz.cofe.stsl.tast.TypeScope;
 import xyz.cofe.stsl.tast.VarScope;
 import xyz.cofe.stsl.tast.isect.OptBaker;
@@ -139,6 +140,12 @@ public class TastCompiler {
             ts.imports(optType);
             _ts = ts;
             return _ts;
+        }
+    }
+    public void withToasterTracer( ToasterTracer tracer ){
+        if( tracer==null )throw new IllegalArgumentException( "tracer==null" );
+        synchronized( this ){
+            _toaster = toaster().withTracer(tracer);
         }
     }
     //endregion

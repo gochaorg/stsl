@@ -9,7 +9,17 @@ import xyz.cofe.stsl.ast.AST
  * @param locations расположение в коде
  */
 class ToasterError( message:String, cause:Throwable, val locations:List[AST]=List() ) extends Error(message,cause) {
-
+  override def toString: String = {
+    val sb = new StringBuilder()
+    sb ++= message
+    if( locations.nonEmpty ){
+      locations.foreach( loc => {
+        sb ++= "\n"
+        sb ++= s"at ${loc.begin()} to ${loc.end()}"
+      })
+    }
+    sb.toString()
+  }
 }
 
 object ToasterError {

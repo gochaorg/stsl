@@ -476,4 +476,52 @@ class ToasterTest {
     assert(computedMap.containsKey("k1"))
     assert(computedMap.containsKey(AnonymousObject.TypeDefinition))
   }
+  
+  @Test
+  def objDef_extern_var():Unit = {
+    println("objDef_extern_var")
+    println("="*30)
+    
+    val ts = new TypeScope()
+    ts.implicits = JvmType.implicitConversion
+    
+    val vs = new VarScope()
+    vs.put("a", JvmType.INT, 1)
+    vs.put("b", JvmType.INT, 2)
+    
+    val ast = Parser.parse(
+      """
+        |{
+        | sum: a+b
+        |}
+        |""".stripMargin)
+    println("AST")
+    ast.foreach( ASTDump.dump )
+    assert( ast.isDefined )
+    
+    val tst = new Toaster(ts,vs)
+    ts.implicits = JvmType.implicitConversion
+    ts.imports(JvmType.types)
+    
+    val tast = tst.compile(ast.get)
+    assert(tast!=null)
+    println("TAST")
+    TASTDump.dump(tast)
+    
+    println("-"*30)
+    println("supplierType:")
+    println(TypeDescriber.describe(tast.supplierType))
+    println("supplier.get():")
+    
+    val computedValue = tast.supplier.get()
+    println(computedValue)
+    println(computedValue.getClass)
+    
+    val computedMap = computedValue.asInstanceOf[java.util.Map[_,_]]
+    computedMap.forEach( (k,v) => {
+      print(s"  key(${k} : ${k.getClass})")
+      println(s" = value(${v} : ${v.getClass})")
+    })
+  }
+  
 }
