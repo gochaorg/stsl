@@ -7,6 +7,7 @@ import xyz.cofe.stsl.conf.CommonForTest;
 import xyz.cofe.stsl.eval.sample.ScriptCompute1;
 import xyz.cofe.stsl.eval.sample.ScriptComputeImpl0;
 import xyz.cofe.stsl.eval.sample.ScriptComputeImpl1;
+import xyz.cofe.stsl.eval.sample.ScriptCompute_str_impl;
 import xyz.cofe.stsl.tast.TAST;
 import xyz.cofe.stsl.tast.ToasterError;
 import xyz.cofe.stsl.tast.ToasterTracer;
@@ -42,6 +43,13 @@ public class ImplBuilderTest extends CommonForTest {
     @Test
     public void dump_impl_1(){
         var cbegin = CBegin.parseByteCode(ScriptComputeImpl1.class);
+        dump(cbegin);
+    }
+
+
+    @Test
+    public void dump_impl_str(){
+        var cbegin = CBegin.parseByteCode(ScriptCompute_str_impl.class);
         dump(cbegin);
     }
 

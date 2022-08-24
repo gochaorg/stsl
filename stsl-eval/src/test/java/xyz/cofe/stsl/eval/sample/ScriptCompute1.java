@@ -6,6 +6,5 @@ import xyz.cofe.stst.eval.export;
 public abstract class ScriptCompute1 {
     @export public int a;
     @export public int b;
-
     @eval public abstract int sum();
 }

@@ -7,8 +7,6 @@ public class ScriptComputeImpl1 extends ScriptCompute1 {
         this.interop = interop;
     }
 
-    public int a;
-
     private TastInterop interop;
 
     @Override

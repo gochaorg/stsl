@@ -20,6 +20,7 @@ import xyz.cofe.jvmbc.mth.MType;
 import xyz.cofe.jvmbc.mth.MVar;
 import xyz.cofe.jvmbc.mth.MethodByteCode;
 import xyz.cofe.jvmbc.mth.OpCode;
+import xyz.cofe.jvmbc.mth.bm.TypeArg;
 import xyz.cofe.stsl.tast.JvmType$;
 
 import java.lang.reflect.Field;
@@ -27,6 +28,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -238,11 +240,13 @@ public class ImplBuilder {
             this.getClazz = getClazz;
         }
     }
-    private static final Map<Type, Return> primitives =
-        Map.of(
-            int.class,
+    private static final Map<Type, Return> primitives;
+    static {
+        var m = new HashMap<Type,Return>();
+
+        m.put(int.class,
             new Return(
-                JvmType$.MODULE$.INT(),
+                xyz.cofe.stsl.tast.JvmType.INT(), //JvmType$.MODULE$.INT(),
                 new TDesc("I"), // typeDesc
                 List.of(new MInsn(OpCode.ICONST_0.code)), // pushDefault
                 List.of(new MInsn(OpCode.IRETURN.code)), // retyrn
@@ -263,6 +267,33 @@ public class ImplBuilder {
                 )
             )
         );
+
+        var tStr1 = org.objectweb.asm.Type.getType("Ljava/lang/String;");
+
+        m.put(String.class,
+            new Return(
+                xyz.cofe.stsl.tast.JvmType.STRING(),//JvmType$.MODULE$.STRING(),
+                new TDesc("Ljava/lang/String;"), // typeDesc
+                List.of(new MInsn(OpCode.ACONST_NULL.code)), // pushDefault
+                List.of(new MInsn(OpCode.ARETURN.code)), // retyrn
+                List.of( // castFromObject
+                    //new MType(OpCode.CHECKCAST.code, "java/lang/Integer"),
+                    //new MMethod(OpCode.INVOKEVIRTUAL.code, "java/lang/Integer", "intValue", "()I", false)
+                    new MType(OpCode.CHECKCAST.code, "java/lang/String") // todo make typed in jvmbc
+                ),
+                List.of( // castToObject
+                    //new MMethod(OpCode.INVOKESTATIC.code, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false)
+                ),
+                List.of( // getClazz
+                    new MLdc( // todo make typed in jvmbc
+                        tStr1
+                    )
+                )
+            )
+        );
+
+        primitives = m;
+    }
 
     private Optional<Return> defaultReturn( Type returnType ){
         var r = primitives.get(returnType);
@@ -294,7 +325,7 @@ public class ImplBuilder {
         var fldBc = fieldBCOpt.get();
         lst.add(new MVar(OpCode.ALOAD.code, 0));
         lst.add(new MFieldInsn(OpCode.GETFIELD.code,
-            "some/myClass",// srcCls.getName().replace(".","/"),
+            clz.targetName.rawName(),
             field.field.getName(),
             fldBc.typeDesc.getRaw()));
         lst.addAll(fldBc.castToObject);
