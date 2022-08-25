@@ -1,4 +1,4 @@
-package xyz.cofe.stst.eval.swing;
+package xyz.cofe.stsl.eval.swing;
 
 import javax.swing.Timer;
 import java.awt.Window;

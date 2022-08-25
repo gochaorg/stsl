@@ -1,4 +1,4 @@
-package xyz.cofe.stst.eval.swing;
+package xyz.cofe.stsl.eval.swing;
 
 import xyz.cofe.stsl.ast.AST;
 import xyz.cofe.stsl.ast.BinaryAST;

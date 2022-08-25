@@ -32,7 +32,7 @@ public class ExportField {
         }
     }
 
-    public static List<ExportField> exportFields(
+    public static List<ExportField> of(
         Class<?> clz,
         Function<Type, Optional<xyz.cofe.stsl.types.Type>> resolveType,
         Function<DefaultValueForField,Object> defaultValue

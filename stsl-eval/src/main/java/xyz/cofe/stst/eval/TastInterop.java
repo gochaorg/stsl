@@ -2,6 +2,9 @@ package xyz.cofe.stst.eval;
 
 import java.lang.reflect.Type;
 
+/**
+ * Взаимодействие с TAST в RunTime
+ */
 public interface TastInterop {
     default void setVariable( String name, Object value, Type valueJvmType ){
         return;

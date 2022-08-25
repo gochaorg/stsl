@@ -1,8 +1,9 @@
-package xyz.cofe.stsl.conf;
+package xyz.cofe.stsl.eval;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import xyz.cofe.jvmbc.ByteCode;
+import xyz.cofe.stsl.types.TypeDescriber;
 import xyz.cofe.text.EndLineReWriter;
 
 import java.io.OutputStreamWriter;
@@ -79,5 +80,9 @@ public class CommonForTest {
             if( ts.level>0 )out.print(indent.defaultIndent.repeat(ts.level));
             out.println(ts.node);
         }
+    }
+
+    public void describe( xyz.cofe.stsl.types.Type type ){
+        out.println(TypeDescriber.describe(type));
     }
 }

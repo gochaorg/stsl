@@ -3,7 +3,6 @@ package xyz.cofe.stsl.eval;
 import org.junit.jupiter.api.Test;
 import xyz.cofe.jvmbc.cls.CBegin;
 import xyz.cofe.stsl.ast.AST;
-import xyz.cofe.stsl.conf.CommonForTest;
 import xyz.cofe.stsl.eval.sample.ScriptCompute1;
 import xyz.cofe.stsl.eval.sample.ScriptComputeImpl0;
 import xyz.cofe.stsl.eval.sample.ScriptComputeImpl1;
@@ -164,7 +163,7 @@ public class ImplBuilderTest extends CommonForTest {
         );
 
         var scriptClass = ScriptCompute1.class;
-        var exportFields = ExportField.exportFields(scriptClass,
+        var exportFields = ExportField.of(scriptClass,
             jvmType -> {
                 var stslType = predefVal.get(jvmType);
                 return stslType!=null ? Optional.of(stslType) : Optional.empty();

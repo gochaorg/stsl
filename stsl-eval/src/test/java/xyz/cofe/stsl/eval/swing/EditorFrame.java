@@ -1,11 +1,11 @@
-package xyz.cofe.stst.eval.swing;
+package xyz.cofe.stsl.eval.swing;
 
 import javax.swing.JFrame;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 
-import static xyz.cofe.stst.eval.swing.SwingEvents.*;
+import static xyz.cofe.stsl.eval.swing.SwingEvents.*;
 
 public class EditorFrame extends JFrame {
     public final EditorPanel editorPanel;
