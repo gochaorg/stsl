@@ -1,7 +1,7 @@
 package xyz.cofe.stsl.conf;
 
 import org.junit.jupiter.api.Test;
-import xyz.cofe.stst.eval.TastCompiler;
+import xyz.cofe.stsl.eval.TastCompiler;
 
 import java.util.List;
 import java.util.Map;

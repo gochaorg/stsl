@@ -12,11 +12,6 @@ import xyz.cofe.stsl.tast.ToasterError;
 import xyz.cofe.stsl.tast.ToasterTracer;
 import xyz.cofe.stsl.types.Obj;
 import xyz.cofe.stsl.types.WriteableField;
-import xyz.cofe.stst.eval.EvalClassloader;
-import xyz.cofe.stst.eval.ExportField;
-import xyz.cofe.stst.eval.ImplBuilder;
-import xyz.cofe.stst.eval.TastCompiler;
-import xyz.cofe.stst.eval.TastInterop;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;

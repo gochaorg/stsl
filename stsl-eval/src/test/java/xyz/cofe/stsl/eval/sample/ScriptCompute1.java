@@ -1,7 +1,7 @@
 package xyz.cofe.stsl.eval.sample;
 
-import xyz.cofe.stst.eval.eval;
-import xyz.cofe.stst.eval.export;
+import xyz.cofe.stsl.eval.eval;
+import xyz.cofe.stsl.eval.export;
 
 public abstract class ScriptCompute1 {
     @export public int a;

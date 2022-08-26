@@ -1,4 +1,4 @@
-package xyz.cofe.stst.eval;
+package xyz.cofe.stsl.eval;
 
 import xyz.cofe.jvmbc.cls.CBegin;
 import xyz.cofe.stsl.tast.TAST;

@@ -1,4 +1,4 @@
-package xyz.cofe.stsl.conf;
+package xyz.cofe.stsl.conf.sample;
 
 public interface SampleCompaund1 {
     SampleConfig1 first();

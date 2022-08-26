@@ -1,6 +1,6 @@
 package xyz.cofe.stsl.conf;
 
-import xyz.cofe.stst.eval.TastCompiler;
+import xyz.cofe.stsl.eval.TastCompiler;
 
 import java.lang.reflect.Proxy;
 

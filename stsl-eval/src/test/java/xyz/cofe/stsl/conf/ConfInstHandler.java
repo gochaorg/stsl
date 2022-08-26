@@ -24,7 +24,6 @@ class ConfInstHandler implements InvocationHandler {
     private Object computed;
 
     public void setTAST( TAST tast ){
-        //this.tast = tast;
         if( tast!=null ){
             tastType = tast.supplierType();
             computed = tast.supplier().get();
@@ -38,6 +37,7 @@ class ConfInstHandler implements InvocationHandler {
     public Object invoke( Object proxy, Method method, Object[] args ) throws Throwable {
         if( method == null ) throw new IllegalArgumentException("method==null");
         if( method.getDeclaringClass().equals(Object.class) ){
+            // Базовые методы
             switch( method.getName() ){
                 case "wait":
                     if( args == null ){
@@ -77,7 +77,9 @@ class ConfInstHandler implements InvocationHandler {
                     throw new RuntimeException("can't invoke " + method);
             }
         }
+
         if( method.getDeclaringClass().equals(confClass) ){
+            // вызов скрипта
             return read(method, args);
         }
 
@@ -115,6 +117,7 @@ class ConfInstHandler implements InvocationHandler {
         });
     }
 
+    // если тип результата метода - интерфейс, создаем прокси
     private Optional<Object> proxy( Object value, Method method, WriteableField field ){
         var retClass = method.getReturnType();
         if( retClass.isInterface() ){

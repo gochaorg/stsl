@@ -1,4 +1,4 @@
-package xyz.cofe.stst.eval;
+package xyz.cofe.stsl.eval;
 
 import xyz.cofe.jvmbc.JavaClassName;
 import xyz.cofe.jvmbc.MDesc;
@@ -20,8 +20,6 @@ import xyz.cofe.jvmbc.mth.MType;
 import xyz.cofe.jvmbc.mth.MVar;
 import xyz.cofe.jvmbc.mth.MethodByteCode;
 import xyz.cofe.jvmbc.mth.OpCode;
-import xyz.cofe.jvmbc.mth.bm.TypeArg;
-import xyz.cofe.stsl.tast.JvmType$;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

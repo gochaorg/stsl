@@ -1,4 +1,4 @@
-package xyz.cofe.stst.eval;
+package xyz.cofe.stsl.eval;
 
 import java.lang.reflect.Type;
 

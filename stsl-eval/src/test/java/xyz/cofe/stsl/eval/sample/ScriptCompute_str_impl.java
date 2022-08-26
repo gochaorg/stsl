@@ -1,8 +1,6 @@
 package xyz.cofe.stsl.eval.sample;
 
-import xyz.cofe.stst.eval.TastInterop;
-import xyz.cofe.stst.eval.eval;
-import xyz.cofe.stst.eval.export;
+import xyz.cofe.stsl.eval.TastInterop;
 
 public class ScriptCompute_str_impl extends ScriptCompute_str {
     private TastInterop interop;

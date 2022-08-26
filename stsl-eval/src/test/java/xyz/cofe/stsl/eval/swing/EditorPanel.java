@@ -4,15 +4,13 @@ import xyz.cofe.stsl.ast.AST;
 import xyz.cofe.stsl.ast.BinaryAST;
 import xyz.cofe.stsl.ast.DelegateAST;
 import xyz.cofe.stsl.ast.LiteralAST;
-import xyz.cofe.stst.eval.TastCompiler;
+import xyz.cofe.stsl.eval.TastCompiler;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.BorderLayout;
@@ -20,8 +18,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Consumer;
 
 public class EditorPanel extends JPanel {
