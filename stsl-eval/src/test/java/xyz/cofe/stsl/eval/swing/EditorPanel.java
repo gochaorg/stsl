@@ -4,7 +4,7 @@ import xyz.cofe.stsl.ast.AST;
 import xyz.cofe.stsl.ast.BinaryAST;
 import xyz.cofe.stsl.ast.DelegateAST;
 import xyz.cofe.stsl.ast.LiteralAST;
-import xyz.cofe.stsl.eval.TastCompiler;
+import xyz.cofe.stsl.conf.TastCompiler;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;

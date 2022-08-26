@@ -10,13 +10,23 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 class ConfigInstanceHandler implements InvocationHandler {
     public final Class<?> confClass;
+    private final Predicate<Method> proxyResult;
 
     public ConfigInstanceHandler( Class<?> conf ){
         if( conf == null ) throw new IllegalArgumentException("conf==null");
         this.confClass = conf;
+        this.proxyResult = method -> method.getReturnType().isInterface();
+    }
+
+    public ConfigInstanceHandler( Class<?> conf, Predicate<Method> proxyResult ){
+        if( conf == null ) throw new IllegalArgumentException("conf==null");
+        if( proxyResult == null )throw new IllegalArgumentException( "proxyResult == null" );
+        this.confClass = conf;
+        this.proxyResult = proxyResult; 
     }
 
     private Type tastType;
@@ -118,12 +128,12 @@ class ConfigInstanceHandler implements InvocationHandler {
 
     // если тип результата метода - интерфейс, создаем прокси
     private Optional<Object> proxy( Object value, Method method, WriteableField field ){
-        var retClass = method.getReturnType();
-        if( retClass.isInterface() ){
-            var handler = new ConfigInstanceHandler(retClass);
+        if( proxyResult.test(method) ){
+            var proxyClass = method.getReturnType();
+            var handler = new ConfigInstanceHandler(proxyClass, proxyResult);
             handler.tastType = field.tip();
             handler.computed = value;
-            var proxy = Proxy.newProxyInstance( confClass.getClassLoader(), new Class[]{retClass}, handler );
+            var proxy = Proxy.newProxyInstance( confClass.getClassLoader(), new Class[]{proxyClass}, handler );
             return Optional.of(proxy);
         }
         return Optional.empty();

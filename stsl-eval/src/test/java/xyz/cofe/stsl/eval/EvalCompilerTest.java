@@ -1,6 +1,7 @@
 package xyz.cofe.stsl.eval;
 
 import org.junit.jupiter.api.Test;
+import xyz.cofe.stsl.conf.TastCompiler;
 
 public class EvalCompilerTest extends CommonForTest {
     public static abstract class Sample_int {

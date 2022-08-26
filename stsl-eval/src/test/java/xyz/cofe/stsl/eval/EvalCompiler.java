@@ -1,6 +1,7 @@
 package xyz.cofe.stsl.eval;
 
 import xyz.cofe.jvmbc.cls.CBegin;
+import xyz.cofe.stsl.conf.TastCompiler;
 import xyz.cofe.stsl.tast.TAST;
 import xyz.cofe.stsl.tast.VarScope;
 import xyz.cofe.stsl.types.Obj;

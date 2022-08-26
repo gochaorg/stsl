@@ -1,7 +1,5 @@
 package xyz.cofe.stsl.conf;
 
-import xyz.cofe.stsl.eval.TastCompiler;
-
 import java.lang.reflect.Proxy;
 
 public class ConfigInstance<T> extends TastCompiler {

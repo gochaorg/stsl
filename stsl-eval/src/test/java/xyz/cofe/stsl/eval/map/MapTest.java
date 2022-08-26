@@ -2,7 +2,7 @@ package xyz.cofe.stsl.eval.map;
 
 import org.junit.jupiter.api.Test;
 import xyz.cofe.stsl.eval.CommonForTest;
-import xyz.cofe.stsl.eval.TastCompiler;
+import xyz.cofe.stsl.conf.TastCompiler;
 
 public class MapTest extends CommonForTest {
     @Test
