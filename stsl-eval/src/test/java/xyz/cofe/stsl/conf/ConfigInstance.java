@@ -2,15 +2,12 @@ package xyz.cofe.stsl.conf;
 
 import xyz.cofe.stsl.tast.TAST;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.function.Predicate;
 
 public class ConfigInstance<T> extends TastCompiler {
     private final T proxy;
     private final Class<T> confItf;
     private final ConfigInstanceHandler handler;
-    private static final Predicate<Method> proxyResult = method -> method.getReturnType().isInterface();
 
     protected ConfigInstance( T proxy, Class<T> itf, ConfigInstanceHandler handler ){
         this.proxy = proxy;
@@ -22,7 +19,7 @@ public class ConfigInstance<T> extends TastCompiler {
         if( configType == null ) throw new IllegalArgumentException("configType==null");
         if( !configType.isInterface() ) throw new IllegalArgumentException("!configType.isInterface()");
 
-        var h = new ConfigInstanceHandler(configType, proxyResult);
+        var h = new ConfigInstanceHandler(configType);
 
         //noinspection unchecked
         T inst = (T) Proxy.newProxyInstance(

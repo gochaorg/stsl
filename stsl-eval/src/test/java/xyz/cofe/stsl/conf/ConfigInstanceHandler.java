@@ -10,40 +10,30 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 class ConfigInstanceHandler implements InvocationHandler {
     public final Class<?> confClass;
-    private final Predicate<Method> proxyResult;
 
     public ConfigInstanceHandler( Class<?> conf ){
         if( conf == null ) throw new IllegalArgumentException("conf==null");
         this.confClass = conf;
-        this.proxyResult = method -> method.getReturnType().isInterface();
-    }
-
-    public ConfigInstanceHandler( Class<?> conf, Predicate<Method> proxyResult ){
-        if( conf == null ) throw new IllegalArgumentException("conf==null");
-        if( proxyResult == null )throw new IllegalArgumentException( "proxyResult == null" );
-        this.confClass = conf;
-        this.proxyResult = proxyResult; 
     }
 
     private Type tastType;
     private Object computed;
 
     public void setTAST( TAST tast ){
-        if( tast!=null ){
+        if( tast != null ){
             tastType = tast.supplierType();
             computed = tast.supplier().get();
-        }else{
+        } else {
             tastType = null;
             computed = null;
         }
     }
 
     @Override
-    public Object invoke( Object proxy, Method method, Object[] args ) throws Throwable {
+    public Object invoke( Object proxy, Method method, Object[] args ) throws Throwable{
         if( method == null ) throw new IllegalArgumentException("method==null");
         if( method.getDeclaringClass().equals(Object.class) ){
             // Базовые методы
@@ -95,57 +85,62 @@ class ConfigInstanceHandler implements InvocationHandler {
         throw new RuntimeException("can't invoke " + method);
     }
 
-    private Object read( Method method, Object[] args ) throws Throwable {
-        if( tastType==null )throw new IllegalStateException("tastType (tast) not set");
-        if( computed==null )throw new IllegalStateException("computed not set");
-        if( args==null || args.length==0 ){
+    private Object read( Method method, Object[] args ) throws Throwable{
+        if( tastType == null ) throw new IllegalStateException("tastType (tast) not set");
+        if( computed == null ) throw new IllegalStateException("computed not set");
+        if( args == null || args.length == 0 ){
             // read field
             if( tastType instanceof Obj ){
-                var tobj = (Obj)tastType;
+                var tobj = (Obj) tastType;
                 return readField(method, computed, tobj, method.getName());
             }
         }
         return null;
     }
 
-    private Optional<Field> findField( Obj objType, String name ) {
-        var oFld = objType.publicFields().find( fld -> name.equals(fld.name()) );
+    private Optional<Field> findField( Obj objType, String name ){
+        var oFld = objType.publicFields().find(fld -> name.equals(fld.name()));
         if( oFld.isDefined() ){
             return Optional.of(oFld.get());
-        }else{
+        } else {
             return Optional.empty();
         }
     }
+
     private Optional<WriteableField> findWriteableField( Obj objType, String name ){
-        return findField(objType, name).flatMap( fld -> {
+        return findField(objType, name).flatMap(fld -> {
             if( fld instanceof WriteableField ){
-                return Optional.of( (WriteableField)fld );
-            }else {
+                return Optional.of((WriteableField) fld);
+            } else {
                 return Optional.empty();
             }
         });
     }
 
     // если тип результата метода - интерфейс, создаем прокси
-    private Optional<Object> proxy( Object value, Method method, WriteableField field ){
-        if( proxyResult.test(method) ){
+    private Optional<Object> proxyAnonObject( Object value, Method method, WriteableField field ){
+        if( method.getReturnType().isInterface() ){
             var proxyClass = method.getReturnType();
-            var handler = new ConfigInstanceHandler(proxyClass, proxyResult);
+            var handler = new ConfigInstanceHandler(proxyClass);
             handler.tastType = field.tip();
             handler.computed = value;
-            var proxy = Proxy.newProxyInstance( confClass.getClassLoader(), new Class[]{proxyClass}, handler );
+            var proxy = Proxy.newProxyInstance(confClass.getClassLoader(), new Class[]{proxyClass}, handler);
             return Optional.of(proxy);
         }
         return Optional.empty();
     }
 
-    private Object fieldValueMapper( Object value, Method method, WriteableField field ){
-        return proxy(value,method,field).orElse(value);
+    private Optional<Object> proxyListOfAnonObject( Object value, Method method, WriteableField field ){
+        return Optional.empty();
     }
 
-    private Object readField( Method method, Object obj ,Obj objType, String name ) throws Throwable {
+    private Object fieldValueMapper( Object value, Method method, WriteableField field ){
+        return proxyListOfAnonObject(value, method, field).or(() -> proxyAnonObject(value, method, field)).orElse(value);
+    }
+
+    private Object readField( Method method, Object obj, Obj objType, String name ) throws Throwable{
         return findWriteableField(objType, name)
-            .map( fld -> fieldValueMapper(fld.reading().apply(obj), method, fld) )
+            .map(fld -> fieldValueMapper(fld.reading().apply(obj), method, fld))
             .orElseThrow();
     }
 }

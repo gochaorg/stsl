@@ -32,12 +32,12 @@ public class ConfigInstanceTest extends CommonForTest {
         System.out.println(conf.name());
         System.out.println(conf.value());
 
-        assert( conf.name().equals("hello world") );
-        assert( conf.value() == 1 );
+        assert (conf.name().equals("hello world"));
+        assert (conf.value() == 1);
     }
 
     @Test
-    public void compaund01() {
+    public void compaund01(){
         var script = "{\n" +
             " first : {\n" +
             "  name: \"hello\", value: 1\n" +
@@ -53,35 +53,35 @@ public class ConfigInstanceTest extends CommonForTest {
         var confInst = ConfigInstance.create(SampleCompaund1.class);
         var conf = confInst.read(script);
 
-        List.of( conf.first(), conf.second() ).forEach( c -> {
-            System.out.println("name="+c.name()+" value="+c.value());
+        List.of(conf.first(), conf.second()).forEach(c -> {
+            System.out.println("name=" + c.name() + " value=" + c.value());
         });
     }
 
     @Test
     public void externalVars01(){
         var confInst = ConfigInstance.create(SampleConfig1.class);
-        confInst.varScope().put("a", xyz.cofe.stsl.tast.JvmType.INT(), 10 );
-        confInst.varScope().put("b", xyz.cofe.stsl.tast.JvmType.INT(), 25 );
-        confInst.varScope().put("c", xyz.cofe.stsl.tast.JvmType.STRING(), "Hello " );
-        confInst.varScope().put("d", xyz.cofe.stsl.tast.JvmType.STRING(), "World!" );
+        confInst.varScope().put("a", xyz.cofe.stsl.tast.JvmType.INT(), 10);
+        confInst.varScope().put("b", xyz.cofe.stsl.tast.JvmType.INT(), 25);
+        confInst.varScope().put("c", xyz.cofe.stsl.tast.JvmType.STRING(), "Hello ");
+        confInst.varScope().put("d", xyz.cofe.stsl.tast.JvmType.STRING(), "World!");
 
         var script =
             "{\n" +
-            "  name: c+d,\n" +
-            "  value: a+b\n" +
-            "}";
+                "  name: c+d,\n" +
+                "  value: a+b\n" +
+                "}";
 
         out.println("script:");
-        indent(()->{
+        indent(() -> {
             out.println(script);
         });
 
         var conf = confInst.read(script);
         out.println("inst:");
-        indent(()->{
-            out.println("name = "+conf.name());
-            out.println("value = "+conf.value());
+        indent(() -> {
+            out.println("name = " + conf.name());
+            out.println("value = " + conf.value());
         });
         out.flush();
     }
@@ -94,41 +94,76 @@ public class ConfigInstanceTest extends CommonForTest {
             var listMethRet = listMeth.getGenericReturnType();
             System.out.println(listMethRet);
 
-            var listMethRetPType = (ParameterizedType)listMethRet;
+            var listMethRetPType = (ParameterizedType) listMethRet;
             assert listMethRetPType.getRawType() == List.class;
             assert listMethRetPType.getActualTypeArguments().length == 1;
             assert listMethRetPType.getActualTypeArguments()[0] == SampleConfig1.class;
 
             var collMeth = cls.getMethod("coll");
-            var collMethRetPType = (ParameterizedType)collMeth.getGenericReturnType();
+            var collMethRetPType = (ParameterizedType) collMeth.getGenericReturnType();
             assert collMethRetPType.getRawType() == Collection.class;
             assert collMethRetPType.getActualTypeArguments().length == 1;
             assert collMethRetPType.getActualTypeArguments()[0] == SampleConfig1.class;
 
             var iterMeth = cls.getMethod("iter");
-            var iterMethRetPType = (ParameterizedType)iterMeth.getGenericReturnType();
+            var iterMethRetPType = (ParameterizedType) iterMeth.getGenericReturnType();
             assert iterMethRetPType.getRawType() == Iterable.class;
             assert iterMethRetPType.getActualTypeArguments().length == 1;
             assert iterMethRetPType.getActualTypeArguments()[0] == SampleConfig1.class;
 
             var optMeth = cls.getMethod("opt");
-            var optMethRetPType = (ParameterizedType)optMeth.getGenericReturnType();
+            var optMethRetPType = (ParameterizedType) optMeth.getGenericReturnType();
             System.out.println(optMethRetPType);
             assert optMethRetPType.getRawType() == Optional.class;
             assert optMethRetPType.getActualTypeArguments().length == 1;
             assert optMethRetPType.getActualTypeArguments()[0] == SampleConfig1.class;
 
             var listOptMeth = cls.getMethod("listOpt");
-            var listOptMethRetPType = (ParameterizedType)listOptMeth.getGenericReturnType();
+            var listOptMethRetPType = (ParameterizedType) listOptMeth.getGenericReturnType();
             System.out.println(listOptMethRetPType);
             assert listOptMethRetPType.getRawType() == List.class;
             assert listOptMethRetPType.getActualTypeArguments().length == 1;
-            var tparam = (ParameterizedType)listOptMethRetPType.getActualTypeArguments()[0];
+            var tparam = (ParameterizedType) listOptMethRetPType.getActualTypeArguments()[0];
             assert tparam.getRawType() == Optional.class;
             assert tparam.getActualTypeArguments().length == 1;
             assert tparam.getActualTypeArguments()[0] == SampleConfig1.class;
         } catch( NoSuchMethodException e ){
             e.printStackTrace();
         }
+    }
+
+    public interface Array02 {
+        List<Array02MenuItem> menu();
+    }
+
+    public interface Array02MenuItem {
+        String name();
+    }
+
+    @Test
+    public void array02(){
+        var tastCompiler = new TastCompiler();
+        var source =
+            "{ \n" +
+                "  menu: [\n" +
+                "    { name: \"item 1\" }, \n" +
+                "    { name: \"item 2\" }, \n" +
+                "    { name: \"item 3\" }  \n" +
+                "  ]\n" +
+                "}";
+
+        out.println(source);
+
+        var tast = tastCompiler.compile(source);
+        out.println(tast);
+
+        var rootType = tast.supplierType();
+        out.println("type:");
+        describe(rootType);
+
+        var root = tast.supplier().get();
+        out.println(root.getClass());
+        out.println(root);
+        out.flush();
     }
 }
