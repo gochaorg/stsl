@@ -1,11 +1,16 @@
 package xyz.cofe.stsl.conf;
 
+import xyz.cofe.stsl.tast.TAST;
+
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.function.Predicate;
 
 public class ConfigInstance<T> extends TastCompiler {
     private final T proxy;
     private final Class<T> confItf;
     private final ConfigInstanceHandler handler;
+    private static final Predicate<Method> proxyResult = method -> method.getReturnType().isInterface();
 
     protected ConfigInstance( T proxy, Class<T> itf, ConfigInstanceHandler handler ){
         this.proxy = proxy;
@@ -13,16 +18,16 @@ public class ConfigInstance<T> extends TastCompiler {
         this.handler = handler;
     }
 
-    public static <T> ConfigInstance<T> create(Class<T> configType) {
-        if( configType==null )throw new IllegalArgumentException( "configType==null" );
-        if( !configType.isInterface() )throw new IllegalArgumentException( "!configType.isInterface()" );
+    public static <T> ConfigInstance<T> create( Class<T> configType ){
+        if( configType == null ) throw new IllegalArgumentException("configType==null");
+        if( !configType.isInterface() ) throw new IllegalArgumentException("!configType.isInterface()");
 
-        var h = new ConfigInstanceHandler(configType);
+        var h = new ConfigInstanceHandler(configType, proxyResult);
 
         //noinspection unchecked
-        T inst = (T)Proxy.newProxyInstance(
+        T inst = (T) Proxy.newProxyInstance(
             configType.getClassLoader(),
-            new Class<?>[]{ configType },
+            new Class<?>[]{configType},
             h
         );
 
@@ -34,9 +39,15 @@ public class ConfigInstance<T> extends TastCompiler {
         return proxy;
     }
 
-    public T read(String source) {
-        if( source==null )throw new IllegalArgumentException( "source==null" );
-        var tast =compile(source);
+    public T read( String source ){
+        if( source == null ) throw new IllegalArgumentException("source==null");
+        var tast = compile(source);
+        handler.setTAST(tast);
+        return get();
+    }
+
+    public T read( TAST tast ){
+        if( tast == null ) throw new IllegalArgumentException("tast==null");
         handler.setTAST(tast);
         return get();
     }
