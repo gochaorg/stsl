@@ -23,6 +23,7 @@ import xyz.cofe.stsl.tast.isect.OptionalBuilder;
 import xyz.cofe.stsl.tast.isect.OptionalField;
 import xyz.cofe.stsl.tast.isect.TAnonReductor;
 import xyz.cofe.stsl.types.AnyVariant;
+import xyz.cofe.stsl.types.GenericInstance;
 import xyz.cofe.stsl.types.Named;
 import xyz.cofe.stsl.types.TAnon;
 import xyz.cofe.stsl.types.TObject;
@@ -36,13 +37,14 @@ public class TastCompiler {
     private final Type anyType = Type.ANY();
 
     private final TObject optType;
+
     {
         var t = TObject.create("Opt").extend(anyType).build();
         t.generics().append(new AnyVariant("A"));
         optType = t;
     }
 
-    private final OptionalField optionalField = new OptionalField(optType,"A");
+    private final OptionalField optionalField = new OptionalField(optType, "A");
 
     private final OptionalBuilder optionalBuilder = new OptBaker();
 
@@ -51,6 +53,7 @@ public class TastCompiler {
     private final TAnonReductor tAnonReductor = new TAnonReductor(optionalField, optionalBuilder, anonMethodBuilder);
 
     private final TObject arrayType;
+
     {
         var t = TObject.create("List").extend(anyType).build();
         t.generics().append(new AnyVariant("A"));
@@ -58,28 +61,38 @@ public class TastCompiler {
     }
 
     @SuppressWarnings("rawtypes")
-    private final Function1 arrayTypeConstruct = v1 -> {
-        var elementType = (Type)v1;
-        var t = arrayType.typeVarBaker().thiz(Map.of("A",elementType));
+    private final Function1 arrayTypeConstruct_bake = v1 -> {
+        var elementType = (Type) v1;
+        var t = arrayType.typeVarBaker().thiz(Map.of("A", elementType));
         if( elementType instanceof Named ){
-            return t.withName("List_"+((Named) elementType).name());
+            return t.withName("List_" + ((Named) elementType).name());
         }
         return t;
     };
+
+    @SuppressWarnings("rawtypes")
+    private final Function1 arrayTypeConstruct_genericInstance = v1 -> {
+        var elementType = (Type) v1;
+        var t = GenericInstance.set("A", elementType).build(arrayType);
+        return t;
+    };
+
+    @SuppressWarnings("rawtypes")
+    private final Function1 arrayTypeConstruct = arrayTypeConstruct_genericInstance;
 
     @SuppressWarnings({"rawtypes", "Convert2MethodRef"})
     private final Function0 emptyArray = () -> new ArrayList<Object>();
 
     @SuppressWarnings("rawtypes")
     private final Function3 appendItem3 = ( listInst, item, itemType ) -> {
-        @SuppressWarnings("unchecked") var lst = (List<Object>)listInst;
+        @SuppressWarnings("unchecked") var lst = (List<Object>) listInst;
         lst.add(item);
         return lst;
     };
 
     @SuppressWarnings("rawtypes")
     private final Function2 appendItem2 = ( listInst, item ) -> {
-        @SuppressWarnings("unchecked") var lst = (List<Object>)listInst;
+        @SuppressWarnings("unchecked") var lst = (List<Object>) listInst;
         lst.add(item);
         return lst;
     };
@@ -113,7 +126,7 @@ public class TastCompiler {
     );
 
     private final ArrayCompiler.LookupMerge lookupMerge_ArrayCompiler = new ArrayCompiler.LookupMerge(
-        (tast) -> {
+        ( tast ) -> {
             if( tast.supplierType() instanceof TAnon ){
                 return Some$.MODULE$.apply(mergeAnon_ArrayCompiler);
             }
@@ -130,10 +143,11 @@ public class TastCompiler {
 
     //region typeScope() : TypeScope
     private volatile TypeScope _ts;
+
     public TypeScope typeScope(){
-        if( _ts!=null )return _ts;
+        if( _ts != null ) return _ts;
         synchronized( this ){
-            if( _ts!=null )return _ts;
+            if( _ts != null ) return _ts;
             TypeScope ts = new TypeScope();
             ts.setImplicits(JvmType.implicitConversion());
             ts.imports(JvmType.types());
@@ -142,19 +156,22 @@ public class TastCompiler {
             return _ts;
         }
     }
+
     public void withToasterTracer( ToasterTracer tracer ){
-        if( tracer==null )throw new IllegalArgumentException( "tracer==null" );
+        if( tracer == null ) throw new IllegalArgumentException("tracer==null");
         synchronized( this ){
             _toaster = toaster().withTracer(tracer);
         }
     }
+
     //endregion
     //region varScope() : VarScope
     private volatile VarScope _vs;
+
     public VarScope varScope(){
-        if( _vs!=null )return _vs;
+        if( _vs != null ) return _vs;
         synchronized( this ){
-            if( _vs!=null )return _vs;
+            if( _vs != null ) return _vs;
             var vs = new VarScope();
             vs.put("true", JvmType.BOOLEAN(), true);
             vs.put("false", JvmType.BOOLEAN(), false);
@@ -162,28 +179,32 @@ public class TastCompiler {
             return _vs;
         }
     }
+
     //endregion
     //region toaster() : Toaster
     private volatile Toaster _toaster;
+
     public Toaster toaster(){
-        if( _toaster!=null )return _toaster;
+        if( _toaster != null ) return _toaster;
         synchronized( this ){
-            if( _toaster!=null )return _toaster;
+            if( _toaster != null ) return _toaster;
             _toaster = Toaster
-                .defaultToaster(typeScope(),varScope())
+                .defaultToaster(typeScope(), varScope())
                 .withPojoCompile(new PojoCompiler.TAnonPojo())
                 .withArrayCompile(fallbackMerge_ArrayCompiler)
             ;
             return _toaster;
         }
     }
+
     //endregion
     //region parser() : Parser
     private volatile Parser _parser;
+
     public Parser parser(){
-        if( _parser!=null )return _parser;
+        if( _parser != null ) return _parser;
         synchronized( this ){
-            if( _parser!=null )return _parser;
+            if( _parser != null ) return _parser;
             _parser = Parser.defaultParser().withArraySupport(true);
             return _parser;
         }
@@ -191,11 +212,11 @@ public class TastCompiler {
     //endregion
 
     public TAST compile( String source ){
-        if( source==null )throw new IllegalArgumentException( "source==null" );
+        if( source == null ) throw new IllegalArgumentException("source==null");
 
         Option<AST> astOpt = parser().parse(source);
         if( astOpt.isEmpty() ){
-            throw new RuntimeException("ast not parsed for "+source);
+            throw new RuntimeException("ast not parsed for " + source);
         }
 
         return toaster().compile(astOpt.get());
