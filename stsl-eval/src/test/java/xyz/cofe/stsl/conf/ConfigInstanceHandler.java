@@ -3,7 +3,6 @@ package xyz.cofe.stsl.conf;
 import xyz.cofe.stsl.tast.TAST;
 import xyz.cofe.stsl.types.Field;
 import xyz.cofe.stsl.types.Obj;
-import xyz.cofe.stsl.types.TObject;
 import xyz.cofe.stsl.types.Type;
 import xyz.cofe.stsl.types.WriteableField;
 
@@ -12,10 +11,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Optional;
 
-class ConfInstHandler implements InvocationHandler {
+class ConfigInstanceHandler implements InvocationHandler {
     public final Class<?> confClass;
 
-    public ConfInstHandler( Class<?> conf ){
+    public ConfigInstanceHandler( Class<?> conf ){
         if( conf == null ) throw new IllegalArgumentException("conf==null");
         this.confClass = conf;
     }
@@ -121,7 +120,7 @@ class ConfInstHandler implements InvocationHandler {
     private Optional<Object> proxy( Object value, Method method, WriteableField field ){
         var retClass = method.getReturnType();
         if( retClass.isInterface() ){
-            var handler = new ConfInstHandler(retClass);
+            var handler = new ConfigInstanceHandler(retClass);
             handler.tastType = field.tip();
             handler.computed = value;
             var proxy = Proxy.newProxyInstance( confClass.getClassLoader(), new Class[]{retClass}, handler );
