@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import xyz.cofe.stsl.conf.sample.SampleArr;
 import xyz.cofe.stsl.conf.sample.SampleCompaund1;
 import xyz.cofe.stsl.conf.sample.SampleConfig1;
-import xyz.cofe.stsl.eval.CommonForTest;
 import xyz.cofe.stsl.types.GenericInstance;
 import xyz.cofe.stsl.types.Obj;
 
