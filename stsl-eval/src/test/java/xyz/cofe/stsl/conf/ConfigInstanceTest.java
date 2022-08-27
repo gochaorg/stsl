@@ -5,6 +5,8 @@ import xyz.cofe.stsl.conf.sample.SampleArr;
 import xyz.cofe.stsl.conf.sample.SampleCompaund1;
 import xyz.cofe.stsl.conf.sample.SampleConfig1;
 import xyz.cofe.stsl.eval.CommonForTest;
+import xyz.cofe.stsl.types.GenericInstance;
+import xyz.cofe.stsl.types.Obj;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
@@ -164,6 +166,28 @@ public class ConfigInstanceTest extends CommonForTest {
         var root = tast.supplier().get();
         out.println(root.getClass());
         out.println(root);
+
+        var rootTObj = (Obj) rootType;
+        var menuField = rootTObj.publicFields().find(f -> f.name().equals("menu")).get();
+        out.println("type of menu:");
+        describe(menuField.tip());
+        out.println(menuField.tip().getClass());
+
+        var giType = (GenericInstance) menuField.tip();
+        var trgt = giType.recipe().get("A").get();
+        out.println(trgt);
+        out.println(trgt instanceof Obj);
+        out.println(trgt.getClass());
+
         out.flush();
+
+        ////////////////////
+        var confInst = ConfigInstance.create(Array02.class);
+        var conf = confInst.read(tast);
+
+        var confMenu = conf.menu();
+        out.println(confMenu.size());
+        out.println(confMenu.get(0).name());
+        out.println(confMenu.get(1).name());
     }
 }
