@@ -31,7 +31,7 @@ trait Fun extends Type with TypeVarReplace[Fun] with TypeVarFetch {
    * @param t присваемый тип данных
    * @return true - операция допускается, false - не допускается
    */
-  override def assignable(t: Type): Boolean = super.assignable(t)
+  override def assignable(t: Type)(implicit tracer:AssignableTracer): Boolean = super.assignable(t)
 
   /**
    * Возвращает сигнатуру функции

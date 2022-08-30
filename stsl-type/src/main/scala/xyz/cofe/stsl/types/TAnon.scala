@@ -2,45 +2,43 @@ package xyz.cofe.stsl.types
 
 import xyz.cofe.stsl.types.TAnon.{assignableByFields, assignableByMethods}
 
-import scala.collection.immutable
-
 /**
  * Анонимный тип, не имеет названия, не от кого не унаследован
  *
  * @param generics Параметры типа
- * @param extend Какой тип расширяет
- * @param fields Атрибуты/поля класса
+ * @param extend   Какой тип расширяет
+ * @param fields   Атрибуты/поля класса
  */
 class TAnon(
-               val generics:MutableGenericParams=new MutableGenericParams(),
-               val fields:MutableFields=new MutableFields(),
-               val methods:MutableMethods=new MutableMethods()
-             )
-extends Obj
-  with ObjGenericValidation
-  with Freezing
-  with TypeVarReplace[TAnon]
-{
+             val generics: MutableGenericParams = new MutableGenericParams(),
+             val fields: MutableFields = new MutableFields(),
+             val methods: MutableMethods = new MutableMethods()
+           )
+  extends Obj
+    with ObjGenericValidation
+    with Freezing
+    with TypeVarReplace[TAnon] {
   override type GENERICS = MutableGenericParams
   override type FIELDS = MutableFields
   override type METHODS = MutableMethods
-  
+
   validateTypeVariables()
-  
+
   //region "Заморозка"
-  
-  private var freezedValue : Boolean = false
-  
+
+  private var freezedValue: Boolean = false
+
   /**
    * Проверка что объект уже заморожен
+   *
    * @return true - объект уже заморожен, его нельзя изменять
    */
-  def freezed : Boolean = freezedValue
-  
+  def freezed: Boolean = freezedValue
+
   /**
    * Заморозка объекта
    */
-  def freeze:Unit = {
+  def freeze: Unit = {
     validateTypeVariables()
     freezedValue = true
     methods.freeze
@@ -48,21 +46,23 @@ extends Obj
     generics.freeze
   }
   //endregion
-  
+
   //region typeVarReplace() - Замена переменных типа
+
   /**
    * Замена переменных типа в данном классе
+   *
    * @param recipe правило замены переменных
    * @return клон с замененными переменными-типами
    */
   override def typeVarReplace(recipe: TypeVariable => Option[Type]): TAnon = {
-    require(recipe!=null)
-    
-    if( generics.isEmpty ){
+    require(recipe != null)
+
+    if (generics.isEmpty) {
       this
-    }else {
+    } else {
       var replaceTypeVarMap: Map[String, Type] = Map()
-      
+
       val replacement: TypeVariable => Option[Type] = (tv) => {
         val trgt = recipe(tv)
         if (trgt.isDefined) {
@@ -78,24 +78,24 @@ extends Obj
         }
         trgt
       }
-      
+
       val newGeneric = generics match {
         case tvr: TypeVarReplace[GenericParams] =>
           tvr.typeVarReplace(replacement)
         case _ =>
           generics
       }
-      
-//      val newExtend = if (extend.isDefined) {
-//        val ext: Type = extend.get match {
-//          case t: TypeVarReplace[_] => t.typeVarReplace(replacement).asInstanceOf[Type]
-//          case _ => extend.get
-//        }
-//        Some(ext)
-//      } else {
-//        None
-//      }
-      
+
+      //      val newExtend = if (extend.isDefined) {
+      //        val ext: Type = extend.get match {
+      //          case t: TypeVarReplace[_] => t.typeVarReplace(replacement).asInstanceOf[Type]
+      //          case _ => extend.get
+      //        }
+      //        Some(ext)
+      //      } else {
+      //        None
+      //      }
+
       val asIsFields: Seq[Field] = fields.filter(f => !fieldsTypeVariablesMap.contains(f.name))
       val newTvFields: Seq[Field] = fields
         .filter(f => fieldsTypeVariablesMap.contains(f.name))
@@ -124,7 +124,7 @@ extends Obj
           }).toList)
         })
       )
-      
+
       val nnewGeneric = new GenericParams(
         newGeneric.params.map(p => {
           if (replaceTypeVarMap.get(p.name).exists(t => t.isInstanceOf[TypeVariable])) {
@@ -139,64 +139,80 @@ extends Obj
           }
         }).filter(_ != null)
       )
-      
+
       val newTObj = TAnon(nnewGeneric, newFields, newMethods)
-      
+
       newTObj
     }
   }
   //endregion
-  
+
   /**
    * Проверка возможности присвоение с учетом параметров типа
    *
    * @param t присваемый тип данных
    * @return true - операция допускается, false - не допускается
    */
-  override def assignable(t: Type): Boolean = {
+  override def assignable(t: Type)(implicit tracer: AssignableTracer): Boolean = {
     t match {
-      case tobj:TObject => assignable(tobj)
-      case tanon:TAnon => assignable(tanon)
+      case tobj: TObject => assignable(tobj)
+      case tanon: TAnon => assignable(tanon)
       case _ => super.assignable(t)
     }
   }
-  
-  private def assignable(t: TObject): Boolean = {
-    val genericAssign = generics.assignable(t.generics)
-    val fieldsAssign = assignableByFields(fields, t.fields)
-    val methodsAssign = assignableByMethods(methods, t.methods)
-    genericAssign && fieldsAssign.isEmpty && methodsAssign.isEmpty
+
+  private def assignable(t: TObject)(implicit tracer: AssignableTracer): Boolean = {
+    tracer("TAnon", this, t) {
+      val genericAssign = generics.assignable(t.generics)
+
+      val fieldsAssign = assignableByFields(fields, t.fields)
+      tracer(s"fieldsAssign ${fieldsAssign}")(fieldsAssign.isEmpty)
+
+      val methodsAssign = assignableByMethods(methods, t.methods)
+      tracer(s"methodsAssign $methodsAssign")(methodsAssign.isEmpty)
+
+      genericAssign && fieldsAssign.isEmpty && methodsAssign.isEmpty
+    }
   }
-  
-  private def assignable(t:TAnon):Boolean = {
-    val genericAssign = generics.assignable(t.generics)
-    val fieldsAssign = assignableByFields(fields, t.fields)
-    val methodsAssign = assignableByMethods(methods, t.methods)
-    genericAssign && fieldsAssign.isEmpty && methodsAssign.isEmpty
+
+  private def assignable(t: TAnon)(implicit tracer: AssignableTracer): Boolean = {
+    tracer("TAnon", this, t) {
+      val genericAssign = generics.assignable(t.generics)
+
+      val fieldsAssign = assignableByFields(fields, t.fields)
+      tracer(s"fieldsAssign ${fieldsAssign}")(fieldsAssign.isEmpty)
+
+      val methodsAssign = assignableByMethods(methods, t.methods)
+      tracer(s"methodsAssign $methodsAssign")(methodsAssign.isEmpty)
+      
+      genericAssign && fieldsAssign.isEmpty && methodsAssign.isEmpty
+    }
   }
 }
 
 object TAnon {
   //region apply(...)
+
   /**
    * Создать тип
+   *
    * @param gparams параметры типа
-   * @param fields поля
+   * @param fields  поля
    * @param methods методы
    * @return анонимный тип
    */
-  def apply(gparams:GenericParams, fields:Fields, methods:Methods):TAnon = {
+  def apply(gparams: GenericParams, fields: Fields, methods: Methods): TAnon = {
     new TAnon(
       gparams match {
-        case mut:MutableGenericParams => mut
+        case mut: MutableGenericParams => mut
         case _ => new MutableGenericParams(gparams.params)
       },
       fields match {
-        case mut:MutableFields => mut
+        case mut: MutableFields => mut
         case _ => new MutableFields(fields.fields)
       },
       methods match {
-        case mut:MutableMethods => mut
+        case mut: MutableMethods => mut
         case _ => new MutableMethods(methods.funs)
       }
     )
@@ -204,96 +220,103 @@ object TAnon {
 
   /**
    * Создать тип
-   * @param fields поля
+   *
+   * @param fields  поля
    * @param methods методы
    * @return анонимный тип
    */
-  def apply(fields:Fields, methods:Methods):TAnon = {
+  def apply(fields: Fields, methods: Methods): TAnon = {
     new TAnon(
       new MutableGenericParams(),
       fields match {
-        case mut:MutableFields => mut
+        case mut: MutableFields => mut
         case _ => new MutableFields(fields.fields)
       },
       methods match {
-        case mut:MutableMethods => mut
+        case mut: MutableMethods => mut
         case _ => new MutableMethods(methods.funs)
       }
     )
   }
-  
+
   /**
    * Создать тип
+   *
    * @param fields поля
    * @return анонимный тип
    */
-  def apply(fields:Fields):TAnon = {
+  def apply(fields: Fields): TAnon = {
     new TAnon(
       new MutableGenericParams(),
       fields match {
-        case mut:MutableFields => mut
+        case mut: MutableFields => mut
         case _ => new MutableFields(fields.fields)
       },
       new MutableMethods()
     )
   }
   //endregion
-  
+
   /**
    * Создание типа из объекта
+   *
    * @param tObj тип объекта
    * @return анонимный тип
    */
-  def from(tObj:TObject):TAnon = {
-    require(tObj!=null)
+  def from(tObj: TObject): TAnon = {
+    require(tObj != null)
     val generics = new MutableGenericParams(tObj.generics.params)
     val fields = new MutableFields()
     val methods = new MutableMethods()
-    tObj.publicFields.foreach( fld => {
-      fields.remove( f => f.name==fld.name ).append( fld )
+    tObj.publicFields.foreach(fld => {
+      fields.remove(f => f.name == fld.name).append(fld)
     })
-    tObj.publicMethods.foreach{ case(name, fun) => {
-      methods.remove { case(e_name,e_f) => e_name==name && e_f.sameTypes(fun) }.append( name, fun )
-    }}
-    apply(generics,fields,methods)
+    tObj.publicMethods.foreach { case (name, fun) => {
+      methods.remove { case (e_name, e_f) => e_name == name && e_f.sameTypes(fun) }.append(name, fun)
+    }
+    }
+    apply(generics, fields, methods)
   }
-  
+
   /**
    * Проверка что к указанным полям можно присвоить указанные
+   *
    * @param taFields целевые поля
    * @param tbFields исходные поля
    * @return ошибка в случае не возможности
    */
-  def assignableByFields( taFields:Fields, tbFields:Fields ):Option[String] = {
+  def assignableByFields(taFields: Fields, tbFields: Fields)(implicit tracer: AssignableTracer): Option[String] = {
     import syntax._
-    
+
     val f_a_bOptList = taFields
       .map { fa => (fa, tbFields.get(fa.name)) }
-    
+
     val nonExistField = f_a_bOptList.map { case (fa, fb) => fb match {
       case Some(_) => None
       case None => Some(s"field ${fa.name} not exists")
-    }}
+    }
+    }
       .filter { err => err.isDefined }
       .foldErr
-    
-    if( nonExistField.isDefined ){
+
+    if (nonExistField.isDefined) {
       nonExistField
-    }else{
-      val f_a_bList = f_a_bOptList.map { case(fa,fb) => (fa,fb.get) }
-      if( f_a_bList.isEmpty ){
+    } else {
+      val f_a_bList = f_a_bOptList.map { case (fa, fb) => (fa, fb.get) }
+      if (f_a_bList.isEmpty) {
         None
-      }else{
+      } else {
         val nonAssignFields = f_a_bList
-          .map { case(fa,fb) => (fa, fa.tip, fb, fb.tip) }
-          .map { case(fa,ta,fb,tb) => (fa,fb, ta.assignable(tb)) }
-          .map { case(fa,fb,asgn) => if (asgn) {
+          .map { case (fa, fb) => (fa, fa.tip, fb, fb.tip) }
+          .map { case (fa, ta, fb, tb) => (fa, fb, ta.assignable(tb)) }
+          .map { case (fa, fb, asgn) => if (asgn) {
             None
           } else {
             Some(s"${fa.name}:${fa.tip} not assignable from ${fb.name}:${fb.tip}")
-          }}.foldErr
-        
-        if( nonAssignFields.isDefined ) {
+          }
+          }.foldErr
+
+        if (nonAssignFields.isDefined) {
           nonAssignFields
         } else {
           None
@@ -301,38 +324,40 @@ object TAnon {
       }
     }
   }
-  
+
   /**
    * Проверка что методы объекта `a` совместимы с методами объекта `b`
+   *
    * @param taMethods методы `a`
    * @param tbMethods методы `b`
    * @return ошибка в случае не возможности
    */
-  def assignableByMethods( taMethods:Methods, tbMethods:Methods ):Option[String] = {
+  def assignableByMethods(taMethods: Methods, tbMethods: Methods)(implicit tracer: AssignableTracer): Option[String] = {
     import syntax._
-    if( taMethods.isEmpty ){
+    if (taMethods.isEmpty) {
       None
-    }else{
+    } else {
       val aFunsMap = taMethods.funs
       val bFunsMap = tbMethods.funs
-      if( aFunsMap.isEmpty ){
+      if (aFunsMap.isEmpty) {
         None
-      }else {
-        val nonExistsMethods = aFunsMap.keySet.map( k => (k,bFunsMap.keySet.contains(k)) ).filter( !_._2 )
-        if( nonExistsMethods.nonEmpty ){
-          nonExistsMethods.map { case(mname, _) => (Some(s"method ${mname} not exists")):Option[String] }.toSeq.foldErr
-        }else{
-          aFunsMap.map { case (methName,aFuns) =>
+      } else {
+        val nonExistsMethods = aFunsMap.keySet.map(k => (k, bFunsMap.keySet.contains(k))).filter(!_._2)
+        if (nonExistsMethods.nonEmpty) {
+          nonExistsMethods.map { case (mname, _) => (Some(s"method ${mname} not exists")): Option[String] }.toSeq.foldErr
+        } else {
+          aFunsMap.map { case (methName, aFuns) =>
             bFunsMap.get(methName) match {
               case None =>
                 Some(s"method ${methName} not found")
               case Some(bFuns) =>
-                aFuns.map { aFun => if (bFuns.exists(bFun => aFun.assignable(bFun))) {
-                  None
-                } else {
-                  Some(s"not found compatible method ${aFun}")
-                }
-              }.foldErr
+                aFuns.map { aFun =>
+                  if (bFuns.exists(bFun => aFun.assignable(bFun))) {
+                    None
+                  } else {
+                    Some(s"not found compatible method ${aFun}")
+                  }
+                }.foldErr
             }
           }.toList.foldErr
         }

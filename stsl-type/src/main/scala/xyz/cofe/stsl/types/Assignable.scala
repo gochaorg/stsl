@@ -22,7 +22,7 @@ trait Assignable {
    * @param t присваемый тип данных
    * @return true - операция допускается, false - не допускается
    */
-  def assignable( t:Type ):Boolean = {
-    this==t
+  def assignable( t:Type )(implicit tracer:AssignableTracer):Boolean = {
+    tracer(s"Assignable from ${t}")(this==t)
   }
 }
