@@ -71,16 +71,16 @@ public class BridgeTypeChecker {
     // x is object
     // x is optional of y
     // x is list of y
-    public Result assignable( java.lang.reflect.Type jvmType, xyz.cofe.stsl.types.Type stslType ){
-        if( jvmType == null ) throw new IllegalArgumentException("jvmType==null");
-        if( stslType == null ) throw new IllegalArgumentException("stslType==null");
-
-        var prim = JvmPrimitive.of(jvmType);
-        if( prim.isPresent() ){
-            var sType = prim.get().stslType;
-            return sType.assignable(stslType) ? succ() : fail("" + jvmType + " not assignable from " + stslType);
-        }
-
-        return fail("not impl " + jvmType);
-    }
+//    public Result assignable( java.lang.reflect.Type jvmType, xyz.cofe.stsl.types.Type stslType ){
+//        if( jvmType == null ) throw new IllegalArgumentException("jvmType==null");
+//        if( stslType == null ) throw new IllegalArgumentException("stslType==null");
+//
+//        var prim = JvmPrimitive.of(jvmType);
+//        if( prim.isPresent() ){
+//            var sType = prim.get().stslType;
+//            return sType.assignable(stslType) ? succ() : fail("" + jvmType + " not assignable from " + stslType);
+//        }
+//
+//        return fail("not impl " + jvmType);
+//    }
 }

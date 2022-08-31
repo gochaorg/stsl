@@ -184,7 +184,7 @@ class TAnon(
 
       val methodsAssign = assignableByMethods(methods, t.methods)
       tracer(s"methodsAssign $methodsAssign")(methodsAssign.isEmpty)
-      
+
       genericAssign && fieldsAssign.isEmpty && methodsAssign.isEmpty
     }
   }
@@ -292,8 +292,14 @@ object TAnon {
       .map { fa => (fa, tbFields.get(fa.name)) }
 
     val nonExistField = f_a_bOptList.map { case (fa, fb) => fb match {
-      case Some(_) => None
-      case None => Some(s"field ${fa.name} not exists")
+      case Some(_) => {
+        tracer(s"field ${fa.name} found")(true)
+        None
+      }
+      case None => {
+        tracer(s"field ${fa.name} not found")(false)
+        Some(s"field ${fa.name} not exists")
+      }
     }
     }
       .filter { err => err.isDefined }
@@ -308,7 +314,7 @@ object TAnon {
       } else {
         val nonAssignFields = f_a_bList
           .map { case (fa, fb) => (fa, fa.tip, fb, fb.tip) }
-          .map { case (fa, ta, fb, tb) => (fa, fb, ta.assignable(tb)) }
+          .map { case (fa, ta, fb, tb) => (fa, fb, tracer(s"field ${fa.name}")(ta.assignable(tb))) }
           .map { case (fa, fb, asgn) => if (asgn) {
             None
           } else {
@@ -344,17 +350,27 @@ object TAnon {
       } else {
         val nonExistsMethods = aFunsMap.keySet.map(k => (k, bFunsMap.keySet.contains(k))).filter(!_._2)
         if (nonExistsMethods.nonEmpty) {
-          nonExistsMethods.map { case (mname, _) => (Some(s"method ${mname} not exists")): Option[String] }.toSeq.foldErr
+          nonExistsMethods.map { case (mname, _) => {
+            tracer(s"method ${mname} not found")(false)
+            Some(s"method ${mname} not exists"): Option[String]
+          }
+          }.toSeq.foldErr
         } else {
           aFunsMap.map { case (methName, aFuns) =>
             bFunsMap.get(methName) match {
-              case None =>
+              case None => {
+                tracer(s"method ${methName} not found")(false)
                 Some(s"method ${methName} not found")
+              }
               case Some(bFuns) =>
                 aFuns.map { aFun =>
                   if (bFuns.exists(bFun => aFun.assignable(bFun))) {
-                    None
+                    {
+                      tracer(s"$methName $aFun is assignable from $bFuns")(true)
+                      None
+                    }
                   } else {
+                    tracer(s"$methName $aFun is NOT assignable $bFuns")(false)
                     Some(s"not found compatible method ${aFun}")
                   }
                 }.foldErr

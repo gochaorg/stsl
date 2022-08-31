@@ -53,26 +53,28 @@ class Fn(val generics: GenericParams
     require(t != null)
     tracer("Fn", this, t)(
       if (!t.isInstanceOf[Fun]) {
-        false
+        tracer(s"${t} is not instance of Fun")(false)
       } else {
         val fn = t.asInstanceOf[Fun]
-        val genericAssignable: Boolean = generics.assignable(fn.generics)
-        val paramsCountMatched: Boolean = parameters.length == fn.parameters.length
+        val genericAssignable: Boolean = tracer("fn generic params")(generics.assignable(fn.generics))
+        val paramsCountMatched: Boolean = tracer("fn params count")(parameters.length == fn.parameters.length)
         val paramsAssignable: Boolean = paramsCountMatched match {
           case true =>
             if (parameters.length == 0) {
-              true
+              tracer("receiver parameters list is empty")(true)
             } else {
               parameters.indices.map(pi => {
                 val toParam = fn.parameters(pi)
                 val fromParam = parameters(pi)
-                toParam.tip.assignable(fromParam.tip)
+                tracer(s"does param [$pi] $toParam is assignable from $fromParam ?")(toParam.tip.assignable(fromParam.tip))
               }).reduce((a, b) => a && b)
             }
           case false =>
             false
         }
-        val returnAssignable = returns.assignable(fn.returns)
+        val returnAssignable = tracer(
+          s"does receiver return type $returns is assignable ${fn.returns}"
+        )(returns.assignable(fn.returns))
         genericAssignable && paramsCountMatched && paramsAssignable && returnAssignable
       })
   }
