@@ -1,5 +1,8 @@
 package xyz.cofe.stsl.types
 
+/**
+ * Трессировка операции [[Assignable]]
+ */
 trait AssignableTracer {
   def apply(message: String)(code: => Boolean): Boolean
 

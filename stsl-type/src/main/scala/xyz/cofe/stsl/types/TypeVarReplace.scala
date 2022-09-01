@@ -6,13 +6,13 @@ import scala.collection.JavaConverters._
  * Замена переменной Типа.
  *
  * <p>
- *   Актуально когда есть параметризированный тип,
- *   например List с параметром A.
+ * Актуально когда есть параметризированный тип,
+ * например List с параметром A.
  *
  * <pre>
- *   List[A] {
- *     add( item : A )
- *   }
+ * List[A] {
+ * add( item : A )
+ * }
  * </pre>
  *
  * Для правильной проверке типов и соответ вывода типов, необходима процедура
@@ -23,8 +23,8 @@ import scala.collection.JavaConverters._
  *
  * <pre>
  * User {
- *   name : String
- *   enabled : Boolean
+ * name : String
+ * enabled : Boolean
  * }
  * </pre>
  *
@@ -40,9 +40,9 @@ import scala.collection.JavaConverters._
  *
  * будет выведен новый тип для userList:
  * <pre>
- *   List {
- *     add( item: User )
- *   }
+ * List {
+ * add( item: User )
+ * }
  * </pre>
  *
  * Этот вывод новго типа осуществляется за счет TypeVarReplace.
@@ -52,23 +52,25 @@ import scala.collection.JavaConverters._
 trait TypeVarReplace[A] {
   /**
    * Замена переменных
+   *
    * @param recipe правило замены
    * @return новый тип
    */
-  def typeVarReplace(recipe:(TypeVariable)=>Option[Type]):A
+  def typeVarReplace(recipe: (TypeVariable) => Option[Type])(implicit tracer: TypeVarTracer): A
 
   /**
    * Замена переменных
+   *
    * @param recipe правило замены
    * @return новый тип
    */
-  def typeVarReplace(recipe:(String,Type)*):A = {
-    val rmap:Map[String,Type] = recipe.toMap
-    typeVarReplace((tv:TypeVariable)=>rmap.get(tv.name))
+  def typeVarReplace(recipe: (String, Type)*)(implicit tracer: TypeVarTracer): A = {
+    val rmap: Map[String, Type] = recipe.toMap
+    typeVarReplace((tv: TypeVariable) => rmap.get(tv.name))
   }
 
-  def typeVarReplacer(recipe:java.util.function.Consumer[TypeVarReplacer]):A = {
-    require(recipe!=null)
+  def typeVarReplacer(recipe: java.util.function.Consumer[TypeVarReplacer])(implicit tracer: TypeVarTracer): A = {
+    require(recipe != null)
     val rpl = new TypeVarReplacer
     recipe.accept(rpl)
     typeVarReplace(rpl.build())
@@ -81,27 +83,28 @@ trait TypeVarReplace[A] {
 
     /**
      * Замена переменых чей владелец (owner) FN
+     *
      * @param recipe правило замены
      * @return новый тип
      */
-    def fn(recipe:(String,Type)*):A = {
-      require(recipe!=null)
-      val rmap:Map[String,Type] = recipe.toMap
-      typeVarReplace((tv:TypeVariable)=>{
-        if( tv.owner==Type.FN ) {
+    def fn(recipe: (String, Type)*)(implicit trace: TypeVarTracer): A = {
+      require(recipe != null)
+      val rmap: Map[String, Type] = recipe.toMap
+      typeVarReplace((tv: TypeVariable) => {
+        if (tv.owner == Type.FN) {
           rmap.get(tv.name)
-        }else{
+        } else {
           None
         }
       })
     }
 
-    def fn(recipe:Map[String,Type]):A = {
-      require(recipe!=null)
-      typeVarReplace((tv:TypeVariable)=>{
-        if( tv.owner==Type.FN ) {
+    def fn(recipe: Map[String, Type])(implicit trace: TypeVarTracer): A = {
+      require(recipe != null)
+      typeVarReplace((tv: TypeVariable) => {
+        if (tv.owner == Type.FN) {
           recipe.get(tv.name)
-        }else{
+        } else {
           None
         }
       })
@@ -109,16 +112,17 @@ trait TypeVarReplace[A] {
 
     /**
      * Замена переменых чей владелец (owner) THIS
+     *
      * @param recipe правило замены
      * @return новый тип
      */
-    def thiz(recipe:Map[String,Type]):A = {
-      require(recipe!=null)
-      val rmap:Map[String,Type] = recipe
-      typeVarReplace((tv:TypeVariable)=>{
-        if( tv.owner==Type.THIS ) {
+    def thiz(recipe: Map[String, Type])(implicit trace: TypeVarTracer): A = {
+      require(recipe != null)
+      val rmap: Map[String, Type] = recipe
+      typeVarReplace((tv: TypeVariable) => {
+        if (tv.owner == Type.THIS) {
           rmap.get(tv.name)
-        }else{
+        } else {
           None
         }
       })
@@ -126,91 +130,95 @@ trait TypeVarReplace[A] {
 
     /**
      * Замена переменых чей владелец (owner) THIS
+     *
      * @param recipe правило замены
      * @return новый тип
      */
-    def thiz(recipe:(String,Type)*):A = {
-      require(recipe!=null)
-      val rmap:Map[String,Type] = recipe.toMap
-      typeVarReplace((tv:TypeVariable)=>{
-        if( tv.owner==Type.THIS ) {
+    def thiz(recipe: (String, Type)*)(implicit trace: TypeVarTracer): A = {
+      require(recipe != null)
+      val rmap: Map[String, Type] = recipe.toMap
+      typeVarReplace((tv: TypeVariable) => {
+        if (tv.owner == Type.THIS) {
           rmap.get(tv.name)
-        }else{
+        } else {
           None
         }
       })
     }
   }
-  
-  def typeVarBaker():TypeVarBaker[A] = new TypeVarBaker(this)
+
+  def typeVarBaker()(implicit trace: TypeVarTracer): TypeVarBaker[A] = new TypeVarBaker(this)
 }
 
-class TypeVarBaker[A]( self: TypeVarReplace[A] ) {
+class TypeVarBaker[A](self: TypeVarReplace[A])(implicit trace: TypeVarTracer) {
   /**
    * Замена переменых чей владелец (owner) FN
+   *
    * @param recipe правило замены
    * @return новый тип
    */
-  def fn(recipe:(String,Type)*):A = {
-    require(recipe!=null)
-    val rmap:Map[String,Type] = recipe.toMap
-    self.typeVarReplace((tv:TypeVariable)=>{
-      if( tv.owner==Type.FN ) {
+  def fn(recipe: (String, Type)*): A = {
+    require(recipe != null)
+    val rmap: Map[String, Type] = recipe.toMap
+    self.typeVarReplace((tv: TypeVariable) => {
+      if (tv.owner == Type.FN) {
         rmap.get(tv.name)
-      }else{
+      } else {
         None
       }
     })
   }
-  
-  def fn(recipe:Map[String,Type]):A = {
-    require(recipe!=null)
-    self.typeVarReplace((tv:TypeVariable)=>{
-      if( tv.owner==Type.FN ) {
+
+  def fn(recipe: Map[String, Type]): A = {
+    require(recipe != null)
+    self.typeVarReplace((tv: TypeVariable) => {
+      if (tv.owner == Type.FN) {
         recipe.get(tv.name)
-      }else{
+      } else {
         None
       }
     })
   }
-  
-  def fn(recipe:java.util.Map[String,Type]):A = this.fn(recipe.asScala.toMap)
-  
+
+  def fn(recipe: java.util.Map[String, Type]): A = this.fn(recipe.asScala.toMap)
+
   /**
    * Замена переменых чей владелец (owner) THIS
+   *
    * @param recipe правило замены
    * @return новый тип
    */
-  def thiz(recipe:Map[String,Type]):A = {
-    require(recipe!=null)
-    val rmap:Map[String,Type] = recipe
-    self.typeVarReplace((tv:TypeVariable)=>{
-      if( tv.owner==Type.THIS ) {
+  def thiz(recipe: Map[String, Type]): A = {
+    require(recipe != null)
+    val rmap: Map[String, Type] = recipe
+    self.typeVarReplace((tv: TypeVariable) => {
+      if (tv.owner == Type.THIS) {
         rmap.get(tv.name)
-      }else{
+      } else {
         None
       }
     })
   }
-  
+
   /**
    * Замена переменых чей владелец (owner) THIS
+   *
    * @param recipe правило замены
    * @return новый тип
    */
-  def thiz(recipe:(String,Type)*):A = {
-    require(recipe!=null)
-    val rmap:Map[String,Type] = recipe.toMap
-    self.typeVarReplace((tv:TypeVariable)=>{
-      if( tv.owner==Type.THIS ) {
+  def thiz(recipe: (String, Type)*): A = {
+    require(recipe != null)
+    val rmap: Map[String, Type] = recipe.toMap
+    self.typeVarReplace((tv: TypeVariable) => {
+      if (tv.owner == Type.THIS) {
         rmap.get(tv.name)
-      }else{
+      } else {
         None
       }
     })
   }
-  
-  def thiz(recipe:java.util.Map[String,Type]):A = {
+
+  def thiz(recipe: java.util.Map[String, Type]): A = {
     this.thiz(recipe.asScala.toMap)
   }
 }

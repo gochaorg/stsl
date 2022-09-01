@@ -49,16 +49,18 @@ class TAnon(
 
   //region typeVarReplace() - Замена переменных типа
 
+  // todo вынести в общий класс/trait для TObject и TAnon
+
   /**
    * Замена переменных типа в данном классе
    *
    * @param recipe правило замены переменных
    * @return клон с замененными переменными-типами
    */
-  override def typeVarReplace(recipe: TypeVariable => Option[Type]): TAnon = {
+  override def typeVarReplace(recipe: TypeVariable => Option[Type])(implicit trace: TypeVarTracer): TAnon = {
     require(recipe != null)
 
-    if (generics.isEmpty) {
+    trace("TAnon")(if (generics.isEmpty) {
       this
     } else {
       var replaceTypeVarMap: Map[String, Type] = Map()
@@ -85,16 +87,6 @@ class TAnon(
         case _ =>
           generics
       }
-
-      //      val newExtend = if (extend.isDefined) {
-      //        val ext: Type = extend.get match {
-      //          case t: TypeVarReplace[_] => t.typeVarReplace(replacement).asInstanceOf[Type]
-      //          case _ => extend.get
-      //        }
-      //        Some(ext)
-      //      } else {
-      //        None
-      //      }
 
       val asIsFields: Seq[Field] = fields.filter(f => !fieldsTypeVariablesMap.contains(f.name))
       val newTvFields: Seq[Field] = fields
@@ -143,7 +135,7 @@ class TAnon(
       val newTObj = TAnon(nnewGeneric, newFields, newMethods)
 
       newTObj
-    }
+    })
   }
   //endregion
 

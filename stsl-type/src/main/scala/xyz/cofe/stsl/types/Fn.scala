@@ -152,8 +152,8 @@ class Fn(val generics: GenericParams
    * @param recipe правило замены
    * @return новый тип
    */
-  override def typeVarReplace(recipe: TypeVariable => Option[Type]): Fun = {
-    val ret: Type = returns match {
+  override def typeVarReplace(recipe: TypeVariable => Option[Type])(implicit trace: TypeVarTracer): Fun = {
+    val ret: Type = trace("returns")(returns match {
       case tv: TypeVariable => recipe(tv).getOrElse(
         tv match {
           case tvr: TypeVarReplace[_] => tvr.typeVarReplace(recipe).asInstanceOf[Type]
@@ -163,9 +163,9 @@ class Fn(val generics: GenericParams
         case tvr: TypeVarReplace[_] => tvr.typeVarReplace(recipe).asInstanceOf[Type]
         case _ => returns
       }
-    }
+    })
 
-    val paramz = Params(parameters.params.map(p => p.typeVarReplace(recipe)))
+    val paramz = trace("parameters")(Params(parameters.params.map(p => p.typeVarReplace(recipe))))
 
     var genericReplacements: List[(TypeVariable, Type)] =
       returns match {
@@ -184,88 +184,103 @@ class Fn(val generics: GenericParams
     })
 
     val replaceTypeVarsNames =
-      genericReplacements.groupBy(_._1.name).map({ case (str, tuples) =>
-        str -> tuples.map(_._2 match {
-          case tv: TypeVariable => tv.name
-          case _ => null
-        }).filter(_ != null).distinct
-      }).toMap
+      trace("replaceTypeVarsNames for generics")(
+        genericReplacements.groupBy(_._1.name).map({ case (str, tuples) =>
+          str -> tuples.map(_._2 match {
+            case tv: TypeVariable => tv.name
+            case _ => null
+          }).filter(_ != null).distinct
+        }).toMap
+      )
 
     replaceTypeVarsNames.foreach(r => if (r._2.length > 1) {
+      trace(s"ambiguous variable name ${r._1} => ${r._2}")(replaceTypeVarsNames)
       throw TypeError(s"ambiguous variable name ${r._1} => ${r._2}")
     })
 
     val grp = genericReplacements.groupBy(_._1).map(r => r._1.name -> r._2.map(x => x._2))
-    val genericReplaceMap = grp.map({ case (name, types) =>
-      if (types.length > 1) {
-        val tis = types.indices
-        tis.foreach(ti1 =>
-          tis.foreach(ti2 =>
-            if (!types(ti1).assignable(types(ti2))) {
-              throw TypeError(s"ambiguous variable ${name} type ${types(ti1)} not assignable ${types(ti2)}")
-            }
+    val genericReplaceMap = {
+      trace("compute genericReplaceMap")(grp.map({ case (name, types) =>
+        if (types.length > 1) {
+          val tis = types.indices
+          tis.foreach(ti1 =>
+            tis.foreach(ti2 =>
+              trace(s"check generic type of param ${name}: ${types(ti1)} assignable ${types(ti2)}")
+              (if (!types(ti1).assignable(types(ti2))) {
+                throw TypeError(s"ambiguous variable ${name} type ${types(ti1)} not assignable ${types(ti2)}")
+              })
+            )
           )
-        )
-      }
-      name -> types.head
-    })
+        }
+        name -> types.head
+      }))
+    }
 
-    val replaceTypeVarsName = replaceTypeVarsNames.filter(_._2.nonEmpty).map(r => r._1 -> r._2.head)
+    val replaceTypeVarsName =
+      trace(s"replaceTypeVarsName")(replaceTypeVarsNames.filter(_._2.nonEmpty).map(r => r._1 -> r._2.head))
 
-    var ngenerics = new GenericParams(
-      generics.map {
-        case av: AnyVariant =>
-          if (genericReplaceMap.contains(av.name)) {
-            if (!av.assignable(genericReplaceMap(av.name))) {
-              throw TypeError(s"can't assign generic param $av from ${genericReplaceMap(av.name)}")
-            } else {
-              if (replaceTypeVarsName.contains(av.name)) {
-                AnyVariant(replaceTypeVarsName(av.name))
+    var ngenerics =
+      trace("construct new GenericParams")(new GenericParams(
+        generics.map {
+          case av: AnyVariant =>
+            if (genericReplaceMap.contains(av.name)) {
+              trace(s"check assignable (AnyVariant) of ${av.name} from genericReplaceMap")(if (!av.assignable(genericReplaceMap(av.name))) {
+                throw TypeError(s"can't assign generic param $av from ${genericReplaceMap(av.name)}")
               } else {
-                null
-              }
-            }
-          } else {
-            av
-          }
-        case cov: CoVariant =>
-          if (genericReplaceMap.contains(cov.name)) {
-            if (!cov.assignable(genericReplaceMap(cov.name))) {
-              throw TypeError(s"can't assign generic param $cov from ${genericReplaceMap(cov.name)}")
+                if (replaceTypeVarsName.contains(av.name)) {
+                  AnyVariant(replaceTypeVarsName(av.name))
+                } else {
+                  null
+                }
+              })
             } else {
-              if (replaceTypeVarsName.contains(cov.name)) {
-                CoVariant(replaceTypeVarsName(cov.name), cov.tip)
-              } else {
-                null
-              }
+              av
             }
-          } else {
-            cov
-          }
-        case ctr: ContraVariant =>
-          if (genericReplaceMap.contains(ctr.name)) {
-            if (!ctr.assignable(genericReplaceMap(ctr.name))) {
-              throw TypeError(s"can't assign generic param $ctr from ${genericReplaceMap(ctr.name)}")
+          case cov: CoVariant =>
+            if (genericReplaceMap.contains(cov.name)) {
+              trace(s"check assignable (CoVariant) of ${cov.name} from genericReplaceMap")(if (!cov.assignable(genericReplaceMap(cov.name))) {
+                throw TypeError(s"can't assign generic param $cov from ${genericReplaceMap(cov.name)}")
+              } else {
+                if (replaceTypeVarsName.contains(cov.name)) {
+                  CoVariant(replaceTypeVarsName(cov.name), cov.tip)
+                } else {
+                  null
+                }
+              })
             } else {
-              if (replaceTypeVarsName.contains(ctr.name)) {
-                ContraVariant(replaceTypeVarsName(ctr.name), ctr.tip)
-              } else {
-                null
-              }
+              cov
             }
-          } else {
-            ctr
-          }
-      }.filter(_ != null).toList
-    )
+          case ctr: ContraVariant =>
+            if (genericReplaceMap.contains(ctr.name)) {
+              trace(s"check assignable (ContraVariant) of ${ctr.name} from genericReplaceMap")(if (!ctr.assignable(genericReplaceMap(ctr.name))) {
+                throw TypeError(s"can't assign generic param $ctr from ${genericReplaceMap(ctr.name)}")
+              } else {
+                if (replaceTypeVarsName.contains(ctr.name)) {
+                  ContraVariant(replaceTypeVarsName(ctr.name), ctr.tip)
+                } else {
+                  null
+                }
+              })
+            } else {
+              ctr
+            }
+        }.filter(_ != null).toList
+      ))
 
-    val retTypeVar: List[TypeVarLocator] = ret match {
+    val retTypeVar: List[TypeVarLocator] = trace("returns type vars locators")(ret match {
       case tv: TypeVariable => List(new TypeVarLocator(tv))
       case tvf: TypeVarFetch => tvf.typeVarFetch()
       case _ => List()
-    }
-    val usedTypeVars = (paramz.typeVarFetch() ++ retTypeVar).map({ t => t.typeVar })
-    ngenerics = new GenericParams((ngenerics.filter { gp => usedTypeVars.exists { tv => tv.name == gp.name } }).toList)
+    })
+    val usedTypeVars = trace("usedTypeVars")(
+      (
+        trace("params type vars locators")(paramz.typeVarFetch()) ++
+          retTypeVar
+        ).map({ t => t.typeVar })
+    )
+    ngenerics = trace("final GenericParams")(
+      new GenericParams((ngenerics.filter { gp => usedTypeVars.exists { tv => tv.name == gp.name } }).toList)
+    )
 
     clone(ngenerics, paramz, ret)
   }
